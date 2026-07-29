@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Convert approved image-generation sources into strict shared pixel assets."""
+"""Convert approved image-generation sources into strict iOS pixel assets."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parents[1]
 PALETTE_PATH = ROOT / "art-source" / "palettes" / "common16.gpl"
-OUTPUT_DIR = ROOT / "art-export" / "production" / "drawable-nodpi"
+OUTPUT_DIR = ROOT / "art-export" / "production" / "sprites"
 
 
 def load_palette() -> list[tuple[int, int, int]]:

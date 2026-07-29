@@ -1,11 +1,10 @@
-name: Validate mobile slices
+name: Validate iOS app
 
 on:
   pull_request:
     paths:
-      - ".github/workflows/validate-mobile-slices.yml"
+      - ".github/workflows/validate-ios.yml"
       - ".mise.toml"
-      - "android/**"
       - "ios/**"
       - "art-export/**"
       - "art-source/**"
@@ -15,9 +14,8 @@ on:
   push:
     branches: [main]
     paths:
-      - ".github/workflows/validate-mobile-slices.yml"
+      - ".github/workflows/validate-ios.yml"
       - ".mise.toml"
-      - "android/**"
       - "ios/**"
       - "art-export/**"
       - "art-source/**"
@@ -29,36 +27,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: mobile-slices-${{ github.workflow }}-${{ github.ref }}
+  group: ios-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  android:
-    name: Android debug, tests, lint
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    defaults:
-      run:
-        working-directory: android
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: "21"
-      - uses: gradle/actions/setup-gradle@v6
-        with:
-          cache-provider: basic
-      - name: Build and verify Android pixel slice
-        run: >-
-          ./gradlew
-          :core:math:test
-          :core:content:test
-          :feature:combat:testDebugUnitTest
-          :app:assembleDebug
-          :app:lintDebug
-          --no-daemon
-
   ios:
     name: iOS debug and XCTest
     runs-on: macos-latest
