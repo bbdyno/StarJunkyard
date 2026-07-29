@@ -8,4 +8,8 @@ DerivedData/
 *.xcodeproj/
 *.xcworkspace/
 .gradle/
+build/
+*.apk
+*.aab
+.idea/
 local.properties
