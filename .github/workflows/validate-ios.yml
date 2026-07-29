@@ -5,7 +5,9 @@ on:
     paths:
       - ".github/workflows/validate-ios.yml"
       - ".mise.toml"
-      - "ios/**"
+      - "Project.swift"
+      - "StarJunkyard/**"
+      - "StarJunkyardTests/**"
       - "art-export/**"
       - "art-source/**"
       - "content/**"
@@ -16,7 +18,9 @@ on:
     paths:
       - ".github/workflows/validate-ios.yml"
       - ".mise.toml"
-      - "ios/**"
+      - "Project.swift"
+      - "StarJunkyard/**"
+      - "StarJunkyardTests/**"
       - "art-export/**"
       - "art-source/**"
       - "content/**"
@@ -35,9 +39,6 @@ jobs:
     name: iOS debug and XCTest
     runs-on: macos-latest
     timeout-minutes: 25
-    defaults:
-      run:
-        working-directory: ios
     steps:
       - uses: actions/checkout@v6
       - uses: jdx/mise-action@v3
@@ -49,7 +50,7 @@ jobs:
       - name: Select an available iPhone simulator
         id: simulator
         run: |
-          simulator_id="$(xcrun simctl list devices available --json | python3 ../tools/select_ios_simulator.py)"
+          simulator_id="$(xcrun simctl list devices available --json | python3 tools/select_ios_simulator.py)"
           echo "id=${simulator_id}" >> "${GITHUB_OUTPUT}"
       - name: Build and test iOS pixel slice
         run: >-

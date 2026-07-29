@@ -37,15 +37,15 @@ let project = Project(
             ]),
             sources: ["StarJunkyard/Sources/**"],
             resources: [
-                "../content/**",
-                "../golden/**",
-                "../art-export/production/**"
+                "content/**",
+                "golden/**",
+                "art-export/production/**"
             ],
             scripts: [
                 .pre(
                     script: """
                     if [ "${CONFIGURATION}" = "Release" ]; then
-                      cd "${SRCROOT}/.."
+                      cd "${SRCROOT}"
                       /usr/bin/python3 tools/validate_project.py --release
                     fi
                     """,
@@ -68,7 +68,7 @@ let project = Project(
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
             sources: ["StarJunkyardTests/**"],
-            resources: ["../content/**"],
+            resources: ["content/**"],
             dependencies: [.target(name: "StarJunkyard")]
         )
     ]
