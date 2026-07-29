@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.tuist-cache/
+Derived/
+DerivedData/
+.gradle/
+local.properties
