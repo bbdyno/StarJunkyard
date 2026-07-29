@@ -56,6 +56,7 @@ let project = Project(
             settings: .settings(
                 base: [
                     "ASSETCATALOG_COMPILER_APPICON_NAME": "",
+                    "CODE_SIGN_ENTITLEMENTS": "StarJunkyard/StarJunkyard.entitlements",
                     "ENABLE_USER_SCRIPT_SANDBOXING": "NO"
                 ]
             )
