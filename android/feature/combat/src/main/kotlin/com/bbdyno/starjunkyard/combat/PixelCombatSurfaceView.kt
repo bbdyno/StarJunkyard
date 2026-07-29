@@ -19,7 +19,7 @@ class PixelCombatSurfaceView @JvmOverloads constructor(
     private val engine = context.assets.open(CONTENT_FILE).bufferedReader().use {
         CombatEngine(VerticalSliceDecoder.decode(it.readText()))
     }
-    private val painter = DebugPixelPainter()
+    private val painter = PixelBattleRenderer(context.resources)
     private val overclockRequested = AtomicBoolean(false)
     private val powerManager = context.getSystemService(PowerManager::class.java)
 
@@ -100,13 +100,13 @@ class PixelCombatSurfaceView @JvmOverloads constructor(
 
     private fun isOverclockHit(physicalX: Float, physicalY: Float): Boolean {
         if (width <= 0 || height <= 0) return false
-        val scale = min(width / DebugPixelPainter.LOGICAL_WIDTH, height / DebugPixelPainter.LOGICAL_HEIGHT)
+        val scale = min(width / PixelBattleRenderer.LOGICAL_WIDTH, height / PixelBattleRenderer.LOGICAL_HEIGHT)
             .coerceAtLeast(1)
-        val offsetX = (width - DebugPixelPainter.LOGICAL_WIDTH * scale) / 2
-        val offsetY = (height - DebugPixelPainter.LOGICAL_HEIGHT * scale) / 2
+        val offsetX = (width - PixelBattleRenderer.LOGICAL_WIDTH * scale) / 2
+        val offsetY = (height - PixelBattleRenderer.LOGICAL_HEIGHT * scale) / 2
         val logicalX = (physicalX - offsetX) / scale
         val logicalY = (physicalY - offsetY) / scale
-        return logicalX in 264f..346f && logicalY in 650f..736f
+        return logicalX in 226f..340f && logicalY in 648f..792f
     }
 
     private companion object {

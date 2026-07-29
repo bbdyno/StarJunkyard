@@ -38,7 +38,8 @@ let project = Project(
             sources: ["StarJunkyard/Sources/**"],
             resources: [
                 "../content/**",
-                "../golden/**"
+                "../golden/**",
+                "../art-export/production/**"
             ],
             scripts: [
                 .pre(
@@ -48,7 +49,7 @@ let project = Project(
                       /usr/bin/python3 tools/validate_project.py --release
                     fi
                     """,
-                    name: "Block Release Without Production Pixel Assets",
+                    name: "Validate Production Pixel Assets",
                     basedOnDependencyAnalysis: false
                 )
             ],

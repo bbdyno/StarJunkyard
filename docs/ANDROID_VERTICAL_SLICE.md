@@ -3,15 +3,15 @@
 ## 경계
 
 - Compose: Activity 생명주기, edge-to-edge, 접근성 의미, `AndroidView` 호스팅
-- SurfaceView/Canvas: 전투 세계, HUD, 하단 탭, 오버클럭 입력, 파편·비 연출
+- SurfaceView/Canvas: 전투 세계, HUD, 작업 콘솔, 과부하 입력, 공격·피격·파편·비 연출
 - 공통 데이터: 저장소 루트의 `content/r1_vertical_slice.json`
 - 공통 판정: `:core:math` PCG32와 50ms 고정 simulation tick
 
-첫 화면의 Compose 트리는 `AndroidView` 하나뿐이다. Card, Button, LazyColumn, Scaffold, Material surface가 없고 360×800 논리 장면 안에서 배경·컨베이어·정비사·드론·폐품 생명체·HUD를 픽셀 블록으로 그린다. 물리 화면에는 정수 scale/translate만 적용하며 `Paint`의 anti-alias, bitmap filtering, subpixel text를 끈다.
+첫 화면의 Compose 트리는 `AndroidView` 하나뿐이다. Card, Button, LazyColumn, Scaffold, Material surface가 없고 360×800 논리 장면에 iOS와 같은 공통 16색 PNG를 그린다. 캐릭터는 정수 scale/translate만 적용하고 bitmap filtering을 끈다. 정비사 공격, 드론 로터/부유, 적 보행/비행, 피격 흔들림, 해체 파편 자석 회수를 50ms 전투 tick 기반 스텝 애니메이션으로 표시한다.
 
-![Android R1 DEBUG 도트 전투 캡처](screenshots/android-r1-debug.png)
+![Android R1 프로덕션 도트 전투 캡처](screenshots/android-r1-production-pixel.png)
 
-현재 블록 스프라이트는 구조·구도 검증용 DEBUG 임시 아트다. 화면에 `DEBUG PIXEL ART`를 표시하고 `packageRelease` 전에 공통 release 검증기를 실행한다. 승인된 Aseprite 1배율 PNG가 들어오기 전에는 배포할 수 없다.
+도형 플레이스홀더와 `DEBUG PIXEL ART` 표시는 제거했다. 하단 앱형 탭도 없애고 자동 해체 장비 상태와 과부하 조작을 보여주는 게임 내 작업 콘솔로 재구성했다. `packageRelease` 전에는 공통 release 검증기로 PNG 크기·팔레트·알파·해시를 다시 확인한다.
 
 ## 빌드 기준
 

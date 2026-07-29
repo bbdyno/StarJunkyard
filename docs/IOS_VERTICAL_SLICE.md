@@ -3,14 +3,14 @@
 ## 경계
 
 - UIKit: 앱 생명주기, 화면 방향, SKView 호스팅, VoiceOver 요약
-- SpriteKit: 전투 세계, HUD, 하단 탭, 오버클럭 입력, 파편 연출
+- SpriteKit: 전투 세계, HUD, 작업 콘솔, 과부하 입력, 파편·자석 회수 연출
 - 공통 데이터: 저장소 루트의 `content/r1_vertical_slice.json`
 
-첫 화면에는 UIKit 카드, UIButton, SF Symbol, 블러, 그라데이션이 없다. 360×800 논리 장면 안에서 배경·컨베이어·정비사·리벳·폐품 생명체·HUD를 모두 픽셀 블록으로 그린다.
+첫 화면에는 UIKit 카드, UIButton, SF Symbol, 블러, 그라데이션이 없다. 360×800 논리 장면에서 공통 16색 PNG 배경·정비사·리벳·폐품 생명체를 nearest-neighbor로 렌더링한다. 정비사 대기/공격 4단계, 드론 부유/반동 4단계, 적 이동/피격 3–4단계와 해체 파편 자석 회수를 정수 좌표 스텝 애니메이션으로 표시한다.
 
-![iOS R1 DEBUG 도트 전투 캡처](screenshots/ios-r1-debug.png)
+![iOS R1 프로덕션 도트 전투 캡처](screenshots/ios-r1-production-pixel.png)
 
-현재 블록 스프라이트는 코드 구조와 구도를 검증하는 DEBUG 전용 임시 아트다. 화면에 `DEBUG PIXEL ART`를 표시하고 공통 release 검증기가 `planned` asset을 거부한다. 승인된 Aseprite 1배율 PNG가 들어오기 전에는 배포하지 않는다.
+캐릭터와 적은 도형 플레이스홀더가 아니라 얼굴·도구·재료·팔다리 실루엣을 갖는 공통 PNG다. 하단 앱형 탭은 제거하고 현재 전투의 절단기·드론·자석 상태와 과부하 조작만 담은 작업 콘솔로 교체했다.
 
 ## 생성과 검증
 
@@ -23,4 +23,4 @@ xcodebuild -project StarJunkyard.xcodeproj -scheme StarJunkyard -sdk iphonesimul
 
 검증 항목은 PCG32 기준 출력, 공통 콘텐츠 디코딩, SKView 단일 루트, UIButton 부재, 360×800 논리 크기, SKShapeNode 부재, 정수 좌표다.
 
-Release 구성은 빌드 전 `tools/validate_project.py --release`를 실행한다. 에셋 매니페스트에 `planned` 항목이 남아 있는 동안 의도적으로 실패한다.
+Release 구성은 빌드 전 `tools/validate_project.py --release`를 실행한다. 9개 프로덕션 PNG의 크기, 완전 알파, 공통 16색, SHA-256이 모두 일치할 때만 성공한다.

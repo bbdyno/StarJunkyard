@@ -34,8 +34,8 @@ def validate_android_pixel_shell() -> str:
     surface = read(
         "android/feature/combat/src/main/kotlin/com/bbdyno/starjunkyard/combat/PixelCombatSurfaceView.kt"
     )
-    painter = read(
-        "android/feature/combat/src/main/kotlin/com/bbdyno/starjunkyard/combat/DebugPixelPainter.kt"
+    renderer = read(
+        "android/feature/combat/src/main/kotlin/com/bbdyno/starjunkyard/combat/PixelBattleRenderer.kt"
     )
     app_build = read("android/app/build.gradle.kts")
     manifest = read("android/app/src/main/AndroidManifest.xml")
@@ -59,11 +59,12 @@ def validate_android_pixel_shell() -> str:
     require(surface, "holder.lockCanvas()", "PixelCombatSurfaceView")
     require(surface, "setZOrderOnTop(true)", "PixelCombatSurfaceView")
     require(surface, "SIMULATION_STEP_NS = 50_000_000L", "PixelCombatSurfaceView")
-    require(painter, "isAntiAlias = false", "DebugPixelPainter")
-    require(painter, "isFilterBitmap = false", "DebugPixelPainter")
-    require(painter, "canvas.scale(scale.toFloat(), scale.toFloat())", "DebugPixelPainter")
-    require(painter, "const val LOGICAL_WIDTH = 360", "DebugPixelPainter")
-    require(painter, "const val LOGICAL_HEIGHT = 800", "DebugPixelPainter")
+    require(renderer, "isAntiAlias = false", "PixelBattleRenderer")
+    require(renderer, "isFilterBitmap = false", "PixelBattleRenderer")
+    require(renderer, "canvas.scale(scale.toFloat(), scale.toFloat())", "PixelBattleRenderer")
+    require(renderer, "canvas.drawBitmap", "PixelBattleRenderer")
+    require(renderer, "const val LOGICAL_WIDTH = 360", "PixelBattleRenderer")
+    require(renderer, "const val LOGICAL_HEIGHT = 800", "PixelBattleRenderer")
     require(app_build, 'compileSdk = 36', "Android app build")
     require(app_build, 'minSdk = 28', "Android app build")
     require(app_build, 'targetSdk = 36', "Android app build")
@@ -71,7 +72,7 @@ def validate_android_pixel_shell() -> str:
     require(app_build, 'it.name == "packageRelease"', "Android release gate")
     require(manifest, 'android:screenOrientation="portrait"', "Android manifest")
 
-    return "Android pixel shell passed: Compose host -> one SurfaceView -> 360x800 integer Canvas"
+    return "Android pixel shell passed: Compose host -> one SurfaceView -> shared PNG sprites on 360x800 integer Canvas"
 
 
 if __name__ == "__main__":

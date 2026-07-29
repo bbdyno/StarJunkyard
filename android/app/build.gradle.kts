@@ -59,7 +59,7 @@ kotlin {
 
 val validateReleasePixelAssets by tasks.registering(Exec::class) {
     group = "verification"
-    description = "Rejects release builds while development pixel assets remain planned."
+    description = "Verifies production pixel asset canvases, palette, alpha, and hashes."
     workingDir(rootProject.projectDir.parentFile)
     commandLine("python3", "tools/validate_project.py", "--release")
 }

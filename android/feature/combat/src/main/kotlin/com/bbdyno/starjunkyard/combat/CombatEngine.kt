@@ -14,6 +14,9 @@ data class CombatSnapshot(
     val tick: Int,
     val overclockTicks: Int,
     val scrapTicks: Int,
+    val playerAttackTicks: Int,
+    val droneAttackTicks: Int,
+    val hitTicks: Int,
 )
 
 class CombatEngine(private val content: VerticalSliceContent) {
@@ -27,6 +30,9 @@ class CombatEngine(private val content: VerticalSliceContent) {
     private var nextDroneAttackTick = 1
     private var overclockUntilTick = 0
     private var scrapTicks = 0
+    private var playerAttackTicks = 0
+    private var droneAttackTicks = 0
+    private var hitTicks = 0
     private var credits = 0
     private var parts = 0
     private var rng = Pcg32(seed = 42uL, stream = 54uL)
@@ -40,16 +46,21 @@ class CombatEngine(private val content: VerticalSliceContent) {
     fun tick() {
         tick += 1
         if (scrapTicks > 0) scrapTicks -= 1
+        if (playerAttackTicks > 0) playerAttackTicks -= 1
+        if (droneAttackTicks > 0) droneAttackTicks -= 1
+        if (hitTicks > 0) hitTicks -= 1
 
         if (tick >= nextPlayerAttackTick) {
             val intervalTicks = if (tick < overclockUntilTick) 15 else 24
             nextPlayerAttackTick = tick + intervalTicks
+            playerAttackTicks = 4
             dealDamage(content.player.baseDamage * 3)
         }
 
         val drone = content.drones.firstOrNull()
         if (drone != null && currentStage.number >= drone.unlockStage && tick >= nextDroneAttackTick) {
             nextDroneAttackTick = tick + maxOf(1, drone.attackIntervalMs / TICK_MS)
+            droneAttackTicks = 3
             dealDamage(drone.baseDamage * 2)
         }
     }
@@ -71,6 +82,9 @@ class CombatEngine(private val content: VerticalSliceContent) {
             tick = tick,
             overclockTicks = maxOf(0, overclockUntilTick - tick),
             scrapTicks = scrapTicks,
+            playerAttackTicks = playerAttackTicks,
+            droneAttackTicks = droneAttackTicks,
+            hitTicks = hitTicks,
         )
     }
 
@@ -89,6 +103,7 @@ class CombatEngine(private val content: VerticalSliceContent) {
             baseDamage
         }
         enemyHp -= damage
+        hitTicks = 3
         if (enemyHp <= 0) dismantleCurrentEnemy()
     }
 

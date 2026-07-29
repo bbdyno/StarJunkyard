@@ -37,6 +37,10 @@ final class PixelSceneTests: XCTestCase {
         XCTAssertEqual(scene.size, CGSize(width: 360, height: 800))
         XCTAssertFalse(scene.children.isEmpty)
         XCTAssertFalse(containsShapeNode(scene), "Vector SKShapeNode is forbidden in the game canvas")
+        XCTAssertNotNil(findNode(named: "actor_mo_base", in: scene))
+        XCTAssertNotNil(findNode(named: "drone_riv0_base", in: scene))
+        XCTAssertNotNil(findNode(named: "enemy_can_bug", in: scene))
+        XCTAssertNil(findNode(named: "mechanic_mo_debug", in: scene))
         assertIntegralPositions(scene)
     }
 
@@ -63,6 +67,11 @@ final class PixelSceneTests: XCTestCase {
 
     private func containsShapeNode(_ node: SKNode) -> Bool {
         node is SKShapeNode || node.children.contains(where: containsShapeNode)
+    }
+
+    private func findNode(named name: String, in node: SKNode) -> SKNode? {
+        if node.name == name { return node }
+        return node.children.lazy.compactMap { self.findNode(named: name, in: $0) }.first
     }
 
     private func assertIntegralPositions(_ node: SKNode, file: StaticString = #filePath, line: UInt = #line) {

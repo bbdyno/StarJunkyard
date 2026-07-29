@@ -26,6 +26,7 @@ android {
     }
 
     sourceSets["test"].resources.srcDir("../../../content")
+    sourceSets["main"].res.srcDir("../../../art-export/production")
 }
 
 kotlin {
