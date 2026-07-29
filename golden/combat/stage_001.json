@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "combat_stage_001_base",
+  "contentVersion": "0.1.0",
+  "input": {
+    "stage": 1,
+    "seed": "42",
+    "stream": "54",
+    "ticks": 1000,
+    "loadout": {
+      "playerDamage": 20,
+      "playerAttackIntervalMs": 1200,
+      "droneDamage": 3,
+      "droneAttackIntervalMs": 1000,
+      "criticalChancePpm": 50000,
+      "criticalDamagePpm": 1700000
+    },
+    "actions": [
+      {"tick": 80, "type": "overclock", "durationTicks": 160, "attackSpeedPpm": 1600000}
+    ]
+  },
+  "expectedState": {
+    "stage": 1,
+    "ticksElapsed": 439,
+    "enemyIndex": 8,
+    "enemyHp": 0,
+    "credits": 80,
+    "parts": 24,
+    "cleared": true,
+    "rngState": "13514241262775908841",
+    "rngStream": "54"
+  },
+  "expectedDigest": "01e793b3e5cd2fc7527cdf2451bfe1db77d70378de05a337f31bb2eaea119615"
+}

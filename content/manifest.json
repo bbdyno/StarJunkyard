@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "0.1.0",
+  "buildLabel": "r1-vertical-slice",
+  "logicalViewport": {
+    "width": 360,
+    "height": 800,
+    "orientation": "portrait"
+  },
+  "contentFiles": [
+    "content/r1_vertical_slice.json"
+  ],
+  "goldenFiles": [
+    "golden/combat/stage_001.json",
+    "golden/combat/stage_010.json",
+    "golden/combat/stage_020.json"
+  ],
+  "assetManifest": "art-export/asset-manifest.json",
+  "palette": "art-source/palettes/common16.gpl"
+}

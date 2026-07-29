@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "contentVersion": "0.1.0",
+  "slice": {
+    "id": "r1_vertical_slice",
+    "regionId": "r01_back_alley",
+    "stageStart": 1,
+    "stageEnd": 20
+  },
+  "player": {
+    "id": "mo",
+    "baseDamage": 8,
+    "attackIntervalMs": 1200,
+    "criticalChancePpm": 50000,
+    "criticalDamagePpm": 1700000,
+    "spriteId": "actor_mo_base"
+  },
+  "drones": [
+    {
+      "id": "riv0",
+      "nameKo": "리벳",
+      "role": "salvage",
+      "baseDamage": 3,
+      "attackIntervalMs": 1000,
+      "unlockStage": 3,
+      "spriteId": "drone_riv0_base"
+    },
+    {
+      "id": "spk2",
+      "nameKo": "스파크",
+      "role": "chain_electric",
+      "baseDamage": 5,
+      "attackIntervalMs": 800,
+      "unlockStage": 18,
+      "spriteId": "drone_spk2_base"
+    }
+  ],
+  "enemies": [
+    {
+      "id": "can_bug",
+      "nameKo": "캔벌레",
+      "class": "normal",
+      "hpMultiplierPpm": 1000000,
+      "weakness": "impact",
+      "spriteId": "enemy_can_bug"
+    },
+    {
+      "id": "umbrella_crab",
+      "nameKo": "우산게",
+      "class": "normal",
+      "hpMultiplierPpm": 1150000,
+      "weakness": "cut",
+      "spriteId": "enemy_umbrella_crab"
+    },
+    {
+      "id": "fan_bat",
+      "nameKo": "선풍기박쥐",
+      "class": "normal",
+      "hpMultiplierPpm": 1250000,
+      "weakness": "electric",
+      "spriteId": "enemy_fan_bat"
+    },
+    {
+      "id": "vending_knight",
+      "nameKo": "자판기기사",
+      "class": "elite",
+      "hpMultiplierPpm": 6000000,
+      "weakness": "electric",
+      "spriteId": "elite_vending_knight"
+    },
+    {
+      "id": "cancrab_king",
+      "nameKo": "압착왕 캔크랩",
+      "class": "boss",
+      "hpMultiplierPpm": 30000000,
+      "weakness": "impact",
+      "spriteId": "boss_cancrab_king"
+    }
+  ],
+  "stages": [
+    {"number": 1, "baseHp": 50, "baseReward": 10, "wave": ["can_bug", "can_bug", "can_bug", "can_bug", "can_bug", "can_bug", "can_bug", "can_bug"], "rewardMultiplierPpm": 1000000},
+    {"number": 2, "baseHp": 55, "baseReward": 11, "wave": ["can_bug", "can_bug", "umbrella_crab", "can_bug", "can_bug", "umbrella_crab", "can_bug", "can_bug"], "rewardMultiplierPpm": 1000000},
+    {"number": 3, "baseHp": 61, "baseReward": 12, "wave": ["can_bug", "umbrella_crab", "can_bug", "can_bug", "umbrella_crab", "can_bug", "can_bug", "can_bug"], "rewardMultiplierPpm": 1000000},
+    {"number": 4, "baseHp": 67, "baseReward": 13, "wave": ["umbrella_crab", "can_bug", "can_bug", "umbrella_crab", "can_bug", "can_bug", "umbrella_crab", "can_bug"], "rewardMultiplierPpm": 1020000},
+    {"number": 5, "baseHp": 75, "baseReward": 14, "wave": ["can_bug", "can_bug", "umbrella_crab", "can_bug", "can_bug", "umbrella_crab", "vending_knight"], "rewardMultiplierPpm": 1100000},
+    {"number": 6, "baseHp": 82, "baseReward": 16, "wave": ["can_bug", "umbrella_crab", "fan_bat", "can_bug", "umbrella_crab", "can_bug", "fan_bat", "can_bug"], "rewardMultiplierPpm": 1040000},
+    {"number": 7, "baseHp": 91, "baseReward": 17, "wave": ["fan_bat", "can_bug", "umbrella_crab", "can_bug", "fan_bat", "can_bug", "umbrella_crab", "can_bug"], "rewardMultiplierPpm": 1040000},
+    {"number": 8, "baseHp": 101, "baseReward": 19, "wave": ["umbrella_crab", "fan_bat", "can_bug", "umbrella_crab", "fan_bat", "can_bug", "can_bug", "umbrella_crab"], "rewardMultiplierPpm": 1060000},
+    {"number": 9, "baseHp": 111, "baseReward": 21, "wave": ["fan_bat", "umbrella_crab", "fan_bat", "can_bug", "umbrella_crab", "fan_bat", "can_bug", "umbrella_crab"], "rewardMultiplierPpm": 1080000},
+    {"number": 10, "baseHp": 123, "baseReward": 23, "wave": ["cancrab_king"], "bossTier": 1, "timeLimitMs": 45000, "rewardMultiplierPpm": 40000000},
+    {"number": 11, "baseHp": 136, "baseReward": 25, "wave": ["can_bug", "umbrella_crab", "fan_bat", "can_bug", "umbrella_crab", "fan_bat", "can_bug", "fan_bat"], "rewardMultiplierPpm": 1100000},
+    {"number": 12, "baseHp": 150, "baseReward": 27, "wave": ["umbrella_crab", "fan_bat", "can_bug", "umbrella_crab", "fan_bat", "can_bug", "umbrella_crab", "fan_bat"], "rewardMultiplierPpm": 1120000},
+    {"number": 13, "baseHp": 166, "baseReward": 30, "wave": ["fan_bat", "fan_bat", "umbrella_crab", "can_bug", "fan_bat", "umbrella_crab", "can_bug", "fan_bat"], "rewardMultiplierPpm": 1140000},
+    {"number": 14, "baseHp": 183, "baseReward": 33, "wave": ["umbrella_crab", "fan_bat", "umbrella_crab", "can_bug", "fan_bat", "umbrella_crab", "fan_bat", "can_bug"], "rewardMultiplierPpm": 1160000},
+    {"number": 15, "baseHp": 202, "baseReward": 36, "wave": ["fan_bat", "umbrella_crab", "can_bug", "fan_bat", "umbrella_crab", "can_bug", "vending_knight"], "rewardMultiplierPpm": 1250000},
+    {"number": 16, "baseHp": 224, "baseReward": 39, "wave": ["fan_bat", "umbrella_crab", "fan_bat", "can_bug", "umbrella_crab", "fan_bat", "umbrella_crab", "can_bug"], "rewardMultiplierPpm": 1180000},
+    {"number": 17, "baseHp": 247, "baseReward": 43, "wave": ["umbrella_crab", "fan_bat", "umbrella_crab", "fan_bat", "can_bug", "fan_bat", "umbrella_crab", "fan_bat"], "rewardMultiplierPpm": 1200000},
+    {"number": 18, "baseHp": 273, "baseReward": 47, "wave": ["fan_bat", "fan_bat", "umbrella_crab", "fan_bat", "can_bug", "umbrella_crab", "fan_bat", "umbrella_crab"], "rewardMultiplierPpm": 1220000},
+    {"number": 19, "baseHp": 302, "baseReward": 51, "wave": ["umbrella_crab", "fan_bat", "fan_bat", "umbrella_crab", "fan_bat", "can_bug", "fan_bat", "umbrella_crab"], "rewardMultiplierPpm": 1240000},
+    {"number": 20, "baseHp": 333, "baseReward": 56, "wave": ["cancrab_king"], "bossTier": 2, "timeLimitMs": 45000, "rewardMultiplierPpm": 45000000}
+  ]
+}

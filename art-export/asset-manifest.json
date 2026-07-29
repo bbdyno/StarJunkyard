@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "logicalViewport": [360, 800],
+  "paletteId": "common16",
+  "assets": [
+    {"id": "actor_mo_base", "kind": "actor", "canvas": [48, 64], "pivot": [24, 58], "scalePolicy": "integer_nearest", "status": "planned"},
+    {"id": "drone_riv0_base", "kind": "drone", "canvas": [32, 32], "pivot": [16, 16], "scalePolicy": "integer_nearest", "status": "planned"},
+    {"id": "drone_spk2_base", "kind": "drone", "canvas": [32, 32], "pivot": [16, 16], "scalePolicy": "integer_nearest", "status": "planned"},
+    {"id": "enemy_can_bug", "kind": "enemy_small", "canvas": [32, 32], "pivot": [16, 28], "scalePolicy": "integer_nearest", "status": "planned"},
+    {"id": "enemy_umbrella_crab", "kind": "enemy_medium", "canvas": [48, 48], "pivot": [24, 42], "scalePolicy": "integer_nearest", "status": "planned"},
+    {"id": "enemy_fan_bat", "kind": "enemy_medium", "canvas": [48, 48], "pivot": [24, 42], "scalePolicy": "integer_nearest", "status": "planned"},
+    {"id": "elite_vending_knight", "kind": "enemy_large", "canvas": [64, 64], "pivot": [32, 58], "scalePolicy": "integer_nearest", "status": "planned"},
+    {"id": "boss_cancrab_king", "kind": "boss", "canvas": [128, 96], "pivot": [64, 90], "scalePolicy": "integer_nearest", "status": "planned"}
+  ]
+}
