@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://starjunkyard.local/schemas/golden.schema.json",
+  "title": "StarJunkyard deterministic golden fixture",
+  "type": "object",
+  "required": ["schemaVersion", "fixtureId", "contentVersion", "input", "expectedState", "expectedDigest"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "fixtureId": {"type": "string"},
+    "contentVersion": {"type": "string"},
+    "input": {
+      "type": "object",
+      "required": ["stage", "seed", "stream", "ticks", "loadout", "actions"],
+      "additionalProperties": false,
+      "properties": {
+        "stage": {"type": "integer", "minimum": 1},
+        "seed": {"type": "string", "pattern": "^[0-9]+$"},
+        "stream": {"type": "string", "pattern": "^[0-9]+$"},
+        "ticks": {"type": "integer", "minimum": 1},
+        "loadout": {
+          "type": "object",
+          "required": ["playerDamage", "playerAttackIntervalMs", "droneDamage", "droneAttackIntervalMs", "criticalChancePpm", "criticalDamagePpm"],
+          "additionalProperties": false,
+          "properties": {
+            "playerDamage": {"type": "integer", "minimum": 1},
+            "playerAttackIntervalMs": {"type": "integer", "minimum": 50},
+            "droneDamage": {"type": "integer", "minimum": 0},
+            "droneAttackIntervalMs": {"type": "integer", "minimum": 50},
+            "criticalChancePpm": {"type": "integer", "minimum": 0, "maximum": 1000000},
+            "criticalDamagePpm": {"type": "integer", "minimum": 1000000}
+          }
+        },
+        "actions": {"type": "array", "items": {"type": "object"}}
+      }
+    },
+    "expectedState": {"type": "object"},
+    "expectedDigest": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://starjunkyard.local/schemas/content.schema.json",
+  "title": "StarJunkyard content contract",
+  "type": "object",
+  "required": ["schemaVersion", "contentVersion", "slice", "player", "drones", "enemies", "stages"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "contentVersion": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "slice": {
+      "type": "object",
+      "required": ["id", "regionId", "stageStart", "stageEnd"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "regionId": {"type": "string"},
+        "stageStart": {"type": "integer", "minimum": 1},
+        "stageEnd": {"type": "integer", "minimum": 1}
+      }
+    },
+    "player": {"$ref": "#/$defs/player"},
+    "drones": {"type": "array", "items": {"$ref": "#/$defs/drone"}, "minItems": 1},
+    "enemies": {"type": "array", "items": {"$ref": "#/$defs/enemy"}, "minItems": 1},
+    "stages": {"type": "array", "items": {"$ref": "#/$defs/stage"}, "minItems": 1}
+  },
+  "$defs": {
+    "positivePpm": {"type": "integer", "minimum": 1, "maximum": 1000000000},
+    "player": {
+      "type": "object",
+      "required": ["id", "baseDamage", "attackIntervalMs", "criticalChancePpm", "criticalDamagePpm", "spriteId"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "baseDamage": {"type": "integer", "minimum": 1},
+        "attackIntervalMs": {"type": "integer", "minimum": 50},
+        "criticalChancePpm": {"type": "integer", "minimum": 0, "maximum": 1000000},
+        "criticalDamagePpm": {"$ref": "#/$defs/positivePpm"},
+        "spriteId": {"type": "string"}
+      }
+    },
+    "drone": {
+      "type": "object",
+      "required": ["id", "nameKo", "role", "baseDamage", "attackIntervalMs", "unlockStage", "spriteId"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "nameKo": {"type": "string"},
+        "role": {"type": "string"},
+        "baseDamage": {"type": "integer", "minimum": 1},
+        "attackIntervalMs": {"type": "integer", "minimum": 50},
+        "unlockStage": {"type": "integer", "minimum": 1},
+        "spriteId": {"type": "string"}
+      }
+    },
+    "enemy": {
+      "type": "object",
+      "required": ["id", "nameKo", "class", "hpMultiplierPpm", "weakness", "spriteId"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string"},
+        "nameKo": {"type": "string"},
+        "class": {"enum": ["normal", "elite", "boss"]},
+        "hpMultiplierPpm": {"$ref": "#/$defs/positivePpm"},
+        "weakness": {"enum": ["cut", "impact", "heat", "electric", "cooling"]},
+        "spriteId": {"type": "string"}
+      }
+    },
+    "stage": {
+      "type": "object",
+      "required": ["number", "baseHp", "baseReward", "wave", "rewardMultiplierPpm"],
+      "additionalProperties": false,
+      "properties": {
+        "number": {"type": "integer", "minimum": 1},
+        "baseHp": {"type": "integer", "minimum": 1},
+        "baseReward": {"type": "integer", "minimum": 1},
+        "wave": {"type": "array", "items": {"type": "string"}, "minItems": 1, "maxItems": 8},
+        "bossTier": {"type": "integer", "minimum": 1},
+        "timeLimitMs": {"type": "integer", "minimum": 10000, "maximum": 75000},
+        "rewardMultiplierPpm": {"$ref": "#/$defs/positivePpm"}
+      }
+    }
+  }
+}

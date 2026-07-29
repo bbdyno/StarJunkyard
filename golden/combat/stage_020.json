@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "combat_stage_020_boss_tier_2",
+  "contentVersion": "0.1.0",
+  "input": {
+    "stage": 20,
+    "seed": "20020",
+    "stream": "11",
+    "ticks": 1000,
+    "loadout": {
+      "playerDamage": 260,
+      "playerAttackIntervalMs": 700,
+      "droneDamage": 80,
+      "droneAttackIntervalMs": 800,
+      "criticalChancePpm": 120000,
+      "criticalDamagePpm": 1700000
+    },
+    "actions": [
+      {"tick": 120, "type": "overclock", "durationTicks": 160, "attackSpeedPpm": 1600000}
+    ]
+  },
+  "expectedState": {
+    "stage": 20,
+    "ticksElapsed": 287,
+    "enemyIndex": 1,
+    "enemyHp": 0,
+    "credits": 2520,
+    "parts": 15,
+    "cleared": true,
+    "rngState": "2469805391027716150",
+    "rngStream": "11"
+  },
+  "expectedDigest": "ff3d56017bc69215e962d1a08ae1f82f2a55821a8309cbe44d82e6e08eb44af4"
+}

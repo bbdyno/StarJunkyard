@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "combat_stage_010_boss",
+  "contentVersion": "0.1.0",
+  "input": {
+    "stage": 10,
+    "seed": "10010",
+    "stream": "7",
+    "ticks": 1000,
+    "loadout": {
+      "playerDamage": 120,
+      "playerAttackIntervalMs": 800,
+      "droneDamage": 30,
+      "droneAttackIntervalMs": 1000,
+      "criticalChancePpm": 100000,
+      "criticalDamagePpm": 1700000
+    },
+    "actions": [
+      {"tick": 100, "type": "overclock", "durationTicks": 160, "attackSpeedPpm": 1600000}
+    ]
+  },
+  "expectedState": {
+    "stage": 10,
+    "ticksElapsed": 295,
+    "enemyIndex": 1,
+    "enemyHp": 0,
+    "credits": 920,
+    "parts": 15,
+    "cleared": true,
+    "rngState": "2865657001343894796",
+    "rngStream": "7"
+  },
+  "expectedDigest": "ea0dcab736cbcf9aee0754fb41d580ebebaf5d42720e348b196a173c1c6c6c0b"
+}
