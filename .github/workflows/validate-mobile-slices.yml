@@ -1,0 +1,87 @@
+name: Validate mobile slices
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/validate-mobile-slices.yml"
+      - ".mise.toml"
+      - "android/**"
+      - "ios/**"
+      - "content/**"
+      - "golden/**"
+      - "tools/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/validate-mobile-slices.yml"
+      - ".mise.toml"
+      - "android/**"
+      - "ios/**"
+      - "content/**"
+      - "golden/**"
+      - "tools/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-slices-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android debug, tests, lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+      - name: Build and verify Android pixel slice
+        run: >-
+          ./gradlew
+          :core:math:test
+          :core:content:test
+          :feature:combat:testDebugUnitTest
+          :app:assembleDebug
+          :app:lintDebug
+          --no-daemon
+
+  ios:
+    name: iOS debug and XCTest
+    runs-on: macos-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@v3
+        with:
+          cache: true
+          install: true
+      - name: Generate the Xcode project
+        run: tuist generate --no-open
+      - name: Select an available iPhone simulator
+        id: simulator
+        run: |
+          simulator_id="$(xcrun simctl list devices available --json | python3 ../tools/select_ios_simulator.py)"
+          echo "id=${simulator_id}" >> "${GITHUB_OUTPUT}"
+      - name: Build and test iOS pixel slice
+        run: >-
+          xcodebuild
+          -project StarJunkyard.xcodeproj
+          -scheme StarJunkyard
+          -configuration Debug
+          -destination 'platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}'
+          -derivedDataPath Derived
+          CODE_SIGNING_ALLOWED=NO
+          test

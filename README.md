@@ -5,3 +5,4 @@
 - [공통 콘텐츠 파이프라인](docs/CONTENT_PIPELINE.md)
 - [iOS 도트 전투 버티컬 슬라이스](docs/IOS_VERTICAL_SLICE.md)
 - [Android 도트 전투 버티컬 슬라이스](docs/ANDROID_VERTICAL_SLICE.md)
+- [버티컬 슬라이스 검증 매트릭스](docs/VERIFICATION_MATRIX.md)
