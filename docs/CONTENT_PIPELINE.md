@@ -9,7 +9,7 @@ python3 tools/validate_project.py
 python3 -m unittest discover -s tests -p "test_*.py"
 ```
 
-`--release`는 모든 픽셀 에셋이 `production_ready`이고 실제 PNG·SHA-256·팔레트 검증을 통과할 때만 성공한다. 현재 R1 에셋은 아트 제작 전 `planned` 상태이므로 개발 검증은 통과하지만 릴리스 검증은 의도적으로 실패한다.
+`--release`는 모든 픽셀 에셋이 `production_ready`이고 실제 PNG·SHA-256·팔레트 검증을 통과할 때만 성공한다. R1은 정비사·드론 2종·적 5종·뒷골목 배경까지 9개 공통 PNG가 이 검증을 통과한다.
 
 ## 데이터 책임
 

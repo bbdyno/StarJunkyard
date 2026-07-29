@@ -6,3 +6,4 @@
 - [iOS 도트 전투 버티컬 슬라이스](docs/IOS_VERTICAL_SLICE.md)
 - [Android 도트 전투 버티컬 슬라이스](docs/ANDROID_VERTICAL_SLICE.md)
 - [버티컬 슬라이스 검증 매트릭스](docs/VERIFICATION_MATRIX.md)
+- [R1 프로덕션 픽셀 아트와 애니메이션](docs/PIXEL_ART_IMPLEMENTATION.md)

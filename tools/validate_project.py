@@ -195,6 +195,11 @@ def validate_assets(asset_manifest: dict[str, Any], required_ids: set[str], pale
     asset_ids = [asset["id"] for asset in assets]
     require(len(asset_ids) == len(set(asset_ids)), "asset ids must be unique")
     require(required_ids <= set(asset_ids), f"missing asset ids: {sorted(required_ids - set(asset_ids))}")
+    require("background_r01_back_alley" in asset_ids, "R1 combat background is missing")
+    profiles = asset_manifest.get("animationProfiles", {})
+    require(profiles.get("actor_mo_base", {}).get("attackFrames") == 4, "Mo needs four attack steps")
+    require(profiles.get("drone_riv0_base", {}).get("hoverFrames") == 4, "Rivet needs four hover steps")
+    require(profiles.get("enemy_normal", {}).get("hitFrames") == 3, "normal enemies need three hit steps")
     allowed_canvas: dict[str, set[tuple[int, int]]] = {
         "actor": {(48, 64)},
         "drone": {(32, 32), (48, 40)},

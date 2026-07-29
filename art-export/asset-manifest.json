@@ -3,13 +3,21 @@
   "logicalViewport": [360, 800],
   "paletteId": "common16",
   "assets": [
-    {"id": "actor_mo_base", "kind": "actor", "canvas": [48, 64], "pivot": [24, 58], "scalePolicy": "integer_nearest", "status": "planned"},
-    {"id": "drone_riv0_base", "kind": "drone", "canvas": [32, 32], "pivot": [16, 16], "scalePolicy": "integer_nearest", "status": "planned"},
-    {"id": "drone_spk2_base", "kind": "drone", "canvas": [32, 32], "pivot": [16, 16], "scalePolicy": "integer_nearest", "status": "planned"},
-    {"id": "enemy_can_bug", "kind": "enemy_small", "canvas": [32, 32], "pivot": [16, 28], "scalePolicy": "integer_nearest", "status": "planned"},
-    {"id": "enemy_umbrella_crab", "kind": "enemy_medium", "canvas": [48, 48], "pivot": [24, 42], "scalePolicy": "integer_nearest", "status": "planned"},
-    {"id": "enemy_fan_bat", "kind": "enemy_medium", "canvas": [48, 48], "pivot": [24, 42], "scalePolicy": "integer_nearest", "status": "planned"},
-    {"id": "elite_vending_knight", "kind": "enemy_large", "canvas": [64, 64], "pivot": [32, 58], "scalePolicy": "integer_nearest", "status": "planned"},
-    {"id": "boss_cancrab_king", "kind": "boss", "canvas": [128, 96], "pivot": [64, 90], "scalePolicy": "integer_nearest", "status": "planned"}
-  ]
+    {"id": "actor_mo_base", "kind": "actor", "canvas": [48, 64], "pivot": [24, 58], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/drawable-nodpi/actor_mo_base.png", "sha256": "8ccf15b73840b6255a71937b19099f27911c9fa02c51af1e91330581ad681cb2"},
+    {"id": "drone_riv0_base", "kind": "drone", "canvas": [48, 40], "pivot": [24, 20], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/drawable-nodpi/drone_riv0_base.png", "sha256": "02acb5c0bac4b2abf704c9e50fae060d08e38e28e22ca698aabd27185d3b061e"},
+    {"id": "drone_spk2_base", "kind": "drone", "canvas": [48, 40], "pivot": [24, 20], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/drawable-nodpi/drone_spk2_base.png", "sha256": "e389b3866f5b349ab76d2c081e752ecf47acf01ac1ef4714b6070f3e8400e245"},
+    {"id": "enemy_can_bug", "kind": "enemy_small", "canvas": [32, 32], "pivot": [16, 28], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/drawable-nodpi/enemy_can_bug.png", "sha256": "e2595ab476d667423efbbcfba9fc3e8a8109309236ebd9fc6b36daef1fa36dd7"},
+    {"id": "enemy_umbrella_crab", "kind": "enemy_medium", "canvas": [48, 48], "pivot": [24, 42], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/drawable-nodpi/enemy_umbrella_crab.png", "sha256": "7b42fa81a3db8f9379fa5cbace1e94e6a06f6e1fc4b1dd0e46aefe12af361515"},
+    {"id": "enemy_fan_bat", "kind": "enemy_medium", "canvas": [48, 48], "pivot": [24, 42], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/drawable-nodpi/enemy_fan_bat.png", "sha256": "00251fbb858e776c1b63adebf1c1ae6df06612e0fb914d0b9d1ec8b2e9eb67ed"},
+    {"id": "elite_vending_knight", "kind": "enemy_large", "canvas": [64, 64], "pivot": [32, 58], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/drawable-nodpi/elite_vending_knight.png", "sha256": "d424bee5549bea23ea221fe95d222253d319db511816cf9a8688cc22f1f96877"},
+    {"id": "boss_cancrab_king", "kind": "boss", "canvas": [128, 96], "pivot": [64, 90], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/drawable-nodpi/boss_cancrab_king.png", "sha256": "39750d42513e2c9ef1163696cf0e4fed07b0fccae34510821f835a43d1e6f858"},
+    {"id": "background_r01_back_alley", "kind": "background", "canvas": [360, 572], "pivot": [0, 572], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/drawable-nodpi/background_r01_back_alley.png", "sha256": "d5680068033c5895b16b16511d1d931d41e07cbcc8e396851d3449bbdbb4eaca"}
+  ],
+  "animationProfiles": {
+    "actor_mo_base": {"mode": "integer_step", "idleFrames": 4, "attackFrames": 4, "attackFps": 10},
+    "drone_riv0_base": {"mode": "integer_step", "hoverFrames": 4, "rotorFrames": 2, "hoverFps": 8},
+    "enemy_normal": {"mode": "integer_step", "locomotionFrames": 4, "hitFrames": 3, "locomotionFps": 7},
+    "enemy_elite": {"mode": "integer_step", "locomotionFrames": 4, "hitFrames": 3, "locomotionFps": 5},
+    "enemy_boss": {"mode": "integer_step", "idleFrames": 4, "clawTellFrames": 4, "hitFrames": 3, "idleFps": 4}
+  }
 }
