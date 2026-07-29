@@ -22,11 +22,14 @@ final class PixelSceneTests: XCTestCase {
     }
 
     func testRootViewIsOneGameCanvasWithoutUIKitButtons() {
-        let controller = GameViewController(content: sampleContent())
+        let controller = GameViewController(content: sampleContent(), saveStore: temporarySaveStore())
         controller.loadViewIfNeeded()
         XCTAssertTrue(controller.view is SKView)
         XCTAssertTrue(controller.view.subviews.isEmpty)
         XCTAssertTrue(findButtons(in: controller.view).isEmpty)
+        XCTAssertTrue((controller.view as? SKView)?.scene is SaveSelectionScene)
+        XCTAssertNotNil(findNode(named: "continue_save", in: (controller.view as! SKView).scene!))
+        XCTAssertNotNil(findNode(named: "cloud_load", in: (controller.view as! SKView).scene!))
     }
 
     func testSceneUsesPortraitLogicalCanvasAndPixelNodes() {
@@ -40,8 +43,37 @@ final class PixelSceneTests: XCTestCase {
         XCTAssertNotNil(findNode(named: "actor_mo_base", in: scene))
         XCTAssertNotNil(findNode(named: "drone_riv0_base", in: scene))
         XCTAssertNotNil(findNode(named: "enemy_can_bug", in: scene))
+        XCTAssertNotNil(findNode(named: "shop_open", in: scene))
+        XCTAssertNotNil(findNode(named: "tutorial_panel", in: scene))
         XCTAssertNil(findNode(named: "mechanic_mo_debug", in: scene))
         assertIntegralPositions(scene)
+    }
+
+    func testLocalSaveRoundTripAndBackupRecovery() throws {
+        let store = temporarySaveStore()
+        var first = GameSave.newGame(now: Date(timeIntervalSince1970: 100))
+        first.credits = 10
+        first.cutterLevel = 2
+        try store.save(first)
+
+        var second = first
+        second.revision = 2
+        second.credits = 77
+        try store.save(second)
+        XCTAssertEqual(store.load(), second)
+
+        try Data("broken".utf8).write(to: store.mainURL, options: .atomic)
+        XCTAssertEqual(store.load(), first)
+    }
+
+    func testSaveSelectionExplainsGameBeforeCombat() {
+        let scene = SaveSelectionScene(localSave: .newGame())
+        let view = SKView(frame: CGRect(origin: .zero, size: SaveSelectionScene.logicalSize))
+        scene.didMove(to: view)
+        XCTAssertNotNil(findNode(named: "save_slot", in: scene))
+        XCTAssertNotNil(findNode(named: "new_game", in: scene))
+        XCTAssertNotNil(findNode(named: "cloud_backup", in: scene))
+        XCTAssertNil(findNode(named: "enemy_can_bug", in: scene))
     }
 
     private func sampleContent() -> VerticalSliceContent {
@@ -58,6 +90,13 @@ final class PixelSceneTests: XCTestCase {
             """.utf8
         )
         return try! JSONDecoder().decode(VerticalSliceContent.self, from: data)
+    }
+
+    private func temporarySaveStore() -> GameSaveStore {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+        return GameSaveStore(directory: directory)
     }
 
     private func findButtons(in view: UIView) -> [UIButton] {

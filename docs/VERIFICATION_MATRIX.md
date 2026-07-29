@@ -3,9 +3,9 @@
 | 영역 | 로컬/CI 명령 | 승인 조건 | 현재 증빙 |
 |---|---|---|---|
 | 콘텐츠 | `python3 tools/validate_project.py` | schema, 20 stages, 16색 팔레트, 3 golden fixture 통과 | GitHub `validate` |
-| iOS | `tuist generate`; `xcodebuild ... test` | Debug build, XCTest 4개, SKView 단일 루트, UIButton/SKShapeNode 없음 | GitHub `iOS debug and XCTest`, 실제 캡처 |
+| iOS | `tuist generate`; `xcodebuild ... test` | Debug build, XCTest 6개, 저장 복구, 저장 선택, SKView 단일 루트, UIButton/SKShapeNode 없음 | GitHub `iOS debug and XCTest`, 실제 캡처 |
 | Release | `python3 tools/validate_project.py --release` | 9개 production-ready PNG의 캔버스·16색·알파·SHA-256 일치 | release 검증 통과 |
-| 시각 | iPhone 17 Pro 캡처·6초 영상 | 정비사·드론·적 식별, 앱형 탭 부재, 공격·부유·피격·회수 움직임 | `docs/screenshots/`, `docs/videos/` |
+| 시각 | iPhone 17 Pro 캡처·6초 영상 | 게임 목표/저장 슬롯 식별, 정비사·드론·적 식별, 앱형 탭 부재, 공격·부유·피격·회수 움직임 | `docs/screenshots/`, `docs/videos/` |
 
 ## CI 재현성
 
