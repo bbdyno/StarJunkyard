@@ -25,9 +25,22 @@ class ProjectContractTests(unittest.TestCase):
         self.assertIn("20 stages", summary)
         self.assertIn("3 golden fixtures", summary)
 
-    def test_release_rejects_planned_assets(self) -> None:
+    def test_release_accepts_only_verified_production_assets(self) -> None:
+        summary = VALIDATOR.validate_project(release=True)
+        self.assertIn("9 pixel assets (release mode)", summary)
+
+        asset_manifest = VALIDATOR.load_json("art-export/asset-manifest.json")
+        self.assertTrue(
+            all(asset["status"] == "production_ready" for asset in asset_manifest["assets"])
+        )
+
+    def test_release_rejects_any_asset_returned_to_planned(self) -> None:
+        asset_manifest = VALIDATOR.load_json("art-export/asset-manifest.json")
+        asset_manifest["assets"][0]["status"] = "planned"
+        palette = VALIDATOR.load_palette("art-source/palettes/common16.gpl")
+
         with self.assertRaisesRegex(VALIDATOR.ContractError, "cannot enter a release build"):
-            VALIDATOR.validate_project(release=True)
+            VALIDATOR.validate_assets(asset_manifest, set(), palette, release=True)
 
     def test_canonical_digest_ignores_key_order(self) -> None:
         left = {"stage": 1, "state": {"hp": 0, "clear": True}}

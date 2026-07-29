@@ -12,11 +12,11 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: Validate content, pixel metadata, and golden fixtures
-        run: python3 tools/validate_project.py
+      - name: Validate release-ready content, pixel assets, and golden fixtures
+        run: python3 tools/validate_project.py --release
       - name: Run contract tests
         run: python3 -m unittest discover -s tests -p "test_*.py"

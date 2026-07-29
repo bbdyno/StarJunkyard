@@ -1,0 +1,64 @@
+name: Validate iOS app
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/validate-ios.yml"
+      - ".mise.toml"
+      - "Project.swift"
+      - "StarJunkyard/**"
+      - "StarJunkyardTests/**"
+      - "art-export/**"
+      - "art-source/**"
+      - "content/**"
+      - "golden/**"
+      - "tools/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/validate-ios.yml"
+      - ".mise.toml"
+      - "Project.swift"
+      - "StarJunkyard/**"
+      - "StarJunkyardTests/**"
+      - "art-export/**"
+      - "art-source/**"
+      - "content/**"
+      - "golden/**"
+      - "tools/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios:
+    name: iOS debug and XCTest
+    runs-on: macos-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@v3
+        with:
+          cache: true
+          install: true
+      - name: Generate the Xcode project
+        run: tuist generate --no-open
+      - name: Select an available iPhone simulator
+        id: simulator
+        run: |
+          simulator_id="$(xcrun simctl list devices available --json | python3 tools/select_ios_simulator.py)"
+          echo "id=${simulator_id}" >> "${GITHUB_OUTPUT}"
+      - name: Build and test iOS pixel slice
+        run: >-
+          xcodebuild
+          -project StarJunkyard.xcodeproj
+          -scheme StarJunkyard
+          -configuration Debug
+          -destination 'platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}'
+          -derivedDataPath Derived
+          CODE_SIGNING_ALLOWED=NO
+          test
