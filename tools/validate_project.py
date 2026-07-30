@@ -9,6 +9,7 @@ import json
 import struct
 import sys
 import zlib
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP, getcontext
 from pathlib import Path
 from typing import Any
@@ -374,6 +375,99 @@ def validate_ios_iap_catalog() -> int:
     return len(products)
 
 
+def _utc_date(value: Any, label: str) -> datetime:
+    require(isinstance(value, str) and value.endswith("Z"), f"{label} must be an explicit UTC timestamp")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as error:
+        raise ContractError(f"{label} is not an ISO-8601 timestamp") from error
+    require(parsed.tzinfo == timezone.utc, f"{label} must use UTC")
+    return parsed
+
+
+def validate_season_definition(season: dict[str, Any], label: str) -> tuple[datetime, datetime]:
+    require(season.get("schemaVersion") == 1, f"{label}: schema version mismatch")
+    content_version = season.get("contentVersion")
+    require(isinstance(content_version, str) and len(content_version.split(".")) == 3 and
+            all(part.isdigit() for part in content_version.split(".")),
+            f"{label}: semantic content version is required")
+    season_id = season.get("seasonID")
+    require(isinstance(season_id, str) and season_id.startswith("season_"), f"{label}: invalid season id")
+    starts_at = _utc_date(season.get("startsAt"), f"{label}.startsAt")
+    ends_at = _utc_date(season.get("endsAt"), f"{label}.endsAt")
+    require(ends_at - starts_at == timedelta(weeks=8), f"{label}: season must last exactly eight weeks")
+    require(season.get("weeklyXPCap") == 2500, f"{label}: weekly play XP cap must be 2500")
+    require(isinstance(season.get("selectionSeed"), int) and season["selectionSeed"] > 0,
+            f"{label}: selection seed must be positive")
+    require(isinstance(season.get("codexEntryID"), str) and season["codexEntryID"],
+            f"{label}: post-season codex entry is required")
+
+    allowed_metrics = {
+        "dismantle_enemy", "salvage_part", "manual_salvage", "crew_attack",
+        "clear_stage", "facility_job", "defeat_boss", "expedition_complete",
+    }
+    forbidden_terms = ("purchase", "payment", "store", "iap", "advert", "watch_ad", "ad_watch")
+    daily = season.get("dailyMissionPool", [])
+    weekly = season.get("weeklyMissions", [])
+    require(isinstance(daily, list) and len(daily) == 6, f"{label}: daily pool must contain six missions")
+    require(isinstance(weekly, list) and len(weekly) == 4, f"{label}: four weekly missions are required")
+    missions = daily + weekly
+    mission_ids = [mission.get("id") for mission in missions]
+    require(len(mission_ids) == len(set(mission_ids)), f"{label}: mission ids must be unique")
+    for mission in missions:
+        identifier = mission.get("id", "")
+        metric = mission.get("metric", "")
+        require(metric in allowed_metrics, f"{label}/{identifier}: non-gameplay mission metric {metric!r}")
+        searchable = f"{identifier} {metric}".casefold()
+        require(not any(term in searchable for term in forbidden_terms),
+                f"{label}/{identifier}: payment and advertising missions are forbidden")
+        require(isinstance(mission.get("target"), int) and mission["target"] > 0,
+                f"{label}/{identifier}: target must be positive")
+        require(isinstance(mission.get("xp"), int) and 0 < mission["xp"] <= 500,
+                f"{label}/{identifier}: invalid mission XP")
+    require(all(mission.get("cadence") == "daily" for mission in daily),
+            f"{label}: daily pool cadence mismatch")
+    require(all(mission.get("cadence") == "weekly" for mission in weekly),
+            f"{label}: weekly cadence mismatch")
+
+    tiers = season.get("rewardTiers", [])
+    require(isinstance(tiers, list) and len(tiers) == 40, f"{label}: reward track must have 40 tiers")
+    require([tier.get("level") for tier in tiers] == list(range(1, 41)),
+            f"{label}: reward tiers must be ordered 1 through 40")
+    require([tier.get("xpRequired") for tier in tiers] == [level * 500 for level in range(1, 41)],
+            f"{label}: reward tier XP must reach 20000 in 500 XP steps")
+    free_kinds = {"currency", "material", "story"}
+    premium_kinds = {"cosmetic", "convenience"}
+    for tier in tiers:
+        level = tier["level"]
+        free = tier.get("free", {})
+        premium = tier.get("premium", {})
+        require(free.get("kind") in free_kinds, f"{label}/tier {level}: invalid free reward")
+        require(premium.get("kind") in premium_kinds,
+                f"{label}/tier {level}: premium track must remain cosmetic or convenience-only")
+        for track, reward in (("free", free), ("premium", premium)):
+            require(isinstance(reward.get("itemID"), str) and reward["itemID"],
+                    f"{label}/tier {level}: {track} item id is required")
+            require(isinstance(reward.get("amount"), int) and reward["amount"] > 0,
+                    f"{label}/tier {level}: {track} amount must be positive")
+    return starts_at, ends_at
+
+
+def validate_season_catalog(manifest: dict[str, Any]) -> int:
+    files = manifest.get("seasonFiles")
+    require(isinstance(files, dict) and set(files) == {"current", "next"},
+            "manifest must declare current and next season files")
+    current = load_json(files["current"])
+    next_season = load_json(files["next"])
+    current_start, current_end = validate_season_definition(current, "current season")
+    next_start, _ = validate_season_definition(next_season, "next season")
+    require(current_end == next_start, "current and next season UTC windows must be contiguous")
+    require(current_start < next_start, "next season must start after current season")
+    require(current["seasonID"] != next_season["seasonID"], "season ids must be unique")
+    require(current["codexEntryID"] != next_season["codexEntryID"], "season codex entries must be unique")
+    return 2
+
+
 def validate_no_shared_runtime() -> None:
     violations: list[str] = []
     for directory in COMMON_DIRS:
@@ -397,6 +491,7 @@ def validate_project(release: bool = False) -> list[str]:
     validate_golden(manifest, content)
     validate_economy_golden(manifest)
     iap_count = validate_ios_iap_catalog()
+    season_count = validate_season_catalog(manifest)
     validate_no_shared_runtime()
     return [
         f"content {manifest['contentVersion']}",
@@ -405,6 +500,7 @@ def validate_project(release: bool = False) -> list[str]:
         f"{len(manifest['goldenFiles'])} golden fixtures",
         f"{len(manifest['economyGoldenFiles'])} economy golden fixtures",
         f"{iap_count} ethical iOS IAP products",
+        f"{season_count} validated eight-week seasons",
     ]
 
 

@@ -10,6 +10,10 @@
   "contentFiles": [
     "content/r1_vertical_slice.json"
   ],
+  "seasonFiles": {
+    "current": "content/season-current.json",
+    "next": "content/season-next.json"
+  },
   "goldenFiles": [
     "golden/combat/stage_001.json",
     "golden/combat/stage_010.json",
