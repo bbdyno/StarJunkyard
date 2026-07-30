@@ -61,6 +61,20 @@ struct GameSettings: Codable, Equatable, Sendable {
     }
 }
 
+enum GameMotionPolicy {
+    static func allowsDecorativeMotion(settings: GameSettings) -> Bool {
+        !settings.reduceMotion
+    }
+
+    static func allowsScreenShake(settings: GameSettings) -> Bool {
+        !settings.reduceScreenShake
+    }
+
+    static func transitionDuration(_ duration: TimeInterval, settings: GameSettings) -> TimeInterval {
+        settings.reduceMotion ? 0 : duration
+    }
+}
+
 protocol GameSettingsProviding: Sendable {
     func load() -> GameSettings
 }
