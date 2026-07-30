@@ -132,6 +132,27 @@
         "tools/validate_project.py"
       ],
       "validationProfile": "full-ios"
+    },
+    {
+      "id": "issue-28",
+      "issue": 28,
+      "title": "8주 시즌과 일일·주간 목표 라이브옵스",
+      "branch": "issue/28-season-liveops",
+      "baseRef": "915158bded45049541ee9dcf8ff4dbf40d00846e",
+      "worktreeHint": "../StarJunkyard-worktrees/issue-28",
+      "ownedPaths": [
+        "agent-harness/tasks.json",
+        "README.md",
+        "StarJunkyard/Sources/**",
+        "StarJunkyardTests/**",
+        "content/manifest.json",
+        "content/season-*.json",
+        "schemas/season.schema.json",
+        "docs/**",
+        "tests/test_project_contracts.py",
+        "tools/validate_project.py"
+      ],
+      "validationProfile": "full-ios"
     }
   ]
 }

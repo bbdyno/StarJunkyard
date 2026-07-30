@@ -285,7 +285,7 @@ final class GameViewController: UIViewController {
     ) {
         let initialEntitlements = purchaseController?.entitlements
             ?? purchaseLedgerStore.loadOrEmpty().entitlementSnapshot()
-        seasonPremiumUnlocked = initialEntitlements.contains(.season2026ScrapfrontierPremium)
+        seasonPremiumUnlocked = initialEntitlements.contains(.season2026ScrapFrontierPremium)
         let scene = CombatScene(
             content: content,
             save: initialSave,
@@ -408,7 +408,7 @@ final class GameViewController: UIViewController {
             guard let self else { return }
             self.combatScene?.updateStorefront(snapshot)
             self.updateSeasonPremiumUnlocked(
-                snapshot.entitlements.contains(.season2026ScrapfrontierPremium)
+                snapshot.entitlements.contains(.season2026ScrapFrontierPremium)
             )
         }
         purchaseController = controller
