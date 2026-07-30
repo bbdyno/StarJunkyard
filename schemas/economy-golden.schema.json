@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://starjunkyard.local/schemas/economy-golden.schema.json",
+  "title": "StarJunkyard deterministic economy fixture",
+  "type": "object",
+  "required": ["schemaVersion", "fixtureId", "contentVersion", "input", "expectedState", "expectedDigest"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "fixtureId": {"type": "string", "minLength": 1},
+    "contentVersion": {"type": "string"},
+    "input": {
+      "type": "object",
+      "required": ["activeSeconds", "offlineSeconds", "purchases"],
+      "additionalProperties": false,
+      "properties": {
+        "activeSeconds": {"type": "integer", "minimum": 0},
+        "offlineSeconds": {"type": "integer", "minimum": 0},
+        "purchases": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "expectedState": {"type": "object"},
+    "expectedDigest": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

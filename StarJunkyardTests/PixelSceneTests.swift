@@ -16,10 +16,70 @@ final class PixelSceneTests: XCTestCase {
     func testSharedVerticalSliceDecodes() {
         let bundle = Bundle(for: Self.self)
         let content = ContentLoader.loadVerticalSlice(bundle: bundle)
-        XCTAssertEqual(content.contentVersion, "0.1.0")
-        XCTAssertEqual(content.stages.map(\.number), Array(1...20))
+        XCTAssertEqual(content.contentVersion, "0.2.0")
+        XCTAssertEqual(content.stages.map(\.number), Array(1...60))
         XCTAssertEqual(content.enemies.count, 6)
         XCTAssertEqual(content.enemies.last(where: { $0.id == "fridge_boar" })?.nameKo, "냉장고멧돼지")
+        XCTAssertEqual(content.economy?.offline.efficiencyPpm, 700_000)
+        XCTAssertEqual(content.stages[59].encounterClass, .regionBoss)
+        XCTAssertEqual(content.stages[59].firstClearReward?.starCores, 1)
+    }
+
+    func testR1EncounterRulesCoverEliteBossAndRegionBoss() {
+        XCTAssertEqual(R1EncounterRule.expected(for: 1), .normal)
+        XCTAssertEqual(R1EncounterRule.expected(for: 5), .elite)
+        XCTAssertEqual(R1EncounterRule.expected(for: 10), .boss)
+        XCTAssertEqual(R1EncounterRule.expected(for: 55), .elite)
+        XCTAssertEqual(R1EncounterRule.expected(for: 60), .regionBoss)
+    }
+
+    func testEconomyModelUsesBattleLootAndLastClearedStageForOffline() throws {
+        let content = ContentLoader.loadVerticalSlice(bundle: Bundle(for: Self.self))
+        let economy = try XCTUnwrap(content.economy)
+        let stage1 = content.stages[0]
+        XCTAssertEqual(
+            R1Economy.battleReward(for: stage1, enemies: content.enemies, partRewards: economy.enemyPartRewards),
+            EconomyWallet(credits: 80, parts: 24, circuits: 0, alloy: 0, starCores: 0)
+        )
+
+        let stage60 = content.stages[59]
+        let fullCycle = R1Economy.battleReward(
+            for: stage60,
+            enemies: content.enemies,
+            partRewards: economy.enemyPartRewards
+        )
+        let harvest = try XCTUnwrap(
+            R1Economy.offlineHarvest(lastClearedStage: 60, elapsed: 75, content: content)
+        )
+        XCTAssertEqual(harvest.stage, 60)
+        XCTAssertEqual(harvest.cycles, 1)
+        XCTAssertEqual(harvest.reward.credits, fullCycle.credits * 700_000 / 1_000_000)
+        XCTAssertEqual(harvest.reward.parts, 10)
+        XCTAssertEqual(harvest.reward.circuits, 0)
+        XCTAssertEqual(harvest.reward.starCores, 0)
+    }
+
+    func testR2LaunchRequiresStageAndAllFiveCurrencies() throws {
+        let content = ContentLoader.loadVerticalSlice(bundle: Bundle(for: Self.self))
+        let launch = try XCTUnwrap(content.economy?.launch)
+        let exactCost = launch.cost.economyWallet
+
+        let stageLocked = R1Economy.launchStatus(
+            highestClearedStage: 59,
+            wallet: exactCost,
+            launch: launch
+        )
+        XCTAssertFalse(stageLocked.eligible)
+        XCTAssertTrue(stageLocked.walletReady)
+
+        let ready = R1Economy.launchStatus(
+            highestClearedStage: 60,
+            wallet: exactCost,
+            launch: launch
+        )
+        XCTAssertTrue(ready.eligible)
+        XCTAssertEqual(ready.missing, .zero)
+        XCTAssertEqual(exactCost.subtracting(exactCost), .zero)
     }
 
     func testRootViewIsOneGameCanvasWithoutUIKitButtons() {

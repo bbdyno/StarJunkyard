@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "fixtureId": "combat_stage_010_boss",
-  "contentVersion": "0.1.0",
+  "contentVersion": "0.2.0",
   "input": {
     "stage": 10,
     "seed": "10010",

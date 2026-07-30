@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "fixtureId": "combat_stage_020_boss_tier_2",
-  "contentVersion": "0.1.0",
+  "contentVersion": "0.2.0",
   "input": {
     "stage": 20,
     "seed": "20020",

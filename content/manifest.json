@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "0.1.0",
-  "buildLabel": "r1-vertical-slice",
+  "contentVersion": "0.2.0",
+  "buildLabel": "r1-s60-economy",
   "logicalViewport": {
     "width": 360,
     "height": 800,
@@ -14,6 +14,10 @@
     "golden/combat/stage_001.json",
     "golden/combat/stage_010.json",
     "golden/combat/stage_020.json"
+  ],
+  "economyGoldenFiles": [
+    "golden/economy/first_30_minutes.json",
+    "golden/economy/first_day.json"
   ],
   "assetManifest": "art-export/asset-manifest.json",
   "palette": "art-source/palettes/common16.gpl"

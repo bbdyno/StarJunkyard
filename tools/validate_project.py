@@ -159,6 +159,7 @@ def validate_content(content: dict[str, Any], manifest: dict[str, Any]) -> set[s
     expected_numbers = list(range(slice_data["stageStart"], slice_data["stageEnd"] + 1))
     actual_numbers = [stage["number"] for stage in stages]
     require(actual_numbers == expected_numbers, "stages must be unique, ordered, and contiguous")
+    require(expected_numbers == list(range(1, 61)), "R1 must contain exactly S1 through S60")
 
     enemy_ids = [enemy["id"] for enemy in content["enemies"]]
     require(len(enemy_ids) == len(set(enemy_ids)), "enemy ids must be unique")
@@ -174,19 +175,85 @@ def validate_content(content: dict[str, Any], manifest: dict[str, Any]) -> set[s
         require(stage["baseHp"] == expected_hp, f"stage {number}: baseHp must be precomputed as {expected_hp}")
         require(stage["baseReward"] == expected_reward, f"stage {number}: baseReward must be precomputed as {expected_reward}")
         require(all(enemy_id in enemy_by_id for enemy_id in stage["wave"]), f"stage {number}: unknown enemy id")
-        if number % 10 == 0:
+        expected_encounter = (
+            "regionBoss" if number == slice_data["stageEnd"]
+            else "boss" if number % 10 == 0
+            else "elite" if number % 5 == 0
+            else "normal"
+        )
+        require(stage.get("encounterClass") == expected_encounter, f"stage {number}: expected {expected_encounter}")
+        first_clear = stage.get("firstClearReward", {})
+        require(
+            set(first_clear) == {"credits", "parts", "circuits", "alloy", "starCores"}
+            and all(isinstance(value, int) and value >= 0 for value in first_clear.values()),
+            f"stage {number}: invalid first-clear wallet",
+        )
+        require(first_clear["credits"] == first_clear["parts"] == 0, f"stage {number}: repeat currencies cannot be first-clear rewards")
+        expected_cores = 1 if number == slice_data["stageEnd"] else 0
+        require(first_clear["starCores"] == expected_cores, f"stage {number}: star core source must be the region boss")
+        require(10 <= stage.get("expectedClearSeconds", 0) <= 300, f"stage {number}: invalid clear-time budget")
+        if expected_encounter in {"boss", "regionBoss"}:
             require(len(stage["wave"]) == 1, f"stage {number}: boss stage must contain one enemy")
             require(enemy_by_id[stage["wave"][0]]["class"] == "boss", f"stage {number}: wave is not a boss")
-            require(stage.get("timeLimitMs") == 45000, f"stage {number}: slice boss limit must be 45 seconds")
+            expected_limit = 60000 if expected_encounter == "regionBoss" else 45000
+            require(stage.get("timeLimitMs") == expected_limit, f"stage {number}: boss limit must be {expected_limit}ms")
+            require(
+                stage["expectedClearSeconds"] * 1000 <= expected_limit,
+                f"stage {number}: expected clear time exceeds its combat limit",
+            )
+            require(stage.get("bossTier") == number // 10, f"stage {number}: invalid boss tier")
         else:
             require("bossTier" not in stage and "timeLimitMs" not in stage, f"stage {number}: non-boss has boss fields")
-            expected_count = 7 if number % 5 == 0 else 8
+            expected_count = 7 if expected_encounter == "elite" else 8
             require(len(stage["wave"]) == expected_count, f"stage {number}: expected {expected_count} enemies")
+            enemy_classes = [enemy_by_id[enemy_id]["class"] for enemy_id in stage["wave"]]
+            if expected_encounter == "elite":
+                require(enemy_classes.count("elite") == 1, f"stage {number}: elite stage needs exactly one elite")
+            else:
+                require(all(enemy_class == "normal" for enemy_class in enemy_classes), f"stage {number}: normal stage has special enemy")
+
+    validate_economy(content["economy"], stages, slice_data["stageEnd"])
 
     sprite_ids = {content["player"]["spriteId"]}
     sprite_ids.update(drone["spriteId"] for drone in content["drones"])
     sprite_ids.update(enemy["spriteId"] for enemy in content["enemies"])
     return sprite_ids
+
+
+def validate_economy(economy: dict[str, Any], stages: list[dict[str, Any]], region_end: int) -> None:
+    currency_ids = [currency["id"] for currency in economy.get("currencies", [])]
+    expected_currencies = {"credits", "parts", "circuits", "alloy", "starCores"}
+    require(len(currency_ids) == 5 and set(currency_ids) == expected_currencies, "economy must define five unique currencies")
+    require(
+        all(currency.get("primarySource") and currency.get("primarySink") for currency in economy["currencies"]),
+        "every currency needs a documented source and sink",
+    )
+    parts = economy.get("enemyPartRewards", {})
+    require(set(parts) == {"normal", "elite", "boss"}, "enemy part reward classes are incomplete")
+    require(0 < parts["normal"] < parts["elite"] < parts["boss"], "part rewards must grow normal < elite < boss")
+
+    offline = economy.get("offline", {})
+    require(offline.get("efficiencyPpm") == 700_000, "offline farming must be exactly 70% efficient")
+    require(offline.get("cycleSeconds", 0) > 0, "offline cycle must be positive")
+    require(offline.get("freeCapSeconds") == 8 * 60 * 60, "free offline cap must be eight hours")
+
+    launch = economy.get("launch", {})
+    require(launch.get("requiredStage") == region_end, "launch must require the R1 region boss")
+    launch_cost = launch.get("cost", {})
+    require(set(launch_cost) == expected_currencies, "launch cost must use the complete wallet contract")
+    require(all(launch_cost[currency] > 0 for currency in expected_currencies), "launch must sink all five currencies")
+
+    sinks = economy.get("upgradeSinks", [])
+    sink_ids = [sink["id"] for sink in sinks]
+    require(sinks and len(sink_ids) == len(set(sink_ids)), "upgrade sink ids must be non-empty and unique")
+    require(
+        all(set(sink.get("cost", {})) == expected_currencies for sink in sinks),
+        "every upgrade sink must use the complete wallet contract",
+    )
+    for currency in ("circuits", "alloy", "starCores"):
+        total_source = sum(stage["firstClearReward"][currency] for stage in stages)
+        total_sink = launch_cost[currency] + sum(sink["cost"][currency] for sink in sinks)
+        require(total_source >= total_sink, f"R1 first clears cannot fund all {currency} progression sinks")
 
 
 def validate_assets(asset_manifest: dict[str, Any], required_ids: set[str], palette: set[tuple[int, int, int]], release: bool) -> None:
@@ -250,6 +317,21 @@ def validate_golden(manifest: dict[str, Any], content: dict[str, Any]) -> None:
         require(fixture.get("expectedDigest") == digest, f"{relative_path}: expected digest is {digest}")
 
 
+def validate_economy_golden(manifest: dict[str, Any]) -> None:
+    paths = manifest.get("economyGoldenFiles", [])
+    require(len(paths) == 2, "30-minute and first-day economy fixtures are required")
+    fixture_ids: set[str] = set()
+    for relative_path in paths:
+        fixture = load_json(relative_path)
+        require(fixture.get("schemaVersion") == 1, f"{relative_path}: schema version mismatch")
+        require(fixture.get("contentVersion") == manifest["contentVersion"], f"{relative_path}: content version mismatch")
+        fixture_id = fixture.get("fixtureId")
+        require(isinstance(fixture_id, str) and fixture_id not in fixture_ids, f"{relative_path}: duplicate fixture id")
+        fixture_ids.add(fixture_id)
+        digest = canonical_digest(fixture["expectedState"])
+        require(fixture.get("expectedDigest") == digest, f"{relative_path}: expected digest is {digest}")
+
+
 def validate_ios_iap_catalog() -> int:
     catalog = load_json("content/ios-iap-catalog.json")
     require(catalog.get("schemaVersion") == 1, "iOS IAP catalog schema mismatch")
@@ -287,6 +369,7 @@ def validate_project(release: bool = False) -> list[str]:
     required_ids = validate_content(content, manifest)
     validate_assets(asset_manifest, required_ids, palette, release)
     validate_golden(manifest, content)
+    validate_economy_golden(manifest)
     iap_count = validate_ios_iap_catalog()
     validate_no_shared_runtime()
     return [
@@ -294,6 +377,7 @@ def validate_project(release: bool = False) -> list[str]:
         f"{len(content['stages'])} stages",
         f"{len(asset_manifest['assets'])} pixel assets ({'release' if release else 'development'} mode)",
         f"{len(manifest['goldenFiles'])} golden fixtures",
+        f"{len(manifest['economyGoldenFiles'])} economy golden fixtures",
         f"{iap_count} ethical iOS IAP products",
     ]
 
