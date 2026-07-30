@@ -11,6 +11,7 @@ final class GameViewController: UIViewController {
     private var saveSelectionScene: SaveSelectionScene?
     private lazy var cloudSave = GameCenterCloudSave(presenter: self, store: saveStore)
     private lazy var feedback = IOSGameFeedbackService(settings: settingsStore)
+    private lazy var operationNotifications = IOSIdleOperationNotificationScheduler()
 
     init(
         content: VerticalSliceContent = ContentLoader.loadVerticalSlice(),
@@ -48,7 +49,18 @@ final class GameViewController: UIViewController {
         gameView.accessibilityLabel = GameText.localized(.accessibilitySaveSelection)
         analytics.record(.appLaunched)
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("-capture-boss-dismantle") {
+        if ProcessInfo.processInfo.arguments.contains("-capture-operations") {
+            let expeditionStart = Date().addingTimeInterval(-31 * 60)
+            var captureSave = GameSave.newGame(now: expeditionStart)
+            var operations = IdleOperationsState.newGame(now: expeditionStart)
+            _ = try? IdleOperationsEngine.start(.expedition, now: expeditionStart, identifier: "capture-expedition", state: &operations)
+            _ = try? IdleOperationsEngine.start(.craft, now: Date().addingTimeInterval(-14 * 60), identifier: "capture-craft", state: &operations)
+            captureSave.idleOperations = operations
+            captureSave.credits = 1_200
+            captureSave.prologueSeen = true
+            captureSave.tutorialStep = 4
+            startGame(with: captureSave, showOperationsPanelOnLaunch: true)
+        } else if ProcessInfo.processInfo.arguments.contains("-capture-boss-dismantle") {
             var captureSave = GameSave.newGame()
             captureSave.stageIndex = 9
             captureSave.enemyHPs = [0]
@@ -186,11 +198,16 @@ final class GameViewController: UIViewController {
         gameView.presentScene(scene, transition: .fade(withDuration: transitionDuration))
     }
 
-    private func startGame(with initialSave: GameSave, showFacilityPanelOnLaunch: Bool = false) {
+    private func startGame(
+        with initialSave: GameSave,
+        showFacilityPanelOnLaunch: Bool = false,
+        showOperationsPanelOnLaunch: Bool = false
+    ) {
         let scene = CombatScene(
             content: content,
             save: initialSave,
-            showFacilityPanelOnLaunch: showFacilityPanelOnLaunch
+            showFacilityPanelOnLaunch: showFacilityPanelOnLaunch,
+            showOperationsPanelOnLaunch: showOperationsPanelOnLaunch
         )
         scene.applyViewport(PixelViewport(view: gameView))
         scene.onSave = { [weak self] save in try? self?.saveStore.save(save) }
@@ -198,6 +215,9 @@ final class GameViewController: UIViewController {
         scene.onReturnToSaveSelection = { [weak self] in self?.presentSaveSelection() }
         scene.onFeedback = { [weak self] event in self?.feedback.perform(event) }
         scene.onAnalyticsEvent = { [weak self] event in self?.analytics.record(event) }
+        scene.onLongOperationStarted = { [weak self] operation in
+            self?.operationNotifications.operationStarted(operation)
+        }
         combatScene = scene
         saveSelectionScene = nil
         gameView.accessibilityLabel = GameText.localized(.accessibilityCombat)

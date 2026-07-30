@@ -10,6 +10,7 @@ iOS/iPadOS 전용 StarJunkyard 저장소다. 루트의 `Project.swift`가 Xcode 
 - [R1 프로덕션 픽셀 아트와 애니메이션](docs/PIXEL_ART_IMPLEMENTATION.md)
 - [멀티에이전트 worktree 및 검증 하네스](docs/AGENT_HARNESS.md)
 - [현지화·설정·분석·피드백 제품 기반](docs/PRODUCT_FOUNDATION.md)
+- [연구·제작·원정 작업 시스템](docs/IDLE_OPERATIONS.md)
 
 ## 병렬 작업 상태와 공통 검증
 

@@ -1,7 +1,7 @@
 import Foundation
 
 struct GameSave: Codable, Equatable, Sendable {
-    static let currentSchemaVersion = 5
+    static let currentSchemaVersion = 6
     static let cloudSlotName = "sj_main_v1"
 
     var schemaVersion: Int = currentSchemaVersion
@@ -33,6 +33,7 @@ struct GameSave: Codable, Equatable, Sendable {
     var bossFailureCounts: [String: Int]
     var pendingBossDismantleStage: Int?
     var pendingBossBaseParts: Int
+    var idleOperations: IdleOperationsState
     var tutorialStep: Int
     var combatTick: Int
     var highestStage: Int
@@ -68,6 +69,7 @@ struct GameSave: Codable, Equatable, Sendable {
             bossFailureCounts: [:],
             pendingBossDismantleStage: nil,
             pendingBossBaseParts: 0,
+            idleOperations: .newGame(now: now),
             tutorialStep: 0,
             combatTick: 0,
             highestStage: 1,
@@ -87,6 +89,7 @@ struct GameSave: Codable, Equatable, Sendable {
         case storyChapter, shelterRepairParts, prologueSeen
         case defeatedBossStages, unlockedBlueprintIDs, unlockedModuleIDs, storyLogIDs, bossFailureCounts
         case pendingBossDismantleStage, pendingBossBaseParts
+        case idleOperations
         case tutorialStep, combatTick, highestStage, cloudBackupEnabled
     }
 
@@ -120,6 +123,7 @@ struct GameSave: Codable, Equatable, Sendable {
         bossFailureCounts: [String: Int],
         pendingBossDismantleStage: Int?,
         pendingBossBaseParts: Int,
+        idleOperations: IdleOperationsState,
         tutorialStep: Int,
         combatTick: Int,
         highestStage: Int,
@@ -154,6 +158,7 @@ struct GameSave: Codable, Equatable, Sendable {
         self.bossFailureCounts = bossFailureCounts
         self.pendingBossDismantleStage = pendingBossDismantleStage
         self.pendingBossBaseParts = pendingBossBaseParts
+        self.idleOperations = idleOperations
         self.tutorialStep = tutorialStep
         self.combatTick = combatTick
         self.highestStage = highestStage
@@ -191,6 +196,7 @@ struct GameSave: Codable, Equatable, Sendable {
         bossFailureCounts = try values.decodeIfPresent([String: Int].self, forKey: .bossFailureCounts) ?? [:]
         pendingBossDismantleStage = try values.decodeIfPresent(Int.self, forKey: .pendingBossDismantleStage)
         pendingBossBaseParts = try values.decodeIfPresent(Int.self, forKey: .pendingBossBaseParts) ?? 0
+        idleOperations = try values.decodeIfPresent(IdleOperationsState.self, forKey: .idleOperations) ?? .newGame(now: updatedAt)
         tutorialStep = try values.decode(Int.self, forKey: .tutorialStep)
         combatTick = try values.decode(Int.self, forKey: .combatTick)
         highestStage = try values.decode(Int.self, forKey: .highestStage)

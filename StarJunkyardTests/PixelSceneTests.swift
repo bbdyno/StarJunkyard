@@ -192,7 +192,7 @@ final class PixelSceneTests: XCTestCase {
             """.utf8
         )
         let migrated = try temporarySaveStore().decodeCloudData(data)
-        XCTAssertEqual(migrated.schemaVersion, 5)
+        XCTAssertEqual(migrated.schemaVersion, 6)
         XCTAssertEqual(migrated.enemyHPs, [41])
         XCTAssertEqual(migrated.crewLevel, 1)
         XCTAssertEqual(migrated.pressLevel, 1)
@@ -204,6 +204,7 @@ final class PixelSceneTests: XCTestCase {
         XCTAssertFalse(migrated.prologueSeen)
         XCTAssertTrue(migrated.defeatedBossStages.isEmpty)
         XCTAssertTrue(migrated.unlockedModuleIDs.isEmpty)
+        XCTAssertEqual(migrated.idleOperations.workbenchSlots, 2)
     }
 
     func testSchemaTwoSaveMigratesYardDefaults() throws {
@@ -213,7 +214,7 @@ final class PixelSceneTests: XCTestCase {
             """.utf8
         )
         let migrated = try temporarySaveStore().decodeCloudData(data)
-        XCTAssertEqual(migrated.schemaVersion, 5)
+        XCTAssertEqual(migrated.schemaVersion, 6)
         XCTAssertEqual(migrated.pressLevel, 1)
         XCTAssertEqual(migrated.warehouseLevel, 0)
         XCTAssertEqual(migrated.manualTapCount, 0)
@@ -321,6 +322,7 @@ final class PixelSceneTests: XCTestCase {
         XCTAssertNotNil(findNode(named: "buy_press", in: scene))
         XCTAssertNotNil(findNode(named: "buy_sorter", in: scene))
         XCTAssertNotNil(findNode(named: "buy_warehouse", in: scene))
+        XCTAssertNotNil(findNode(named: "operations_open", in: scene))
         XCTAssertEqual(persisted?.yardIncomeBank, 9 * 8 * 60 * 60)
     }
 
