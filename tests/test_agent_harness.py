@@ -58,19 +58,35 @@ class AgentHarnessDefinitionTests(unittest.TestCase):
     def test_repository_definitions_are_valid_and_have_no_codex_branches(self) -> None:
         payload, tasks = HARNESS.load_definitions(ROOT / "agent-harness" / "tasks.json")
 
-        self.assertEqual(7, len(tasks))
-        self.assertEqual({21, 22, 25, 26, 27, 28, 29}, {task.issue for task in tasks.values()})
+        self.assertEqual(10, len(tasks))
+        self.assertEqual({21, 22, 25, 26, 27, 28, 29, 38, 44, 45}, {task.issue for task in tasks.values()})
         for task in tasks.values():
             self.assertTrue(task.branch.startswith("issue/"))
             self.assertNotIn("codex", task.branch.casefold())
         self.assertIn("full-ios", payload["validationProfiles"])
         self.assertIn("app-store-release", payload["validationProfiles"])
+        self.assertIn("pixel-pack", payload["validationProfiles"])
         commands = [
             step["command"] for step in payload["validationProfiles"]["full-ios"]
         ]
         self.assertIn(["tuist", "generate", "--no-open"], commands)
         self.assertTrue(any(command[0] == "xcodebuild" and "test" in command for command in commands))
         self.assertTrue(any(command[-1] == "--release" for command in commands))
+        pixel_commands = [step["command"] for step in payload["validationProfiles"]["pixel-pack"]]
+        self.assertEqual(
+            ["python3", "tools/integrate_world_pixel_packs.py", "--build-current-pack"],
+            pixel_commands[0],
+        )
+        self.assertIn(
+            ["python3", "tools/integrate_world_pixel_packs.py", "--check-contracts"],
+            pixel_commands,
+        )
+        self.assertTrue(any(command[-1] == "--release" for command in pixel_commands))
+        self.assertEqual("issue/38-r2-r6-content", tasks["issue-38"].branch)
+        self.assertEqual("issue/44-r3-r4-pixel-pack", tasks["issue-44"].branch)
+        self.assertEqual("issue/45-r5-r6-pixel-pack", tasks["issue-45"].branch)
+        self.assertIn("art-export/issue-44-r3-r4/**", tasks["issue-44"].owned_paths)
+        self.assertIn("art-export/issue-45-r5-r6/**", tasks["issue-45"].owned_paths)
 
     def test_rejects_forbidden_branch_fragment_case_insensitively(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

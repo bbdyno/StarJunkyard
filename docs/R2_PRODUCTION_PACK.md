@@ -122,13 +122,23 @@ Every region background uses the same manifest fields with `kind: background`, c
 
 ## Integration and harness gates
 
-The final integration task should add #38, #44, and #45 to `agent-harness/tasks.json` after resolving concurrent harness edits. The pixel-pack profile must run these gates in order:
+Issues #38, #44, and #45 are registered in `agent-harness/tasks.json` with disjoint common-integration and pack-production ownership. The `pixel-pack` profile runs these gates in order:
 
-1. Run the region asset builder.
-2. Compare the returned world and manifest fragments to `tools/generate_world_content.py` and the manifest schema.
-3. Regenerate world and regional economy goldens.
-4. Run `python3 -m unittest discover -s tests -p 'test_*.py'`.
-5. Run `python3 tools/validate_project.py --release`.
-6. Run iOS tests and capture one phone plus one iPad frame for the new regions.
+1. Detect issue #44 or #45 from the branch, run its region asset builder, and exact-match the emitted fragment.
+2. Check the immutable R3–R6 world contract without writing.
+3. Run the pixel-pack integration fixture tests.
+4. Run `python3 tools/validate_project.py --release` against the current common production set.
+
+After both packs merge, the final #38 integration also regenerates regional economy goldens, runs the full Python and iOS suites, and captures one phone plus one iPad frame for the new regions.
 
 Current visual references are `docs/screenshots/r2-iphone17.png` and `docs/screenshots/r2-ipad-a16.png`.
+
+`python3 tools/integrate_world_pixel_packs.py --check-contracts` is always read-only and works before the pack fragments exist. When both fragments are complete, validate them without writing first:
+
+```shell
+python3 tools/integrate_world_pixel_packs.py \
+  --fragment art-export/issue-44-r3-r4/manifest-fragment.json \
+  --fragment art-export/issue-45-r5-r6/manifest-fragment.json
+```
+
+Only after that succeeds should the integrator be run again with `--apply`. The apply path revalidates both packs together, copies their production PNGs into the common runtime directory, adds their palettes and assets to the common manifest, records a deterministic `content/world-pixel-pack-promotions.json` overlay, promotes every R3–R6 entity/background, and changes `productionStageEnd` to 360. A single pack cannot promote the world.

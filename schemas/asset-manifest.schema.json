@@ -31,7 +31,7 @@
           "pivot": {"type": "array", "items": {"type": "integer", "minimum": 0}, "minItems": 2, "maxItems": 2},
           "scalePolicy": {"const": "integer_nearest"},
           "status": {"enum": ["planned", "placeholder", "production_ready"]},
-          "paletteId": {"enum": ["common16", "r02_mall12"]},
+          "paletteId": {"type": "string", "pattern": "^[a-z0-9_]+$"},
           "file": {"type": "string"},
           "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
         }

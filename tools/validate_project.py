@@ -616,9 +616,10 @@ def validate_project(release: bool = False) -> list[str]:
     asset_manifest = load_json(manifest["assetManifest"])
     palette_files = asset_manifest.get("paletteFiles", {})
     require(palette_files.get("common16") == manifest["palette"], "common palette path mismatch")
+    require(palette_files.get("r02_mall12") == "art-source/palettes/r02_mall12.gpl", "R2 palette path mismatch")
     palettes = {
-        "common16": load_palette(palette_files["common16"], expected_count=16),
-        "r02_mall12": load_palette(palette_files["r02_mall12"], expected_count=12),
+        palette_id: load_palette(relative_path, expected_count=12 if palette_id == "r02_mall12" else 16)
+        for palette_id, relative_path in palette_files.items()
     }
 
     validate_schema_documents()

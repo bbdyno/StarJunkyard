@@ -12,6 +12,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_PATH = ROOT / "content" / "r1_vertical_slice.json"
 OUTPUT_PATH = ROOT / "content" / "world_r1_r6.json"
+PROMOTIONS_PATH = ROOT / "content" / "world-pixel-pack-promotions.json"
 PPM = 1_000_000
 CONTENT_VERSION = "0.3.0"
 
@@ -291,7 +292,29 @@ def serializable_region(region: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def build() -> dict[str, Any]:
+def apply_pixel_pack_promotions(world: dict[str, Any], promotions: dict[str, Any]) -> dict[str, Any]:
+    """Apply the validated integration overlay without weakening canonical fields."""
+    promoted = json.loads(json.dumps(world))
+    region_by_id = {region["id"]: region for region in promoted["regions"]}
+    enemy_by_id = {enemy["id"]: enemy for enemy in promoted["enemies"]}
+    for region_id, values in promotions.get("regions", {}).items():
+        if region_id not in region_by_id or set(values) != {"backgroundSpriteId"}:
+            raise ValueError(f"invalid region promotion {region_id}")
+        region_by_id[region_id]["backgroundSpriteId"] = values["backgroundSpriteId"]
+    for enemy_id, values in promotions.get("enemies", {}).items():
+        if enemy_id not in enemy_by_id or set(values) != {"spriteId", "assetStatus"}:
+            raise ValueError(f"invalid enemy promotion {enemy_id}")
+        if values["assetStatus"] != "production_ready" or not values["spriteId"]:
+            raise ValueError(f"invalid production promotion {enemy_id}")
+        enemy_by_id[enemy_id].update(values)
+    production_end = promotions.get("productionStageEnd", 120)
+    if production_end not in {120, 360}:
+        raise ValueError("productionStageEnd promotion must be 120 or 360")
+    promoted["slice"]["productionStageEnd"] = production_end
+    return promoted
+
+
+def build(promotions_path: Path | None = PROMOTIONS_PATH) -> dict[str, Any]:
     source = json.loads(SOURCE_PATH.read_text(encoding="utf-8"))
     enemies: list[dict[str, Any]] = []
     stages: list[dict[str, Any]] = []
@@ -302,7 +325,7 @@ def build() -> dict[str, Any]:
 
     economy = source["economy"]
     economy["launch"]["cost"]["starCores"] = 1
-    return {
+    world = {
         "schemaVersion": 2,
         "contentVersion": CONTENT_VERSION,
         "slice": {
@@ -319,6 +342,12 @@ def build() -> dict[str, Any]:
         "stages": stages,
         "economy": economy,
     }
+    if promotions_path is not None and promotions_path.is_file():
+        promotions = json.loads(promotions_path.read_text(encoding="utf-8"))
+        if promotions.get("schemaVersion") != 1:
+            raise ValueError("pixel pack promotion schemaVersion must be 1")
+        world = apply_pixel_pack_promotions(world, promotions)
+    return world
 
 
 def main() -> int:
