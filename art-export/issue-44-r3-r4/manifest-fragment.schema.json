@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://starjunkyard.local/schemas/issue-44-r3-r4-manifest-fragment.json",
+  "title": "Issue 44 R3-R4 production pixel pack fragment",
+  "type": "object",
+  "required": ["schemaVersion", "issue", "sourceContract", "regions", "assets"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {"type": "string"},
+    "schemaVersion": {"const": 1},
+    "issue": {"const": 44},
+    "sourceContract": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"const": "issue-38/content/world_r1_r6.json"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "regions": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["id", "nameKo", "paletteFile", "paletteAnchors", "eliteStageAllocation"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"enum": ["r03", "r04"]},
+          "nameKo": {"type": "string"},
+          "paletteFile": {"type": "string"},
+          "paletteAnchors": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "string", "pattern": "^#[A-F0-9]{6}$"}},
+          "eliteStageAllocation": {
+            "type": "array",
+            "minItems": 6,
+            "maxItems": 6,
+            "items": {
+              "type": "object",
+              "required": ["localStage", "entityId"],
+              "additionalProperties": false,
+              "properties": {
+                "localStage": {"enum": [5, 15, 25, 35, 45, 55]},
+                "entityId": {"type": "string", "pattern": "^[a-z0-9_]+$"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 18,
+      "maxItems": 18,
+      "items": {
+        "type": "object",
+        "required": ["id", "regionId", "entityId", "nameKo", "nameEn", "class", "kind", "behaviorId", "behaviorKo", "weakness", "breakSequenceKo", "canvas", "pivot", "paletteFile", "scalePolicy", "status", "sourceFile", "file"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+          "regionId": {"enum": ["r03", "r04"]},
+          "entityId": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+          "nameKo": {"type": "string"},
+          "nameEn": {"type": "string"},
+          "class": {"enum": ["normal", "elite", "boss", "background"]},
+          "kind": {"enum": ["enemy_small", "enemy_medium", "enemy_wide", "enemy_large", "boss", "background"]},
+          "behaviorId": {"type": "string"},
+          "behaviorKo": {"type": "string"},
+          "weakness": {"enum": ["none", "impact", "cut", "electric", "heat", "cooling"]},
+          "secondaryWeaknesses": {"type": "array", "items": {"enum": ["impact", "cut", "electric", "heat", "cooling"]}},
+          "breakSequenceKo": {"type": "string"},
+          "extension": {"type": "string"},
+          "imagegenCallArtifacts": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^exec-[a-f0-9-]+\\.png$"}
+          },
+          "canvas": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 1}},
+          "pivot": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 0}},
+          "paletteFile": {"type": "string"},
+          "scalePolicy": {"const": "integer_nearest"},
+          "status": {"enum": ["planned", "production_ready"]},
+          "sourceFile": {"type": "string"},
+          "transparentFile": {"type": "string"},
+          "file": {"type": "string"},
+          "sourceSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "transparentSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "verified": {
+            "type": "object",
+            "required": ["binaryAlpha", "transparentCorners", "strictPalette", "greenFringePixels"],
+            "additionalProperties": false,
+            "properties": {
+              "binaryAlpha": {"const": true},
+              "transparentCorners": {"type": "boolean"},
+              "strictPalette": {"const": true},
+              "greenFringePixels": {"const": 0}
+            }
+          }
+        }
+      }
+    }
+  }
+}

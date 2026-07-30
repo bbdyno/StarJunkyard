@@ -1,0 +1,20 @@
+GIMP Palette
+Name: StarJunkyard R03 Subway 16
+Columns: 8
+# Strict R3 subway palette; includes the four world contract anchors.
+ 18  20  28	Outline Ink
+ 17  29  51	Region Deep Navy
+ 34  48  72	Tunnel Navy
+ 58  70  92	Rail Shadow
+123 135 148	Signal Grey
+180 190 198	Cold Steel
+242 240 233	Work White
+ 83  39  30	Dark Signal Rust
+155  54  36	Signal Rust
+228  87  46	Signal Orange
+104  69  10	Dark Amber
+184 116  10	Rail Amber
+243 167  18	Signal Amber
+ 37  74  82	Cable Teal
+ 58 122 123	Lamp Teal
+117 183 171	Lamp Mint
