@@ -47,6 +47,15 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private var droneLevel: Int
     private var magnetLevel: Int
     private var crewLevel: Int
+    private var pressLevel: Int
+    private var sorterLevel: Int
+    private var warehouseLevel: Int
+    private var yardIncomeBank: Int
+    private var manualTapCount: Int
+    private var discoveredEnemyIDs: Set<String>
+    private let offlineSeconds: Int
+    private let offlineAmount: Int
+    private let showFacilityPanelOnLaunch: Bool
     private var tutorialStep: Int
     private var accumulator: TimeInterval = 0
     private var lastUpdateTime: TimeInterval = 0
@@ -80,11 +89,18 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private let shopLayer = SKNode()
     private let shopStatusLabel = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
 
+    private enum ManagementPanel: Equatable {
+        case equipment
+        case crew
+        case facilities
+        case records
+    }
+
     convenience init(content: VerticalSliceContent) {
         self.init(content: content, save: .newGame())
     }
 
-    init(content: VerticalSliceContent, save: GameSave) {
+    init(content: VerticalSliceContent, save: GameSave, showFacilityPanelOnLaunch: Bool = false) {
         self.content = content
         enemyByID = Dictionary(uniqueKeysWithValues: content.enemies.map { ($0.id, $0) })
         self.save = save
@@ -102,6 +118,24 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         droneLevel = max(1, save.droneLevel)
         magnetLevel = max(1, save.magnetLevel)
         crewLevel = max(1, save.crewLevel)
+        pressLevel = max(1, save.pressLevel)
+        sorterLevel = max(0, save.sorterLevel)
+        warehouseLevel = max(0, save.warehouseLevel)
+        manualTapCount = max(0, save.manualTapCount)
+        discoveredEnemyIDs = Set(save.discoveredEnemyIDs)
+        self.showFacilityPanelOnLaunch = showFacilityPanelOnLaunch
+        let offline = YardEconomy.offlineIncome(
+            rate: YardEconomy.passiveIncome(
+                pressLevel: pressLevel,
+                sorterLevel: sorterLevel,
+                warehouseLevel: warehouseLevel,
+                crewLevel: crewLevel
+            ),
+            elapsed: Date().timeIntervalSince(save.updatedAt)
+        )
+        offlineSeconds = offline.seconds
+        offlineAmount = offline.amount
+        yardIncomeBank = max(0, save.yardIncomeBank) + offline.amount
         tutorialStep = max(0, save.tutorialStep)
         super.init(size: Self.logicalSize)
         anchorPoint = .zero
@@ -136,6 +170,10 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         spawnCurrentGroup()
         applyViewport(PixelViewport(view: view))
         setLowPowerMode(ProcessInfo.processInfo.isLowPowerModeEnabled)
+        if showFacilityPanelOnLaunch || (offlineSeconds >= 60 && offlineAmount > 0) {
+            openFacilities(status: offlineReportText)
+        }
+        persist()
     }
 
     func applyViewport(_ viewport: PixelViewport) {
@@ -186,13 +224,30 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             else if names.contains("buy_drone") { buy(.drone) }
             else if names.contains("buy_magnet") { buy(.magnet) }
             else if names.contains("buy_crew") { buy(.crew) }
+            else if names.contains("buy_press") { buyFacility(.press) }
+            else if names.contains("buy_sorter") { buyFacility(.sorter) }
+            else if names.contains("buy_warehouse") { buyFacility(.warehouse) }
+            else if names.contains("collect_yard_income") { collectYardIncome() }
+            else if names.contains("management_equipment") { openShop() }
+            else if names.contains("management_crew") { openCrew() }
+            else if names.contains("management_facilities") { openFacilities() }
+            else if names.contains("management_records") { openRecords() }
             else if names.contains("shop_close") { closeShop() }
             return
         }
-        if names.contains("overclock") {
+        if let manualName = names.first(where: { $0.hasPrefix("manual_salvage_") }),
+           let token = Int(manualName.replacingOccurrences(of: "manual_salvage_", with: "")) {
+            manualSalvage(token: token)
+        } else if names.contains("overclock") {
             activateOverclock()
         } else if names.contains("shop_open") {
             openShop()
+        } else if names.contains("crew_open") {
+            openCrew()
+        } else if names.contains("facility_open") {
+            openFacilities()
+        } else if names.contains("records_open") {
+            openRecords()
         } else if names.contains("save_menu") {
             persist()
             onReturnToSaveSelection?()
@@ -203,8 +258,15 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func simulateTick() {
-        guard !groupTransitioning, currentTarget != nil else { return }
         combatTick += 1
+        if combatTick.isMultiple(of: 20) {
+            yardIncomeBank += passiveIncomeRate
+            updateHUD()
+        }
+        guard !groupTransitioning, currentTarget != nil else {
+            if combatTick.isMultiple(of: 200) { persist() }
+            return
+        }
 
         if tutorialStep == 0 && combatTick >= max(24, save.combatTick + 24) {
             tutorialStep = 1
@@ -288,6 +350,51 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         if enemy.hp == 0 { dismantle(enemy) }
     }
 
+    private var manualDamage: Int {
+        YardEconomy.manualDamage(cutterLevel: cutterLevel)
+    }
+
+    private var manualReward: Int {
+        YardEconomy.manualReward(cutterLevel: cutterLevel)
+    }
+
+    private var passiveIncomeRate: Int {
+        YardEconomy.passiveIncome(
+            pressLevel: pressLevel,
+            sorterLevel: sorterLevel,
+            warehouseLevel: warehouseLevel,
+            crewLevel: crewLevel
+        )
+    }
+
+    private var offlineReportText: String {
+        guard offlineAmount > 0 else { return "시설은 전투 중에도 매초 고철을 쌓습니다" }
+        let minutes = max(1, offlineSeconds / 60)
+        return "부재 " + String(minutes) + "분 • +" + String(offlineAmount) + " 고철 적립 완료"
+    }
+
+    private func manualSalvage(token: Int) {
+        guard let enemy = activeEnemies.first(where: { $0.token == token }), enemy.hp > 0 else { return }
+        credits += manualReward
+        manualTapCount += 1
+        playMechanicAttack()
+        let feedback = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
+        configureLabel(feedback, size: 10, color: PixelPalette.warningAmber, alignment: .center)
+        feedback.text = "직접 해체  -(manualDamage)  +(manualReward)"
+        feedback.position = CGPoint(x: enemy.root.position.x, y: enemy.root.position.y + 78)
+        feedback.zPosition = 90
+        effectsLayer.addChild(feedback)
+        feedback.run(.sequence([
+            .moveBy(x: 0, y: 12, duration: 0.12),
+            .wait(forDuration: 0.12),
+            .fadeOut(withDuration: 0.10),
+            .removeFromParent()
+        ]))
+        applyDamage(manualDamage, to: token)
+        updateHUD()
+        if manualTapCount.isMultiple(of: 10) { persist() }
+    }
+
     private func spawnCurrentGroup() {
         groupTransitioning = false
         enemyLayer.removeAllChildren()
@@ -311,6 +418,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         }
 
         for (index, spec) in specs.enumerated() {
+            discoveredEnemyIDs.insert(spec.id)
             let maxHP = max(1, stage.baseHp * spec.hpMultiplierPpm / 1_000_000)
             let restored = restoredEnemyHPs.flatMap { index < $0.count ? $0[index] : nil }
             let hp = min(maxHP, max(0, restored ?? maxHP))
@@ -323,6 +431,12 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             enemy.root.zPosition = CGFloat(24 + (specs.count - index))
             art.zPosition = 2
             enemy.root.addChild(art)
+
+            let manualHitArea = SKSpriteNode(color: .clear, size: CGSize(width: 76, height: 96))
+            manualHitArea.position = CGPoint(x: 0, y: 8)
+            manualHitArea.zPosition = 8
+            manualHitArea.name = "manual_salvage_\(enemy.token)"
+            enemy.root.addChild(manualHitArea)
 
             let name = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
             configureLabel(name, size: 7, color: PixelPalette.workWhite, alignment: .center)
@@ -347,6 +461,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         }
         restoredEnemyHPs = nil
         updateHUD()
+        refreshLoadout()
         rebuildAdaptiveRails()
     }
 
@@ -534,7 +649,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
         let status = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
         configureLabel(status, size: 12, color: PixelPalette.lightTeal, alignment: .left)
-        status.text = "3인 자동 해체반 가동 중"
+        status.text = "폐품장 운영 • 적을 눌러 직접 해체"
         status.position = CGPoint(x: 24, y: 126)
         status.zPosition = 93
         controlsLayer.addChild(status)
@@ -544,15 +659,13 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         loadoutLabel.zPosition = 93
         controlsLayer.addChild(loadoutLabel)
 
-        let shopButton = PixelArt.panel(size: CGSize(width: 184, height: 58), name: "shop_open")
-        shopButton.position = CGPoint(x: 22, y: 24)
-        shopButton.zPosition = 94
-        shopButton.name = "shop_open"
-        controlsLayer.addChild(shopButton)
-        addControlLabel("장비·직원 작업대", x: 36, y: 64, size: 10, color: PixelPalette.warningAmber, name: "shop_open")
-        addControlLabel("고철로 공격과 보라를 성장", x: 36, y: 43, size: 8, color: PixelPalette.lightTeal, name: "shop_open")
+        addMenuTile(name: "shop_open", title: "장비", subtitle: "직접 +\(manualDamage)", spriteID: content.player.spriteId, x: 22, y: 62)
+        addMenuTile(name: "crew_open", title: "직원", subtitle: "보라 LV.\(crewLevel)", spriteID: "crew_bora_base", x: 116, y: 62)
+        addMenuTile(name: "facility_open", title: "시설", subtitle: "+\(passiveIncomeRate)/초", spriteID: content.drones[0].spriteId, x: 22, y: 24)
+        addMenuTile(name: "records_open", title: "괴수 기록", subtitle: "\(discoveredEnemyIDs.count)/\(content.enemies.count)", spriteID: content.enemies.first?.spriteId ?? "enemy_can_bug", x: 116, y: 24)
 
         let overclockPanel = PixelArt.panel(size: CGSize(width: 112, height: 112), name: "overclock")
+        overclockButton.removeAllChildren()
         overclockButton.name = "overclock"
         overclockButton.position = CGPoint(x: 226, y: 24)
         overclockButton.zPosition = 94
@@ -577,7 +690,32 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         refreshLoadout()
     }
 
-    private func addControlLabel(_ text: String, x: Int, y: Int, size: CGFloat, color: SKColor, name: String) {
+    private func addMenuTile(name: String, title: String, subtitle: String, spriteID: String, x: Int, y: Int) {
+        let button = PixelArt.panel(size: CGSize(width: 88, height: 34), name: name)
+        button.position = CGPoint(x: x, y: y)
+        button.zPosition = 94
+        button.name = name
+        controlsLayer.addChild(button)
+
+        let hitArea = SKSpriteNode(color: .clear, size: CGSize(width: 88, height: 34))
+        hitArea.anchorPoint = .zero
+        hitArea.position = CGPoint(x: x, y: y)
+        hitArea.zPosition = 95
+        hitArea.name = name
+        controlsLayer.addChild(hitArea)
+
+        let icon = PixelArt.asset(spriteID, scale: spriteID.hasPrefix("enemy_") ? 0.55 : 0.30)
+        icon.position = CGPoint(x: x + 17, y: y + 17)
+        icon.zPosition = 96
+        icon.name = name
+        controlsLayer.addChild(icon)
+        addControlLabel(title, x: x + 31, y: y + 22, size: 8, color: PixelPalette.warningAmber, name: name)
+        let subtitleLabel = addControlLabel(subtitle, x: x + 31, y: y + 10, size: 6, color: PixelPalette.lightTeal, name: name)
+        subtitleLabel.name = "\(name)_subtitle"
+    }
+
+    @discardableResult
+    private func addControlLabel(_ text: String, x: Int, y: Int, size: CGFloat, color: SKColor, name: String) -> SKLabelNode {
         let label = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
         configureLabel(label, size: size, color: color, alignment: .left)
         label.text = text
@@ -585,6 +723,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         label.zPosition = 96
         label.name = name
         controlsLayer.addChild(label)
+        return label
     }
 
     private func buildTutorial() {
@@ -606,14 +745,14 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         tutorialLayer.isHidden = false
         tutorialLayer.alpha = 1
         switch tutorialStep {
-        case 0: tutorialLabel.text = "① 모·리벳·보라가 여러 적을 자동 해체합니다."
+        case 0: tutorialLabel.text = "① 괴수를 직접 누르면 해체 피해와 고철을 얻습니다."
         case 1:
-            tutorialLabel.text = "② 오른쪽 [과부하]로 공격 속도를 올리세요."
+            tutorialLabel.text = "② 직원은 자동 공격합니다. [과부하]로 속도를 올리세요."
             overclockButton.run(.repeat(.sequence([.fadeAlpha(to: 0.55, duration: 0.15), .fadeAlpha(to: 1, duration: 0.15)]), count: 4))
         case 2: tutorialLabel.text = "③ 고철 10개를 모아 첫 장비를 강화하세요."
-        case 3: tutorialLabel.text = "③ [장비·직원 작업대]에서 절단날을 구매하세요."
+        case 3: tutorialLabel.text = "③ [장비]에서 절단날을 강화하고 직접 해체를 키우세요."
         default:
-            tutorialLabel.text = "완료: 다중 해체 → 고철 획득 → 직원 성장 • S10 보스가 목표"
+            tutorialLabel.text = "완료: 직접 해체 → 직원 자동화 → 시설 수익 회수 • S10 목표"
             tutorialLayer.run(.sequence([.wait(forDuration: 4), .fadeOut(withDuration: 0.15), .hide()]))
         }
     }
@@ -625,7 +764,60 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private var magnetCost: Int { 15 * magnetLevel }
     private var crewCost: Int { 30 * crewLevel }
 
-    private func openShop() {
+    private func openShop(status: String = "직접 해체 공격을 원하는 방향으로 강화하세요") {
+        beginManagement(.equipment, title: "장비 작업대", subtitle: "직접 해체 +\(manualDamage) 피해 • 탭마다 고철 +\(manualReward)")
+        addShopItem(name: "buy_cutter", title: "강화 절단날 LV.\(cutterLevel + 1)", effect: "직접·자동 절단 피해 증가", cost: cutterCost, y: 450)
+        addShopItem(name: "buy_drone", title: "리벳 출력 코일 LV.\(droneLevel + 1)", effect: "드론 자동 피해 +4", cost: droneCost, y: 365)
+        addShopItem(name: "buy_magnet", title: "자석 바구니 LV.\(magnetLevel + 1)", effect: "괴수마다 부품 +1", cost: magnetCost, y: 280)
+        finishManagement(status: status)
+    }
+
+    private func openCrew(status: String = "보라는 전투 중 계속 공격하고 주기적으로 모와 협동합니다") {
+        beginManagement(.crew, title: "직원 숙소", subtitle: "고용 직원 1명 • 보라가 자동 해체 중")
+        let bora = PixelArt.asset("crew_bora_base", scale: 1.15)
+        bora.position = CGPoint(x: 88, y: 445)
+        bora.zPosition = 4
+        shopLayer.addChild(bora)
+        addShopLabel("보라  LV.\(crewLevel)", x: 134, y: 470, size: 14, color: PixelPalette.warningAmber, alignment: .left)
+        addShopLabel("개인 공격  \(5 + (crewLevel - 1) * 5)", x: 134, y: 440, size: 9, color: PixelPalette.workWhite, alignment: .left)
+        addShopLabel("협동 해체  전체 +\(8 + cutterLevel * 2 + crewLevel * 4)", x: 134, y: 414, size: 9, color: PixelPalette.lightTeal, alignment: .left)
+        addShopItem(name: "buy_crew", title: "보라 작업 숙련 LV.\(crewLevel + 1)", effect: "개인 피해 +5 • 협동 전체 +4", cost: crewCost, y: 300)
+        addShopLabel("다음 직원 슬롯", x: 50, y: 266, size: 8, color: PixelPalette.midIron, alignment: .left)
+        addShopLabel("S10 보스 격파 후 개방", x: 308, y: 266, size: 8, color: PixelPalette.midIron, alignment: .right)
+        finishManagement(status: status)
+    }
+
+    private func openFacilities(status: String = "회수 대기 고철은 사라지지 않습니다") {
+        beginManagement(.facilities, title: "폐품장 시설", subtitle: "자동 생산 +\(passiveIncomeRate)/초 • 오프라인 최대 8시간")
+        let collect = PixelArt.panel(size: CGSize(width: 292, height: 54), name: "collect_yard_income")
+        collect.position = CGPoint(x: 34, y: 468)
+        collect.zPosition = 2
+        collect.name = "collect_yard_income"
+        shopLayer.addChild(collect)
+        addShopHitArea(name: "collect_yard_income", position: CGPoint(x: 34, y: 468), size: CGSize(width: 292, height: 54))
+        addShopLabel("회수 대기  \(yardIncomeBank) 고철", x: 50, y: 501, size: 11, color: PixelPalette.workWhite, name: "collect_yard_income", alignment: .left)
+        addShopLabel("수익 회수", x: 308, y: 492, size: 10, color: yardIncomeBank > 0 ? PixelPalette.warningAmber : PixelPalette.midIron, name: "collect_yard_income", alignment: .right)
+        addFacilityItem(.press, level: pressLevel, y: 385)
+        addFacilityItem(.sorter, level: sorterLevel, y: 305)
+        addFacilityItem(.warehouse, level: warehouseLevel, y: 225)
+        finishManagement(status: status)
+    }
+
+    private func openRecords() {
+        beginManagement(.records, title: "괴수 해체 기록", subtitle: "발견 \(discoveredEnemyIDs.count)/\(content.enemies.count) • 싸워 본 괴수만 기록됩니다")
+        for (index, enemy) in content.enemies.prefix(6).enumerated() {
+            addRecordCard(enemy, index: index)
+        }
+        addShopLabel("다음 목표", x: 42, y: 276, size: 9, color: PixelPalette.warningAmber, alignment: .left)
+        let bossGoal = save.highestStage >= 10 ? "✓ S10 폐품왕 격파" : "□ S10 폐품왕 도달"
+        let regionGoal = save.highestStage >= 20 ? "✓ R1 뒷골목 정리" : "□ S20 지역 완료"
+        addShopLabel(bossGoal, x: 54, y: 248, size: 9, color: PixelPalette.workWhite, alignment: .left)
+        addShopLabel(regionGoal, x: 54, y: 224, size: 9, color: PixelPalette.workWhite, alignment: .left)
+        addShopLabel("직접 해체 \(manualTapCount)회", x: 306, y: 236, size: 8, color: PixelPalette.lightTeal, alignment: .right)
+        finishManagement(status: "괴수의 이름·모습·장기 목표를 여기서 확인하세요")
+    }
+
+    private func beginManagement(_ panelType: ManagementPanel, title: String, subtitle: String) {
         shopLayer.removeAllChildren()
         shopLayer.isHidden = false
         let shade = SKSpriteNode(color: PixelPalette.ink.withAlphaComponent(0.84), size: Self.logicalSize)
@@ -637,25 +829,44 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         panel.position = CGPoint(x: 16, y: 150)
         panel.zPosition = 1
         shopLayer.addChild(panel)
-        addShopLabel("폐품 장비·직원 작업대", x: 180, y: 616, size: 15, color: PixelPalette.warningAmber)
-        addShopLabel("고철 \(credits) • 모두 플레이로 성장", x: 180, y: 590, size: 9, color: PixelPalette.lightTeal)
-        addShopItem(name: "buy_cutter", title: "강화 절단날 LV.\(cutterLevel + 1)", effect: "모 피해 +6", cost: cutterCost, y: 500)
-        addShopItem(name: "buy_drone", title: "리벳 출력 코일 LV.\(droneLevel + 1)", effect: "드론 피해 +4", cost: droneCost, y: 420)
-        addShopItem(name: "buy_magnet", title: "자석 바구니 LV.\(magnetLevel + 1)", effect: "적마다 부품 +1", cost: magnetCost, y: 340)
-        addShopItem(name: "buy_crew", title: "보라 작업 숙련 LV.\(crewLevel + 1)", effect: "직원 피해 +5 • 협동 공격 +4", cost: crewCost, y: 260)
-
-        configureLabel(shopStatusLabel, size: 9, color: PixelPalette.workWhite, alignment: .center)
-        shopStatusLabel.text = "원하는 성장을 눌러 구매하세요"
-        shopStatusLabel.position = CGPoint(x: 180, y: 184)
-        shopStatusLabel.zPosition = 4
-        shopLayer.addChild(shopStatusLabel)
+        addShopLabel(title, x: 42, y: 622, size: 15, color: PixelPalette.warningAmber, alignment: .left)
+        addShopLabel("고철 \(credits)", x: 318, y: 622, size: 10, color: PixelPalette.workWhite, alignment: .right)
+        addShopLabel(subtitle, x: 42, y: 596, size: 8, color: PixelPalette.lightTeal, alignment: .left)
+        addManagementTabs(selected: panelType)
         let close = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
         configureLabel(close, size: 10, color: PixelPalette.lightIron, alignment: .right)
         close.text = "닫기 ×"
-        close.position = CGPoint(x: 326, y: 630)
+        close.position = CGPoint(x: 326, y: 642)
         close.zPosition = 4
         close.name = "shop_close"
         shopLayer.addChild(close)
+    }
+
+    private func addManagementTabs(selected: ManagementPanel) {
+        let tabs: [(ManagementPanel, String, String)] = [
+            (.equipment, "management_equipment", "장비"),
+            (.crew, "management_crew", "직원"),
+            (.facilities, "management_facilities", "시설"),
+            (.records, "management_records", "기록")
+        ]
+        for (index, tab) in tabs.enumerated() {
+            let x = 34 + index * 74
+            let button = PixelArt.panel(size: CGSize(width: 68, height: 30), name: tab.1)
+            button.position = CGPoint(x: x, y: 548)
+            button.zPosition = 2
+            button.name = tab.1
+            shopLayer.addChild(button)
+            addShopHitArea(name: tab.1, position: CGPoint(x: x, y: 548), size: CGSize(width: 68, height: 30))
+            addShopLabel(tab.2, x: x + 34, y: 563, size: 8, color: tab.0 == selected ? PixelPalette.warningAmber : PixelPalette.lightIron, name: tab.1)
+        }
+    }
+
+    private func finishManagement(status: String) {
+        configureLabel(shopStatusLabel, size: 8, color: PixelPalette.workWhite, alignment: .center)
+        shopStatusLabel.text = status
+        shopStatusLabel.position = CGPoint(x: 180, y: 184)
+        shopStatusLabel.zPosition = 4
+        shopLayer.addChild(shopStatusLabel)
     }
 
     private func addShopItem(name: String, title: String, effect: String, cost: Int, y: Int) {
@@ -664,9 +875,50 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         button.zPosition = 2
         button.name = name
         shopLayer.addChild(button)
+        addShopHitArea(name: name, position: CGPoint(x: 34, y: y), size: CGSize(width: 292, height: 66))
         addShopLabel(title, x: 50, y: y + 45, size: 10, color: PixelPalette.workWhite, name: name, alignment: .left)
         addShopLabel(effect, x: 50, y: y + 22, size: 8, color: PixelPalette.lightTeal, name: name, alignment: .left)
         addShopLabel("고철 \(cost)", x: 308, y: y + 33, size: 9, color: credits >= cost ? PixelPalette.warningAmber : PixelPalette.midIron, name: name, alignment: .right)
+    }
+
+    private func addFacilityItem(_ facility: YardFacility, level: Int, y: Int) {
+        let name = "buy_\(facility.rawValue)"
+        let cost = YardEconomy.upgradeCost(facility, currentLevel: level)
+        let button = PixelArt.panel(size: CGSize(width: 292, height: 66), name: name)
+        button.position = CGPoint(x: 34, y: y)
+        button.zPosition = 2
+        button.name = name
+        shopLayer.addChild(button)
+        addShopHitArea(name: name, position: CGPoint(x: 34, y: y), size: CGSize(width: 292, height: 66))
+        addShopLabel("\(facility.nameKo)  LV.\(level)", x: 50, y: y + 45, size: 10, color: PixelPalette.workWhite, name: name, alignment: .left)
+        addShopLabel("현재 +\(YardEconomy.facilityOutput(facility, level: level))/초  →  +\(YardEconomy.facilityOutput(facility, level: level + 1))/초", x: 50, y: y + 22, size: 8, color: PixelPalette.lightTeal, name: name, alignment: .left)
+        addShopLabel("강화 \(cost)", x: 308, y: y + 33, size: 9, color: credits >= cost ? PixelPalette.warningAmber : PixelPalette.midIron, name: name, alignment: .right)
+    }
+
+    private func addRecordCard(_ enemy: VerticalSliceContent.Enemy, index: Int) {
+        let discovered = discoveredEnemyIDs.contains(enemy.id)
+        let column = index % 3
+        let row = index / 3
+        let x = 34 + column * 98
+        let y = 445 - row * 96
+        let card = PixelArt.panel(size: CGSize(width: 88, height: 82), name: "record_\(enemy.id)")
+        card.position = CGPoint(x: x, y: y)
+        card.zPosition = 2
+        shopLayer.addChild(card)
+        if discovered {
+            let art = PixelArt.asset(enemy.spriteId, scale: enemy.id == "can_bug" ? 1.1 : 0.62)
+            art.position = CGPoint(x: x + 44, y: y + 48)
+            art.zPosition = 4
+            shopLayer.addChild(art)
+        } else {
+            let unknown = SKLabelNode(fontNamed: "Menlo-Bold")
+            configureLabel(unknown, size: 24, color: PixelPalette.midIron, alignment: .center)
+            unknown.text = "?"
+            unknown.position = CGPoint(x: x + 44, y: y + 49)
+            unknown.zPosition = 4
+            shopLayer.addChild(unknown)
+        }
+        addShopLabel(discovered ? enemy.nameKo : "미발견", x: x + 44, y: y + 14, size: 7, color: discovered ? PixelPalette.workWhite : PixelPalette.midIron)
     }
 
     private func addShopLabel(_ text: String, x: Int, y: Int, size: CGFloat, color: SKColor, name: String? = nil, alignment: SKLabelHorizontalAlignmentMode = .center) {
@@ -677,6 +929,15 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         label.zPosition = 4
         label.name = name
         shopLayer.addChild(label)
+    }
+
+    private func addShopHitArea(name: String, position: CGPoint, size: CGSize) {
+        let hitArea = SKSpriteNode(color: .clear, size: size)
+        hitArea.anchorPoint = .zero
+        hitArea.position = position
+        hitArea.zPosition = 3
+        hitArea.name = name
+        shopLayer.addChild(hitArea)
     }
 
     private func buy(_ item: ShopItem) {
@@ -712,7 +973,50 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         refreshLoadout()
         updateHUD()
         persist()
-        run(.sequence([.wait(forDuration: 0.35), .run { [weak self] in self?.openShop() }]))
+        let status = shopStatusLabel.text ?? "강화 완료"
+        switch item {
+        case .crew: openCrew(status: status)
+        case .cutter, .drone, .magnet: openShop(status: status)
+        }
+    }
+
+    private func buyFacility(_ facility: YardFacility) {
+        let level: Int
+        switch facility {
+        case .press: level = pressLevel
+        case .sorter: level = sorterLevel
+        case .warehouse: level = warehouseLevel
+        }
+        let cost = YardEconomy.upgradeCost(facility, currentLevel: level)
+        guard credits >= cost else {
+            shopStatusLabel.text = "고철이 부족합니다 • 직접 해체하거나 회수 대기 수익을 받으세요"
+            shopStatusLabel.fontColor = PixelPalette.sparkOrange
+            return
+        }
+        credits -= cost
+        switch facility {
+        case .press: pressLevel += 1
+        case .sorter: sorterLevel += 1
+        case .warehouse: warehouseLevel += 1
+        }
+        refreshLoadout()
+        updateHUD()
+        persist()
+        openFacilities(status: "\(facility.nameKo) 강화 완료 • 자동 수익이 증가했습니다")
+    }
+
+    private func collectYardIncome() {
+        guard yardIncomeBank > 0 else {
+            shopStatusLabel.text = "아직 회수할 고철이 없습니다"
+            shopStatusLabel.fontColor = PixelPalette.midIron
+            return
+        }
+        let collected = yardIncomeBank
+        credits += collected
+        yardIncomeBank = 0
+        updateHUD()
+        persist()
+        openFacilities(status: "시설 수익 \(collected) 고철을 회수했습니다")
     }
 
     private func closeShop() {
@@ -721,7 +1025,11 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func refreshLoadout() {
-        loadoutLabel.text = "절단 \(cutterLevel) • 리벳 \(droneLevel) • 자석 \(magnetLevel) • 보라 \(crewLevel)"
+        loadoutLabel.text = "직접 +\(manualDamage) • 자동 +\(passiveIncomeRate)/초 • 회수 대기 \(yardIncomeBank)"
+        (controlsLayer.childNode(withName: "//shop_open_subtitle") as? SKLabelNode)?.text = "직접 +\(manualDamage)"
+        (controlsLayer.childNode(withName: "//crew_open_subtitle") as? SKLabelNode)?.text = "보라 LV.\(crewLevel)"
+        (controlsLayer.childNode(withName: "//facility_open_subtitle") as? SKLabelNode)?.text = "+\(passiveIncomeRate)/초"
+        (controlsLayer.childNode(withName: "//records_open_subtitle") as? SKLabelNode)?.text = "\(discoveredEnemyIDs.count)/\(content.enemies.count)"
     }
 
     private func enemyMotion(_ enemyID: String) -> SKAction {
@@ -830,7 +1138,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         guard !content.stages.isEmpty else { return }
         let stage = content.stages[stageIndex]
         stageLabel.text = "R1 • \(String(format: "%02d", stage.number))"
-        currencyLabel.text = "고철 \(credits)  부품 \(parts)"
+        currencyLabel.text = "고철 \(credits)  •  +\(passiveIncomeRate)/초"
+        locationLabel.text = "뒷골목 압착장 • 회수 대기 \(yardIncomeBank) • 부품 \(parts)"
         let living = activeEnemies.filter { $0.hp > 0 }
         groupLabel.text = living.count > 1 ? "폐품 괴수 \(living.count)체 동시 출현" : (living.first?.spec.nameKo ?? "다음 무리 탐색")
         let charge = combatTick >= overclockUntilTick ? 1 : CGFloat(max(0, overclockUntilTick - combatTick)) / 160
@@ -850,14 +1159,14 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             "모  절단 LV.\(cutterLevel)",
             "리벳  출력 LV.\(droneLevel)",
             "보라  숙련 LV.\(crewLevel)",
-            "120틱 협동 해체"
+            "직접 \(manualDamage) / 협동 가동"
         ], accent: PixelPalette.lightTeal)
         let remaining = activeEnemies.filter { $0.hp > 0 }
         addRail(name: "ipad_wave_rail", title: "WAVE / 적 무리", x: rightX, width: available, lines: [
             "현재 \(remaining.count)체",
             remaining.first.map { "표적  \($0.spec.nameKo)" } ?? "다음 무리 탐색",
-            "진행  \(waveIndex + 1)/\(content.stages[stageIndex].wave.count)",
-            "보상  고철+부품"
+            "시설  +\(passiveIncomeRate)/초",
+            "회수 대기  \(yardIncomeBank)"
         ], accent: PixelPalette.warningAmber)
     }
 
@@ -898,6 +1207,12 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         save.droneLevel = droneLevel
         save.magnetLevel = magnetLevel
         save.crewLevel = crewLevel
+        save.pressLevel = pressLevel
+        save.sorterLevel = sorterLevel
+        save.warehouseLevel = warehouseLevel
+        save.yardIncomeBank = yardIncomeBank
+        save.manualTapCount = manualTapCount
+        save.discoveredEnemyIDs = discoveredEnemyIDs.sorted()
         save.tutorialStep = tutorialStep
         save.combatTick = combatTick
         save.highestStage = max(save.highestStage, content.stages[stageIndex].number)

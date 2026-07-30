@@ -37,7 +37,18 @@ final class GameViewController: UIViewController {
         gameView.accessibilityTraits = [.allowsDirectInteraction, .updatesFrequently]
         gameView.accessibilityLabel = "저장 선택 화면. 계속하기, 새 게임, Game Center 불러오기를 선택할 수 있습니다."
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("-capture-combat") {
+        if ProcessInfo.processInfo.arguments.contains("-capture-facility") {
+            var captureSave = GameSave.newGame(now: Date().addingTimeInterval(-15 * 60))
+            captureSave.stageIndex = 3
+            captureSave.credits = 650
+            captureSave.parts = 88
+            captureSave.crewLevel = 3
+            captureSave.pressLevel = 3
+            captureSave.sorterLevel = 1
+            captureSave.discoveredEnemyIDs = ["can_bug", "umbrella_crab", "fan_bat", "fridge_boar"]
+            captureSave.tutorialStep = 4
+            startGame(with: captureSave, showFacilityPanelOnLaunch: true)
+        } else if ProcessInfo.processInfo.arguments.contains("-capture-combat") {
             var captureSave = GameSave.newGame()
             captureSave.stageIndex = 3
             captureSave.credits = 500
@@ -102,7 +113,6 @@ final class GameViewController: UIViewController {
                 case .success(var save):
                     save.cloudBackupEnabled = true
                     save.revision += 1
-                    save.updatedAt = Date()
                     try? self.saveStore.save(save)
                     scene?.refresh(save: save)
                     scene?.setStatus("클라우드 진행을 로컬 슬롯에 복구했습니다.")
@@ -139,11 +149,12 @@ final class GameViewController: UIViewController {
         gameView.presentScene(scene, transition: .fade(withDuration: 0.18))
     }
 
-    private func startGame(with initialSave: GameSave) {
-        var save = initialSave
-        save.updatedAt = Date()
-        try? saveStore.save(save)
-        let scene = CombatScene(content: content, save: save)
+    private func startGame(with initialSave: GameSave, showFacilityPanelOnLaunch: Bool = false) {
+        let scene = CombatScene(
+            content: content,
+            save: initialSave,
+            showFacilityPanelOnLaunch: showFacilityPanelOnLaunch
+        )
         scene.applyViewport(PixelViewport(view: gameView))
         scene.onSave = { [weak self] save in try? self?.saveStore.save(save) }
         scene.onAccessibilitySummary = { [weak gameView] summary in gameView?.accessibilityLabel = summary }

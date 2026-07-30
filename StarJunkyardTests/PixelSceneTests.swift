@@ -46,6 +46,10 @@ final class PixelSceneTests: XCTestCase {
         XCTAssertNotNil(findNode(named: "crew_bora_base", in: scene))
         XCTAssertNotNil(findNode(named: "enemy_can_bug", in: scene))
         XCTAssertNotNil(findNode(named: "shop_open", in: scene))
+        XCTAssertNotNil(findNode(named: "crew_open", in: scene))
+        XCTAssertNotNil(findNode(named: "facility_open", in: scene))
+        XCTAssertNotNil(findNode(named: "records_open", in: scene))
+        XCTAssertNotNil(findNode(named: "manual_salvage_1", in: scene))
         XCTAssertNotNil(findNode(named: "tutorial_panel", in: scene))
         XCTAssertNil(findNode(named: "mechanic_mo_debug", in: scene))
         assertIntegralPositions(scene)
@@ -123,9 +127,57 @@ final class PixelSceneTests: XCTestCase {
             """.utf8
         )
         let migrated = try temporarySaveStore().decodeCloudData(data)
-        XCTAssertEqual(migrated.schemaVersion, 2)
+        XCTAssertEqual(migrated.schemaVersion, 3)
         XCTAssertEqual(migrated.enemyHPs, [41])
         XCTAssertEqual(migrated.crewLevel, 1)
+        XCTAssertEqual(migrated.pressLevel, 1)
+        XCTAssertEqual(migrated.sorterLevel, 0)
+        XCTAssertEqual(migrated.yardIncomeBank, 0)
+        XCTAssertTrue(migrated.discoveredEnemyIDs.isEmpty)
+    }
+
+    func testSchemaTwoSaveMigratesYardDefaults() throws {
+        let data = Data(
+            """
+            {"schemaVersion":2,"revision":9,"updatedAt":100000,"stageIndex":0,"waveIndex":0,"enemyHPs":[25],"credits":44,"parts":6,"cutterLevel":2,"droneLevel":2,"magnetLevel":1,"crewLevel":3,"tutorialStep":4,"combatTick":120,"highestStage":4,"cloudBackupEnabled":true}
+            """.utf8
+        )
+        let migrated = try temporarySaveStore().decodeCloudData(data)
+        XCTAssertEqual(migrated.schemaVersion, 3)
+        XCTAssertEqual(migrated.pressLevel, 1)
+        XCTAssertEqual(migrated.warehouseLevel, 0)
+        XCTAssertEqual(migrated.manualTapCount, 0)
+    }
+
+    func testYardEconomyBalancesManualAutomationAndOfflineCap() {
+        XCTAssertEqual(YardEconomy.manualDamage(cutterLevel: 1), 10)
+        XCTAssertEqual(YardEconomy.manualReward(cutterLevel: 4), 2)
+        XCTAssertEqual(
+            YardEconomy.passiveIncome(pressLevel: 2, sorterLevel: 1, warehouseLevel: 1, crewLevel: 3),
+            23
+        )
+        XCTAssertEqual(YardEconomy.upgradeCost(.sorter, currentLevel: 0), 90)
+        let offline = YardEconomy.offlineIncome(rate: 7, elapsed: 12 * 60 * 60)
+        XCTAssertEqual(offline.seconds, 8 * 60 * 60)
+        XCTAssertEqual(offline.amount, 201_600)
+    }
+
+    func testFacilityPanelShowsOfflineReportAndActionableRows() {
+        var save = GameSave.newGame(now: Date().addingTimeInterval(-9 * 60 * 60))
+        save.pressLevel = 2
+        save.sorterLevel = 1
+        var persisted: GameSave?
+        let scene = CombatScene(content: sampleContent(), save: save, showFacilityPanelOnLaunch: true)
+        scene.onSave = { persisted = $0 }
+        let view = SKView(frame: CGRect(origin: .zero, size: CombatScene.logicalSize))
+        scene.didMove(to: view)
+
+        XCTAssertNotNil(findNode(named: "shop_panel", in: scene))
+        XCTAssertNotNil(findNode(named: "collect_yard_income", in: scene))
+        XCTAssertNotNil(findNode(named: "buy_press", in: scene))
+        XCTAssertNotNil(findNode(named: "buy_sorter", in: scene))
+        XCTAssertNotNil(findNode(named: "buy_warehouse", in: scene))
+        XCTAssertEqual(persisted?.yardIncomeBank, 9 * 8 * 60 * 60)
     }
 
     func testSaveSelectionExplainsGameBeforeCombat() {
