@@ -18,6 +18,104 @@ final class IdleOperationsTests: XCTestCase {
         }
     }
 
+    func testPaidThirdWorkbenchRunsResearchAndTwoCrafts() throws {
+        let now = Date(timeIntervalSince1970: 12_000)
+        var state = IdleOperationsState.newGame(now: now)
+        state.workbenchSlots = 3
+        _ = try IdleOperationsEngine.start(.research, now: now, identifier: "research", state: &state)
+        _ = try IdleOperationsEngine.start(.craft, now: now, identifier: "craft-1", state: &state)
+        _ = try IdleOperationsEngine.start(.craft, now: now, identifier: "craft-2", state: &state)
+
+        XCTAssertEqual(state.active.filter { $0.kind == .research || $0.kind == .craft }.count, 3)
+        XCTAssertThrowsError(
+            try IdleOperationsEngine.start(.craft, now: now, identifier: "craft-3", state: &state)
+        ) {
+            XCTAssertEqual($0 as? IdleOperationError, .slotFull)
+        }
+    }
+
+    func testCraftSpeedAppliesOnlyWhenANewOperationStarts() throws {
+        let now = Date(timeIntervalSince1970: 13_000)
+        var normalState = IdleOperationsState.newGame(now: now)
+        let existing = try IdleOperationsEngine.start(
+            .craft,
+            now: now,
+            identifier: "existing",
+            craftSpeedMultiplier: 1,
+            state: &normalState
+        )
+        let existingCompletion = existing.completesAt
+
+        var paidState = IdleOperationsState.newGame(now: now)
+        let paid = try IdleOperationsEngine.start(
+            .craft,
+            now: now,
+            identifier: "paid",
+            craftSpeedMultiplier: 1.10,
+            state: &paidState
+        )
+
+        XCTAssertEqual(existing.completesAt.timeIntervalSince(now), 15 * 60)
+        XCTAssertEqual(paid.completesAt.timeIntervalSince(now), 15 * 60 / 1.10, accuracy: 0.001)
+        XCTAssertEqual(normalState.active[0].completesAt, existingCompletion, "Later entitlement changes must not rewrite running work")
+    }
+
+    func testDailyInstantFinishIsOneUsePerUTCDayAndIdempotent() throws {
+        let dayOne = Date(timeIntervalSince1970: 86_400 * 10)
+        var state = IdleOperationsState.newGame(now: dayOne)
+        var ticket = DailyInstantFinishState.empty
+        let first = try IdleOperationsEngine.start(.craft, now: dayOne, identifier: "first", state: &state)
+
+        try IdleOperationsEngine.finishWithDailyTicket(
+            id: first.id,
+            now: dayOne,
+            entitled: true,
+            ticket: &ticket,
+            state: &state
+        )
+        XCTAssertEqual(ticket.remainingUses(on: dayOne, entitled: true), 0)
+        XCTAssertEqual(ticket.consumedOperationIDs, ["first"])
+        XCTAssertThrowsError(
+            try IdleOperationsEngine.finishWithDailyTicket(
+                id: first.id,
+                now: dayOne,
+                entitled: true,
+                ticket: &ticket,
+                state: &state
+            )
+        ) {
+            XCTAssertEqual($0 as? IdleOperationError, .notComplete)
+        }
+        XCTAssertEqual(ticket.consumedOperationIDs, ["first"])
+        _ = try IdleOperationsEngine.claim(id: first.id, now: dayOne, state: &state)
+
+        let second = try IdleOperationsEngine.start(.craft, now: dayOne, identifier: "second", state: &state)
+        XCTAssertThrowsError(
+            try IdleOperationsEngine.finishWithDailyTicket(
+                id: second.id,
+                now: dayOne,
+                entitled: true,
+                ticket: &ticket,
+                state: &state
+            )
+        ) {
+            XCTAssertEqual($0 as? IdleOperationError, .dailyTicketAlreadyUsed)
+        }
+
+        let dayTwo = dayOne.addingTimeInterval(86_400)
+        _ = try IdleOperationsEngine.claim(id: second.id, now: dayTwo, state: &state)
+        let third = try IdleOperationsEngine.start(.craft, now: dayTwo, identifier: "third", state: &state)
+        try IdleOperationsEngine.finishWithDailyTicket(
+            id: third.id,
+            now: dayTwo,
+            entitled: true,
+            ticket: &ticket,
+            state: &state
+        )
+        XCTAssertEqual(ticket.utcDayKey, DailyInstantFinishState.dayKey(for: dayTwo))
+        XCTAssertEqual(ticket.consumedOperationIDs, ["third"])
+    }
+
     func testSaveRoundTripPreservesRunningOperationAndClaimState() throws {
         let now = Date(timeIntervalSince1970: 15_000)
         var state = IdleOperationsState.newGame(now: now)
@@ -30,6 +128,8 @@ final class IdleOperationsTests: XCTestCase {
         XCTAssertEqual(decoded.idleOperations.active.map(\.id), ["saved-expedition"])
         XCTAssertEqual(decoded.idleOperations.active.first?.completesAt, now.addingTimeInterval(30 * 60))
         XCTAssertEqual(decoded.idleOperations.circuits, 0)
+        XCTAssertEqual(decoded.dailyInstantFinish, .empty)
+        XCTAssertEqual(decoded.equippedBoraUniform, .base)
     }
 
     func testFreeFinishOnlyWithinLastThreeMinutesAndClaimIsIdempotent() throws {

@@ -1,0 +1,136 @@
+{
+  "identifier" : "A803F8DA-9670-4C0D-B192-AE0023A0C8B4",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "2.99",
+      "familyShareable" : false,
+      "internalID" : "90EF7A0F-EE5C-4D87-BE63-F56F0C5B5BA0",
+      "localizations" : [
+        {
+          "description" : "보라 창업 정비복, 공격 효과와 프로필 배지",
+          "displayName" : "보라 창업 정비 키트",
+          "locale" : "ko_KR"
+        }
+      ],
+      "productID" : "com.bbdyno.starjunkyard.starter.crewkit",
+      "referenceName" : "Bora Founder Crew Kit",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "7.99",
+      "familyShareable" : false,
+      "internalID" : "B9AE57DD-EAD6-41B5-951F-5F5C98BA67F0",
+      "localizations" : [
+        {
+          "description" : "세 번째 작업 슬롯을 영구 해금합니다.",
+          "displayName" : "작업대 3번 슬롯",
+          "locale" : "ko_KR"
+        }
+      ],
+      "productID" : "com.bbdyno.starjunkyard.workbench.slot3",
+      "referenceName" : "Workbench Slot 3",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "5.99",
+      "familyShareable" : false,
+      "internalID" : "27B2D8D2-7E53-49CF-B028-9A3D02D41FE6",
+      "localizations" : [
+        {
+          "description" : "오프라인 적립 상한을 8시간에서 16시간으로 늘립니다.",
+          "displayName" : "오프라인 적립 16시간",
+          "locale" : "ko_KR"
+        }
+      ],
+      "productID" : "com.bbdyno.starjunkyard.offline.16h",
+      "referenceName" : "Offline Reward 16 Hours",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "4.99",
+      "familyShareable" : false,
+      "internalID" : "4053CF5D-7814-4EEB-9456-C8D1CD882DB6",
+      "localizations" : [
+        {
+          "description" : "보라의 녹슨 정비복과 전용 공격 효과",
+          "displayName" : "보라 녹슨 정비복",
+          "locale" : "ko_KR"
+        }
+      ],
+      "productID" : "com.bbdyno.starjunkyard.cosmetic.bora.rust",
+      "referenceName" : "Bora Rust Cosmetic",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "08D34E06-6B69-48CB-A63F-938820EE45D0",
+      "localizations" : [
+        {
+          "description" : "2026 고철전선 시즌의 유료 보상 트랙을 영구 해금합니다.",
+          "displayName" : "고철전선 2026 시즌 패스",
+          "locale" : "ko_KR"
+        }
+      ],
+      "productID" : "com.bbdyno.starjunkyard.season.2026.scrapfrontier",
+      "referenceName" : "Scrap Frontier 2026 Season Pass",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "com.bbdyno.starjunkyard",
+    "_developerTeamID" : "",
+    "_failTransactionsEnabled" : false,
+    "_locale" : "ko_KR",
+    "_renewalBillingIssuesEnabled" : false,
+    "_storefront" : "KOR",
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "F06D5D52-3E46-486D-B23C-E76D9FB77685",
+      "localizations" : [
+        {
+          "description" : "제작 편의와 월간 외형을 제공하는 정비 멤버십",
+          "displayName" : "정비 멤버십",
+          "locale" : "ko_KR"
+        }
+      ],
+      "name" : "maintenance_membership",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "7.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "DA8CE7A0-CAB1-46F4-9829-79BA8012A6AA",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "제작 속도 10%, 일일 단축권과 월간 직원 외형",
+              "displayName" : "월간 정비 멤버십",
+              "locale" : "ko_KR"
+            }
+          ],
+          "productID" : "com.bbdyno.starjunkyard.maintenance.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Monthly Maintenance Membership",
+          "subscriptionGroupID" : "F06D5D52-3E46-486D-B23C-E76D9FB77685",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

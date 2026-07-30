@@ -8,9 +8,11 @@ final class GameViewController: UIViewController {
     private let settingsStore: GameSettingsStore
     private let consentStore: AnalyticsConsentStore
     private let analytics: any GameAnalytics
+    private let purchaseLedgerStore: PurchaseLedgerStore
     private var combatScene: CombatScene?
     private var saveSelectionScene: SaveSelectionScene?
     private var settingsScene: PixelSettingsScene?
+    private var purchaseController: StoreKitPurchaseController?
     private lazy var cloudSave = GameCenterCloudSave(presenter: self, store: saveStore)
     private lazy var feedback = IOSGameFeedbackService(settings: settingsStore)
     private lazy var operationNotifications = IOSIdleOperationNotificationScheduler()
@@ -20,7 +22,8 @@ final class GameViewController: UIViewController {
         saveStore: GameSaveStore = GameSaveStore(),
         settingsStore: GameSettingsStore = GameSettingsStore(),
         consentStore: AnalyticsConsentStore = AnalyticsConsentStore(),
-        analytics: (any GameAnalytics)? = nil
+        analytics: (any GameAnalytics)? = nil,
+        purchaseLedgerStore: PurchaseLedgerStore = PurchaseLedgerStore()
     ) {
         self.content = content
         self.saveStore = saveStore
@@ -30,6 +33,7 @@ final class GameViewController: UIViewController {
             consentStore: consentStore,
             destination: LocalGameAnalyticsRecorder()
         )
+        self.purchaseLedgerStore = purchaseLedgerStore
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -52,6 +56,7 @@ final class GameViewController: UIViewController {
         gameView.accessibilityTraits = [.allowsDirectInteraction, .updatesFrequently]
         gameView.accessibilityLabel = GameText.localized(.accessibilitySaveSelection)
         analytics.record(.appLaunched)
+        startStoreKit()
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-capture-settings") ||
             ProcessInfo.processInfo.arguments.contains("-capture-settings-en") {
@@ -64,6 +69,11 @@ final class GameViewController: UIViewController {
                 ? Locale(identifier: "en")
                 : Locale(identifier: "ko")
             presentSettings(locale: locale)
+        } else if ProcessInfo.processInfo.arguments.contains("-capture-premium-store") {
+            var captureSave = GameSave.newGame()
+            captureSave.prologueSeen = true
+            captureSave.tutorialStep = 4
+            startGame(with: captureSave, showPremiumStoreOnLaunch: true)
         } else if ProcessInfo.processInfo.arguments.contains("-capture-operations") {
             let expeditionStart = Date().addingTimeInterval(-31 * 60)
             var captureSave = GameSave.newGame(now: expeditionStart)
@@ -146,6 +156,12 @@ final class GameViewController: UIViewController {
             name: UIApplication.didEnterBackgroundNotification,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appWillEnterForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
     }
 
     override var prefersStatusBarHidden: Bool { true }
@@ -166,6 +182,12 @@ final class GameViewController: UIViewController {
     @objc private func appEnteredBackground() {
         guard let save = saveStore.load(), save.cloudBackupEnabled else { return }
         cloudSave.upload(save) { _ in }
+    }
+
+    @objc private func appWillEnterForeground() {
+        Task { [weak self] in
+            await self?.purchaseController?.refreshEntitlements()
+        }
     }
 
     private func presentSaveSelection(status: String? = nil, isError: Bool = false) {
@@ -229,13 +251,18 @@ final class GameViewController: UIViewController {
         with initialSave: GameSave,
         showFacilityPanelOnLaunch: Bool = false,
         showOperationsPanelOnLaunch: Bool = false,
-        showCrewPanelOnLaunch: Bool = false
+        showCrewPanelOnLaunch: Bool = false,
+        showPremiumStoreOnLaunch: Bool = false
     ) {
+        let initialEntitlements = purchaseController?.entitlements
+            ?? purchaseLedgerStore.loadOrEmpty().entitlementSnapshot()
         let scene = CombatScene(
             content: content,
             save: initialSave,
+            premiumEntitlements: initialEntitlements,
             showFacilityPanelOnLaunch: showFacilityPanelOnLaunch,
             showOperationsPanelOnLaunch: showOperationsPanelOnLaunch,
+            showPremiumStoreOnLaunch: showPremiumStoreOnLaunch,
             showCrewPanelOnLaunch: showCrewPanelOnLaunch,
             settings: settingsStore.load()
         )
@@ -249,6 +276,20 @@ final class GameViewController: UIViewController {
         scene.onLongOperationStarted = { [weak self] operation in
             self?.operationNotifications.operationStarted(operation)
         }
+        if purchaseController != nil {
+            scene.onStorePurchase = { [weak self] productID in
+                Task { [weak self] in await self?.purchaseController?.purchase(productID) }
+            }
+            scene.onStoreRestore = { [weak self] in
+                Task { [weak self] in await self?.purchaseController?.restorePurchases() }
+            }
+            scene.onStoreRetry = { [weak self] in
+                Task { [weak self] in await self?.purchaseController?.retryLastOperation() }
+            }
+        }
+        scene.updateStorefront(
+            purchaseController?.snapshot ?? .unavailable(entitlements: initialEntitlements)
+        )
         combatScene = scene
         saveSelectionScene = nil
         settingsScene = nil
@@ -325,6 +366,16 @@ final class GameViewController: UIViewController {
                 }
             )
         ]
+    }
+
+    private func startStoreKit() {
+        guard let catalog = try? IAPCatalog.load() else { return }
+        let controller = StoreKitPurchaseController(catalog: catalog, ledger: purchaseLedgerStore)
+        controller.onUpdate = { [weak self] snapshot in
+            self?.combatScene?.updateStorefront(snapshot)
+        }
+        purchaseController = controller
+        controller.start()
     }
 
     deinit {

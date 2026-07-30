@@ -31,7 +31,11 @@ enum YardFacility: String, CaseIterable, Sendable {
 }
 
 struct YardEconomy: Sendable {
-    static let offlineCap: TimeInterval = 8 * 60 * 60
+    static let defaultOfflineCap: TimeInterval = 8 * 60 * 60
+
+    static func offlineCap(entitlements: EntitlementSnapshot = .none) -> TimeInterval {
+        entitlements.contains(.offlineCap16Hours) ? defaultOfflineCap * 2 : defaultOfflineCap
+    }
 
     static func manualDamage(cutterLevel: Int) -> Int {
         6 + max(1, cutterLevel) * 4
@@ -61,8 +65,12 @@ struct YardEconomy: Sendable {
         facility.baseCost * max(1, currentLevel + 1)
     }
 
-    static func offlineIncome(rate: Int, elapsed: TimeInterval) -> (seconds: Int, amount: Int) {
-        let seconds = Int(min(max(0, elapsed), offlineCap).rounded(.down))
+    static func offlineIncome(
+        rate: Int,
+        elapsed: TimeInterval,
+        entitlements: EntitlementSnapshot = .none
+    ) -> (seconds: Int, amount: Int) {
+        let seconds = Int(min(max(0, elapsed), offlineCap(entitlements: entitlements)).rounded(.down))
         return (seconds, max(0, rate) * seconds)
     }
 }

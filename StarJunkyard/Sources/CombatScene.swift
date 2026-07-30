@@ -11,6 +11,9 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     var onFeedback: ((GameFeedbackEvent) -> Void)?
     var onAnalyticsEvent: ((GameAnalyticsEvent) -> Void)?
     var onLongOperationStarted: ((TimedIdleOperation) -> Void)?
+    var onStorePurchase: ((StoreProductID) -> Void)?
+    var onStoreRestore: (() -> Void)?
+    var onStoreRetry: (() -> Void)?
 
     @MainActor
     private final class ActiveEnemy {
@@ -34,6 +37,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private let content: VerticalSliceContent
     private let enemyByID: [String: VerticalSliceContent.Enemy]
     private var save: GameSave
+    private var premiumEntitlements: EntitlementSnapshot
     private var stageIndex: Int
     private var waveIndex: Int
     private var restoredEnemyHPs: [Int]?
@@ -73,6 +77,9 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private var pendingBossDismantleStage: Int?
     private var pendingBossBaseParts: Int
     private var idleOperations: IdleOperationsState
+    private var dailyInstantFinish: DailyInstantFinishState
+    private var equippedBoraUniform: BoraUniform
+    private var storefront: StorefrontSnapshot
     private var bossDeadlineTick: Int?
     private var bossEncounterPhase: BossEncounterRules.Phase?
     private var pendingBossToken: Int?
@@ -81,6 +88,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private let offlineAmount: Int
     private let showFacilityPanelOnLaunch: Bool
     private let showOperationsPanelOnLaunch: Bool
+    private let showPremiumStoreOnLaunch: Bool
     private let showCrewPanelOnLaunch: Bool
     private var tutorialStep: Int
     private var accumulator: TimeInterval = 0
@@ -104,6 +112,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private let secondaryDroneMotion = SKNode()
     private let crewAnchor = SKNode()
     private let crewMotion = SKNode()
+    private var crewSprite: SKSpriteNode?
     private let enemyLayer = SKNode()
     private let effectsLayer = SKNode()
     private let rainLayer = SKNode()
@@ -131,12 +140,15 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private let bossPhaseLabel = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
     private let shopLayer = SKNode()
     private let shopStatusLabel = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
+    private var activeManagementPanel: ManagementPanel?
 
     private enum ManagementPanel: Equatable {
         case equipment
         case crew
         case facilities
         case records
+        case premium
+        case operations
     }
 
     convenience init(content: VerticalSliceContent) {
@@ -146,14 +158,18 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     init(
         content: VerticalSliceContent,
         save: GameSave,
+        premiumEntitlements: EntitlementSnapshot = .none,
         showFacilityPanelOnLaunch: Bool = false,
         showOperationsPanelOnLaunch: Bool = false,
+        showPremiumStoreOnLaunch: Bool = false,
         showCrewPanelOnLaunch: Bool = false,
         settings: GameSettings = .default
     ) {
         self.content = content
         enemyByID = Dictionary(uniqueKeysWithValues: content.enemies.map { ($0.id, $0) })
         self.save = save
+        self.premiumEntitlements = premiumEntitlements
+        storefront = .unavailable(entitlements: premiumEntitlements)
         stageIndex = min(max(0, save.stageIndex), max(0, content.stages.count - 1))
         let waveCount = content.stages[stageIndex].wave.count
         waveIndex = min(max(0, save.waveIndex), max(0, waveCount - 1))
@@ -189,8 +205,14 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         pendingBossDismantleStage = save.pendingBossDismantleStage
         pendingBossBaseParts = max(0, save.pendingBossBaseParts)
         idleOperations = save.idleOperations
+        idleOperations.workbenchSlots = premiumEntitlements.workbenchSlots
+        dailyInstantFinish = save.dailyInstantFinish
+        equippedBoraUniform = save.equippedBoraUniform.isUnlocked(by: premiumEntitlements)
+            ? save.equippedBoraUniform
+            : .base
         self.showFacilityPanelOnLaunch = showFacilityPanelOnLaunch
         self.showOperationsPanelOnLaunch = showOperationsPanelOnLaunch
+        self.showPremiumStoreOnLaunch = showPremiumStoreOnLaunch
         self.showCrewPanelOnLaunch = showCrewPanelOnLaunch
         let offline = YardEconomy.offlineIncome(
             rate: YardEconomy.passiveIncome(
@@ -199,7 +221,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
                 warehouseLevel: warehouseLevel,
                 crewLevel: crewLevel
             ),
-            elapsed: Date().timeIntervalSince(save.updatedAt)
+            elapsed: Date().timeIntervalSince(save.updatedAt),
+            entitlements: premiumEntitlements
         )
         offlineSeconds = offline.seconds
         offlineAmount = offline.amount
@@ -249,7 +272,9 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         spawnCurrentGroup()
         applyViewport(PixelViewport(view: view))
         setLowPowerMode(ProcessInfo.processInfo.isLowPowerModeEnabled)
-        if showOperationsPanelOnLaunch {
+        if showPremiumStoreOnLaunch {
+            openPremiumStore()
+        } else if showOperationsPanelOnLaunch {
             openOperations()
         } else if showCrewPanelOnLaunch {
             openCrew(status: "무료 해금 편성과 약점 모듈을 선택하세요")
@@ -279,6 +304,33 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         tutorialLayer.position.y = topShift
         storyLayer.position.y = topShift
         rebuildAdaptiveRails()
+    }
+
+    func updateStorefront(_ snapshot: StorefrontSnapshot) {
+        storefront = snapshot
+        updatePremiumEntitlements(snapshot.entitlements)
+    }
+
+    func updatePremiumEntitlements(_ entitlements: EntitlementSnapshot) {
+        let accessChanged = premiumEntitlements != entitlements
+            || idleOperations.workbenchSlots != entitlements.workbenchSlots
+        premiumEntitlements = entitlements
+        idleOperations.workbenchSlots = entitlements.workbenchSlots
+        if !equippedBoraUniform.isUnlocked(by: entitlements) {
+            equippedBoraUniform = .base
+        }
+        applyCrewAppearance()
+        refreshLoadout()
+        if accessChanged, view != nil { persist() }
+        guard !shopLayer.isHidden else { return }
+        switch activeManagementPanel {
+        case .equipment: openShop(status: "App Store 권한 상태를 갱신했습니다")
+        case .crew: openCrew(status: "직원 외형 권한 상태를 갱신했습니다")
+        case .facilities: openFacilities(status: "시설 편의 권한 상태를 갱신했습니다")
+        case .premium: openPremiumStore()
+        case .operations: openOperations(status: "작업 권한 상태를 갱신했습니다")
+        case .records, .none: break
+        }
     }
 
     func setLowPowerMode(_ enabled: Bool) {
@@ -361,6 +413,17 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             else if names.contains("buy_warehouse") { buyFacility(.warehouse) }
             else if names.contains("collect_yard_income") { collectYardIncome() }
             else if names.contains("operations_open") { openOperations() }
+            else if names.contains("premium_store_open") { openPremiumStore() }
+            else if names.contains("store_restore") { onStoreRestore?() }
+            else if names.contains("store_retry") { onStoreRetry?() }
+            else if let purchaseName = names.first(where: { $0.hasPrefix("store_purchase_") }),
+                    let productID = StoreProductID(rawValue: String(purchaseName.dropFirst("store_purchase_".count))) {
+                onStorePurchase?(productID)
+            }
+            else if let uniformName = names.first(where: { $0.hasPrefix("equip_bora_") }),
+                    let uniform = BoraUniform(rawValue: String(uniformName.dropFirst("equip_bora_".count))) {
+                equipBoraUniform(uniform)
+            }
             else if names.contains("start_research") { startIdleOperation(.research) }
             else if names.contains("start_craft") { startIdleOperation(.craft) }
             else if names.contains("start_expedition") { startIdleOperation(.expedition) }
@@ -369,6 +432,9 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             }
             else if let finishName = names.first(where: { $0.hasPrefix("free_finish_") }) {
                 finishIdleOperationFree(id: String(finishName.dropFirst("free_finish_".count)))
+            }
+            else if let ticketName = names.first(where: { $0.hasPrefix("daily_finish_") }) {
+                finishIdleOperationWithDailyTicket(id: String(ticketName.dropFirst("daily_finish_".count)))
             }
             else if names.contains("management_equipment") { openShop() }
             else if names.contains("management_crew") { openCrew() }
@@ -463,7 +529,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
                 base: FormationProgression.crewDamage(masteryLevel: crewMasteryLevel, role: activeCrewRole),
                 source: CGPoint(x: 72, y: 248),
                 steps: 7,
-                color: PixelPalette.sparkOrange,
+                color: crewAttackColor,
                 affinity: activeCrewRole.affinity
             )
         }
@@ -982,7 +1048,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         let tokens = activeEnemies.filter { $0.hp > 0 }.map(\.token)
         guard !tokens.isEmpty else { return }
         let banner = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
-        configureLabel(banner, size: 13, color: PixelPalette.warningAmber, alignment: .center)
+        configureLabel(banner, size: 13, color: crewAttackColor, alignment: .center)
         banner.text = "모 × 보라  협동 해체!"
         banner.position = CGPoint(x: 180, y: 468)
         banner.zPosition = 80
@@ -994,7 +1060,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             .removeFromParent()
         ]))
         for index in 0..<6 {
-            let slash = SKSpriteNode(color: index.isMultiple(of: 2) ? PixelPalette.warningAmber : PixelPalette.lightTeal, size: CGSize(width: 30, height: 3))
+            let slash = SKSpriteNode(color: index.isMultiple(of: 2) ? crewAttackColor : PixelPalette.lightTeal, size: CGSize(width: 30, height: 3))
             slash.position = CGPoint(x: 116 - index * 7, y: 250 + index * 20)
             slash.zPosition = 70
             effectsLayer.addChild(slash)
@@ -1099,7 +1165,11 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
         crewAnchor.position = CGPoint(x: 48, y: 238)
         crewAnchor.zPosition = 29
-        crewMotion.addChild(PixelArt.asset("crew_bora_base", scale: 2))
+        let bora = PixelArt.asset("crew_bora_base", scale: 2)
+        bora.name = "crew_bora_combat"
+        crewSprite = bora
+        crewMotion.addChild(bora)
+        applyCrewAppearance()
         crewAnchor.addChild(crewMotion)
         crewAnchor.run(stepLoop(points: [0, 1, 0, -1], duration: 0.17), withKey: "idle")
         combatLayer.addChild(crewAnchor)
@@ -1579,12 +1649,15 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         addShopItem(name: "buy_drone", title: "리벳 출력 코일 LV.\(droneLevel + 1)", effect: "드론 자동 피해 +4", cost: droneCost, y: 365)
         addShopItem(name: "buy_magnet", title: "자석 바구니 LV.\(magnetLevel + 1)", effect: "괴수마다 부품 +1", cost: magnetCost, y: 280)
         addModuleLoadoutRow(y: 210)
+        addShopHitArea(name: "premium_store_open", position: CGPoint(x: 216, y: 186), size: CGSize(width: 110, height: 18))
+        addShopLabel("App Store 정비소  〉", x: 308, y: 198, size: 6, color: PixelPalette.warningAmber, name: "premium_store_open", alignment: .right)
         finishManagement(status: status)
     }
 
     private func openCrew(status: String = "보라는 전투 중 계속 공격하고 주기적으로 모와 협동합니다") {
         beginManagement(.crew, title: "직원·드론 편성", subtitle: "무료 해금 동료를 선택해 적 약점에 맞추세요")
         let bora = PixelArt.asset("crew_bora_base", scale: 0.9)
+        styleBoraPreview(bora, uniform: equippedBoraUniform)
         bora.position = CGPoint(x: 70, y: 470)
         bora.zPosition = 4
         shopLayer.addChild(bora)
@@ -1602,13 +1675,100 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         for (index, drone) in content.drones.prefix(2).enumerated() {
             addDroneFormationCard(drone, x: index == 0 ? 38 : 186, y: 315)
         }
-        addShopItem(name: "buy_crew", title: "보라 작업 숙련 LV.\(crewMasteryLevel + 1)", effect: "역할 피해·협동 해체 증가", cost: crewCost, y: 230)
-        addShopLabel(nextFreeUnlockText, x: 180, y: 212, size: 7, color: PixelPalette.lightTeal, name: "formation_next_unlock")
+        addShopItem(name: "buy_crew", title: "보라 작업 숙련 LV.\(crewMasteryLevel + 1)", effect: "역할 피해·협동 해체 증가", cost: crewCost, y: 248)
+        for (index, uniform) in BoraUniform.allCases.enumerated() {
+            addBoraUniformOption(uniform, x: 34 + index * 98)
+        }
+        addShopLabel(
+            "월간 직원 외형 • 전용 픽셀 자산 준비 전 잠김",
+            x: 180,
+            y: 190,
+            size: 6,
+            color: PixelPalette.midIron,
+            name: "monthly_cosmetic_asset_locked"
+        )
         finishManagement(status: status)
     }
 
+    private func addBoraUniformOption(_ uniform: BoraUniform, x: Int) {
+        let unlocked = uniform.isUnlocked(by: premiumEntitlements)
+        let equipped = equippedBoraUniform == uniform
+        let name = "equip_bora_" + uniform.rawValue
+        let button = PixelArt.panel(size: CGSize(width: 88, height: 48), name: name)
+        button.position = CGPoint(x: x, y: 198)
+        button.zPosition = 2
+        button.name = unlocked ? name : "bora_uniform_locked"
+        shopLayer.addChild(button)
+        if unlocked {
+            addShopHitArea(name: name, position: CGPoint(x: x, y: 198), size: CGSize(width: 88, height: 48))
+        }
+        addShopLabel(uniform.nameKo, x: x + 44, y: 229, size: 7, color: unlocked ? PixelPalette.workWhite : PixelPalette.midIron, name: unlocked ? name : nil)
+        let state = equipped ? "장착 중" : (unlocked ? "선택" : "미보유")
+        addShopLabel(state, x: x + 44, y: 212, size: 7, color: equipped ? PixelPalette.recoveryGreen : PixelPalette.midIron, name: unlocked ? name : nil)
+    }
+
+    private func equipBoraUniform(_ uniform: BoraUniform) {
+        guard uniform.isUnlocked(by: premiumEntitlements) else {
+            openCrew(status: uniform.nameKo + " 상품을 먼저 보유해야 합니다")
+            return
+        }
+        equippedBoraUniform = uniform
+        applyCrewAppearance()
+        persist()
+        openCrew(status: uniform.nameKo + " 장착 • 전투 스프라이트와 공격 효과 변경")
+    }
+
+    private func openPremiumStore() {
+        beginManagement(.premium, title: "App Store 정비소", subtitle: "상품명과 가격은 App Store 현지 정보를 사용합니다")
+        let yPositions = [490, 436, 382, 328, 274, 220]
+        for (index, productID) in StoreProductID.allCases.enumerated() {
+            addStoreProductRow(productID, y: yPositions[index])
+        }
+        if onStoreRestore != nil, storefront.state.allowsRestore {
+            let restore = PixelArt.panel(size: CGSize(width: 126, height: 24), name: "store_restore")
+            restore.position = CGPoint(x: 34, y: 188)
+            restore.zPosition = 2
+            restore.name = "store_restore"
+            shopLayer.addChild(restore)
+            addShopHitArea(name: "store_restore", position: CGPoint(x: 34, y: 188), size: CGSize(width: 126, height: 24))
+            addShopLabel("구매 복원", x: 97, y: 200, size: 7, color: PixelPalette.lightTeal, name: "store_restore")
+        }
+        if storefront.state.needsRetry, onStoreRetry != nil {
+            let retry = PixelArt.panel(size: CGSize(width: 126, height: 24), name: "store_retry")
+            retry.position = CGPoint(x: 200, y: 188)
+            retry.zPosition = 2
+            retry.name = "store_retry"
+            shopLayer.addChild(retry)
+            addShopHitArea(name: "store_retry", position: CGPoint(x: 200, y: 188), size: CGSize(width: 126, height: 24))
+            addShopLabel("연결 다시 시도", x: 263, y: 200, size: 7, color: PixelPalette.warningAmber, name: "store_retry")
+        }
+        finishManagement(status: storefront.state.statusKo)
+    }
+
+    private func addStoreProductRow(_ productID: StoreProductID, y: Int) {
+        let display = storefront.products.first(where: { $0.id == productID })
+        let owned = !productID.expectedGrants.isDisjoint(with: premiumEntitlements.active)
+        let canPurchase = display != nil && storefront.state.allowsPurchase && !owned && onStorePurchase != nil
+        let name = "store_purchase_" + productID.rawValue
+        let row = PixelArt.panel(size: CGSize(width: 292, height: 48), name: "store_product_" + productID.rawValue)
+        row.position = CGPoint(x: 34, y: y)
+        row.zPosition = 2
+        shopLayer.addChild(row)
+        if canPurchase {
+            addShopHitArea(name: name, position: CGPoint(x: 34, y: y), size: CGSize(width: 292, height: 48))
+        }
+        addShopLabel(display?.displayName ?? productID.fallbackNameKo, x: 48, y: y + 32, size: 8, color: PixelPalette.workWhite, name: canPurchase ? name : nil, alignment: .left)
+        addShopLabel(productID.benefitKo, x: 48, y: y + 14, size: 6, color: PixelPalette.lightTeal, name: canPurchase ? name : nil, alignment: .left)
+        let action = owned ? "보유" : (display?.displayPrice ?? "가격 확인 필요")
+        addShopLabel(action, x: 312, y: y + 24, size: 7, color: owned ? PixelPalette.recoveryGreen : (canPurchase ? PixelPalette.warningAmber : PixelPalette.midIron), name: canPurchase ? name : nil, alignment: .right)
+    }
+
     private func openFacilities(status: String = "회수 대기 고철은 사라지지 않습니다") {
-        beginManagement(.facilities, title: "폐품장 시설", subtitle: "자동 생산 +\(passiveIncomeRate)/초 • 오프라인 최대 8시간")
+        beginManagement(
+            .facilities,
+            title: "폐품장 시설",
+            subtitle: "자동 생산 +\(passiveIncomeRate)/초 • 오프라인 최대 \(premiumEntitlements.offlineCapHours)시간"
+        )
         addShopHitArea(name: "operations_open", position: CGPoint(x: 214, y: 580), size: CGSize(width: 108, height: 28))
         addShopLabel("작업 관리 〉", x: 316, y: 596, size: 8, color: PixelPalette.warningAmber, name: "operations_open", alignment: .right)
         let collect = PixelArt.panel(size: CGSize(width: 292, height: 54), name: "collect_yard_income")
@@ -1622,54 +1782,115 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         addFacilityItem(.press, level: pressLevel, y: 385)
         addFacilityItem(.sorter, level: sorterLevel, y: 305)
         addFacilityItem(.warehouse, level: warehouseLevel, y: 225)
-        addShopLabel("무료 편성 경로 • " + nextFreeUnlockText, x: 180, y: 207, size: 7, color: PixelPalette.lightTeal, name: "formation_next_unlock")
+        let slotState = premiumEntitlements.contains(.workbenchSlot3) ? "작업대3 활성" : "작업대3 잠김"
+        let offlineState = premiumEntitlements.contains(.offlineCap16Hours) ? "16H 활성" : "16H 잠김"
+        let membershipState = premiumEntitlements.contains(.craftSpeed110) ? "멤버십 활성" : "멤버십 잠김"
+        addShopLabel(
+            slotState + " • " + offlineState + " • " + membershipState,
+            x: 180,
+            y: 207,
+            size: 8,
+            color: PixelPalette.lightIron,
+            name: "premium_access_status"
+        )
+        addShopLabel(
+            "무료 편성 경로 • " + nextFreeUnlockText,
+            x: 180,
+            y: 190,
+            size: 6,
+            color: PixelPalette.lightTeal,
+            name: "formation_next_unlock"
+        )
         finishManagement(status: status)
     }
 
     private func openOperations(status: String = "완료된 작업은 사라지지 않으며 직접 회수합니다") {
-        IdleOperationsEngine.observe(now: Date(), state: &idleOperations)
-        beginManagement(.facilities, title: "연구 · 제작 · 원정", subtitle: "무료 작업대 2칸 • 원정 슬롯 1칸 • 3분 이하 무료 완료")
         let now = Date()
-        addOperationRow(.research, y: 438, now: now)
-        addOperationRow(.craft, y: 342, now: now)
-        addOperationRow(.expedition, y: 246, now: now)
+        IdleOperationsEngine.observe(now: now, state: &idleOperations)
+        if premiumEntitlements.contains(.dailyTimeTicketPlus1) {
+            let previousTicket = dailyInstantFinish
+            dailyInstantFinish.refresh(for: now)
+            if previousTicket != dailyInstantFinish { persist() }
+        }
+        let speed = premiumEntitlements.contains(.craftSpeed110) ? "제작 1.10배" : "제작 기본 속도"
+        let hasDailyTicket = premiumEntitlements.contains(.dailyTimeTicketPlus1)
+        let ticketRemaining = dailyInstantFinish.remainingUses(
+            on: now,
+            entitled: hasDailyTicket
+        )
+        let ticketStatus = hasDailyTicket ? "일일권 \(ticketRemaining)/1" : "일일권 잠김"
+        beginManagement(
+            .operations,
+            title: "연구 · 제작 · 원정",
+            subtitle: "작업대 \(idleOperations.workbenchSlots)칸 • \(speed) • \(ticketStatus)"
+        )
+        addOperationRow(.research, y: 470, now: now)
+        addOperationRow(.craft, y: 398, now: now, occurrence: 0)
+        addOperationRow(.craft, y: 326, now: now, occurrence: 1, requiresThirdWorkbench: true)
+        addOperationRow(.expedition, y: 254, now: now)
         let wallet = "회로 " + String(idleOperations.circuits) + " • 합금 " + String(idleOperations.alloy)
-        addShopLabel(wallet, x: 50, y: 220, size: 8, color: PixelPalette.lightTeal, alignment: .left)
+        addShopLabel(wallet, x: 50, y: 232, size: 8, color: PixelPalette.lightTeal, alignment: .left)
         let effectiveStatus = idleOperations.clockSuspect
             ? "기기 시간이 역행해 완료 판정을 보류했습니다"
             : status
         finishManagement(status: effectiveStatus)
     }
 
-    private func addOperationRow(_ kind: IdleOperationKind, y: Int, now: Date) {
-        let row = PixelArt.panel(size: CGSize(width: 292, height: 78), name: "operation_" + kind.rawValue)
+    private func addOperationRow(
+        _ kind: IdleOperationKind,
+        y: Int,
+        now: Date,
+        occurrence: Int = 0,
+        requiresThirdWorkbench: Bool = false
+    ) {
+        let rowName = "operation_" + kind.rawValue + "_" + String(occurrence)
+        let row = PixelArt.panel(size: CGSize(width: 292, height: 66), name: rowName)
         row.position = CGPoint(x: 34, y: y)
         row.zPosition = 2
         shopLayer.addChild(row)
-        if let operation = idleOperations.active.first(where: { $0.kind == kind }) {
+        if requiresThirdWorkbench, idleOperations.workbenchSlots < 3 {
+            addShopLabel("제작 • 작업대 3번", x: 50, y: y + 43, size: 9, color: PixelPalette.midIron, alignment: .left)
+            addShopLabel("App Store 영구 슬롯 보유 시 개방", x: 50, y: y + 20, size: 7, color: PixelPalette.midIron, alignment: .left)
+            addShopLabel("잠김", x: 302, y: y + 32, size: 8, color: PixelPalette.midIron, alignment: .right)
+            return
+        }
+        let matchingOperations = idleOperations.active.filter { $0.kind == kind }
+        if occurrence < matchingOperations.count {
+            let operation = matchingOperations[occurrence]
             let remaining = IdleOperationsRules.remainingSeconds(operation, now: now)
-            addShopLabel(kind.nameKo + " • " + operation.title, x: 50, y: y + 54, size: 10, color: PixelPalette.workWhite, alignment: .left)
+            addShopLabel(kind.nameKo + " • " + operation.title, x: 50, y: y + 44, size: 9, color: PixelPalette.workWhite, alignment: .left)
             if remaining == 0 {
                 let name = "claim_operation_" + operation.id
-                addShopHitArea(name: name, position: CGPoint(x: 214, y: y + 8), size: CGSize(width: 96, height: 56))
-                addShopLabel("완료 • 회수", x: 302, y: y + 34, size: 9, color: PixelPalette.recoveryGreen, name: name, alignment: .right)
+                addShopHitArea(name: name, position: CGPoint(x: 214, y: y + 6), size: CGSize(width: 96, height: 52))
+                addShopLabel("완료 • 회수", x: 302, y: y + 32, size: 8, color: PixelPalette.recoveryGreen, name: name, alignment: .right)
             } else {
                 let minutes = remaining / 60
                 let seconds = remaining % 60
-                addShopLabel(String(format: "%02d:%02d 남음", minutes, seconds), x: 50, y: y + 24, size: 9, color: PixelPalette.lightTeal, alignment: .left)
+                addShopLabel(String(format: "%02d:%02d 남음", minutes, seconds), x: 50, y: y + 20, size: 8, color: PixelPalette.lightTeal, alignment: .left)
                 if IdleOperationsRules.canFinishFree(operation, now: now) {
                     let name = "free_finish_" + operation.id
-                    addShopHitArea(name: name, position: CGPoint(x: 214, y: y + 8), size: CGSize(width: 96, height: 56))
-                    addShopLabel("무료 완료", x: 302, y: y + 34, size: 9, color: PixelPalette.warningAmber, name: name, alignment: .right)
+                    addShopHitArea(name: name, position: CGPoint(x: 214, y: y + 6), size: CGSize(width: 96, height: 52))
+                    addShopLabel("무료 완료", x: 302, y: y + 32, size: 8, color: PixelPalette.warningAmber, name: name, alignment: .right)
+                } else if dailyInstantFinish.remainingUses(
+                    on: now,
+                    entitled: premiumEntitlements.contains(.dailyTimeTicketPlus1)
+                ) > 0 {
+                    let name = "daily_finish_" + operation.id
+                    addShopHitArea(name: name, position: CGPoint(x: 214, y: y + 6), size: CGSize(width: 96, height: 52))
+                    addShopLabel("일일 즉시완료", x: 302, y: y + 32, size: 7, color: PixelPalette.warningAmber, name: name, alignment: .right)
                 }
             }
         } else {
             let template = IdleOperationsRules.template(for: kind)
             let name = "start_" + kind.rawValue
-            addShopLabel(kind.nameKo + " • " + template.title, x: 50, y: y + 54, size: 10, color: PixelPalette.workWhite, name: name, alignment: .left)
-            addShopLabel("예상 " + formatOperationDuration(template.duration), x: 50, y: y + 24, size: 8, color: PixelPalette.lightTeal, name: name, alignment: .left)
-            addShopHitArea(name: name, position: CGPoint(x: 214, y: y + 8), size: CGSize(width: 96, height: 56))
-            addShopLabel("시작  〉", x: 302, y: y + 34, size: 9, color: PixelPalette.warningAmber, name: name, alignment: .right)
+            let duration = IdleOperationsRules.duration(
+                for: kind,
+                craftSpeedMultiplier: premiumEntitlements.craftSpeedMultiplier
+            )
+            addShopLabel(kind.nameKo + " • " + template.title, x: 50, y: y + 44, size: 9, color: PixelPalette.workWhite, name: name, alignment: .left)
+            addShopLabel("예상 " + formatOperationDuration(duration), x: 50, y: y + 20, size: 7, color: PixelPalette.lightTeal, name: name, alignment: .left)
+            addShopHitArea(name: name, position: CGPoint(x: 214, y: y + 6), size: CGSize(width: 96, height: 52))
+            addShopLabel("시작  〉", x: 302, y: y + 32, size: 8, color: PixelPalette.warningAmber, name: name, alignment: .right)
         }
     }
 
@@ -1680,7 +1901,12 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
     private func startIdleOperation(_ kind: IdleOperationKind) {
         do {
-            let operation = try IdleOperationsEngine.start(kind, now: Date(), state: &idleOperations)
+            let operation = try IdleOperationsEngine.start(
+                kind,
+                now: Date(),
+                craftSpeedMultiplier: premiumEntitlements.craftSpeedMultiplier,
+                state: &idleOperations
+            )
             persist()
             onLongOperationStarted?(operation)
             openOperations(status: operation.title + " 작업을 시작했습니다")
@@ -1700,6 +1926,24 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             openOperations(status: "3분 이하 작업을 무료로 완료했습니다")
         } catch {
             openOperations(status: "무료 완료 가능 시간이 아닙니다")
+        }
+    }
+
+    private func finishIdleOperationWithDailyTicket(id: String) {
+        do {
+            try IdleOperationsEngine.finishWithDailyTicket(
+                id: id,
+                now: Date(),
+                entitled: premiumEntitlements.contains(.dailyTimeTicketPlus1),
+                ticket: &dailyInstantFinish,
+                state: &idleOperations
+            )
+            persist()
+            openOperations(status: "오늘의 정비 멤버십 즉시완료권을 사용했습니다")
+        } catch IdleOperationError.dailyTicketAlreadyUsed {
+            openOperations(status: "오늘의 즉시완료권은 이미 사용했습니다")
+        } catch {
+            openOperations(status: "사용 가능한 정비 멤버십 즉시완료권이 없습니다")
         }
     }
 
@@ -1731,6 +1975,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func beginManagement(_ panelType: ManagementPanel, title: String, subtitle: String) {
+        activeManagementPanel = panelType
         shopLayer.removeAllChildren()
         shopLayer.isHidden = false
         let shade = SKSpriteNode(color: PixelPalette.ink.withAlphaComponent(0.84), size: Self.logicalSize)
@@ -1777,7 +2022,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private func finishManagement(status: String) {
         configureLabel(shopStatusLabel, size: 8, color: PixelPalette.workWhite, alignment: .center)
         shopStatusLabel.text = status
-        shopStatusLabel.position = CGPoint(x: 180, y: 184)
+        shopStatusLabel.position = CGPoint(x: 180, y: 174)
         shopStatusLabel.zPosition = 4
         shopLayer.addChild(shopStatusLabel)
     }
@@ -2007,6 +2252,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func closeShop() {
+        activeManagementPanel = nil
         shopLayer.isHidden = true
         shopLayer.removeAllChildren()
     }
@@ -2076,6 +2322,43 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             .rotate(toAngle: -0.10, duration: 0), .moveTo(x: 8, duration: 0), .wait(forDuration: 0.06),
             .rotate(toAngle: 0, duration: 0), .moveTo(x: 0, duration: 0)
         ]), withKey: "attack")
+    }
+
+    private func applyCrewAppearance() {
+        guard let crewSprite else { return }
+        switch equippedBoraUniform {
+        case .base:
+            crewSprite.color = .white
+            crewSprite.colorBlendFactor = 0
+        case .founder:
+            crewSprite.color = PixelPalette.workBlue
+            crewSprite.colorBlendFactor = 0.38
+        case .rust:
+            crewSprite.color = PixelPalette.rust
+            crewSprite.colorBlendFactor = 0.52
+        }
+    }
+
+    private func styleBoraPreview(_ sprite: SKSpriteNode, uniform: BoraUniform) {
+        switch uniform {
+        case .base:
+            sprite.color = .white
+            sprite.colorBlendFactor = 0
+        case .founder:
+            sprite.color = PixelPalette.workBlue
+            sprite.colorBlendFactor = 0.38
+        case .rust:
+            sprite.color = PixelPalette.rust
+            sprite.colorBlendFactor = 0.52
+        }
+    }
+
+    private var crewAttackColor: SKColor {
+        switch equippedBoraUniform {
+        case .base: PixelPalette.sparkOrange
+        case .founder: PixelPalette.workBlue
+        case .rust: PixelPalette.rust
+        }
     }
 
     private func playEnemyHit(_ enemy: ActiveEnemy) {
@@ -2336,6 +2619,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         save.pendingBossDismantleStage = pendingBossDismantleStage
         save.pendingBossBaseParts = pendingBossBaseParts
         save.idleOperations = idleOperations
+        save.dailyInstantFinish = dailyInstantFinish
+        save.equippedBoraUniform = equippedBoraUniform
         save.tutorialStep = tutorialStep
         save.combatTick = combatTick
         save.highestStage = max(save.highestStage, content.stages[stageIndex].number)

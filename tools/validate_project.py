@@ -345,6 +345,32 @@ def validate_ios_iap_catalog() -> int:
     require(all(identifier.startswith("com.bbdyno.starjunkyard.") for identifier in identifiers), "invalid IAP product prefix")
     allowed_types = {"non_consumable", "auto_renewable_subscription"}
     require(all(product["type"] in allowed_types for product in products), "unsupported launch IAP type")
+
+    storekit = load_json("StarJunkyard/StarJunkyard.storekit")
+    configured_products = storekit.get("products", [])
+    configured_subscriptions = [
+        subscription
+        for group in storekit.get("subscriptionGroups", [])
+        for subscription in group.get("subscriptions", [])
+    ]
+    configured_ids = {
+        product["productID"] for product in configured_products + configured_subscriptions
+    }
+    require(configured_ids == set(identifiers), "StoreKit Configuration product ids must match the iOS IAP catalog")
+    expected_non_consumables = {
+        product["id"] for product in products if product["type"] == "non_consumable"
+    }
+    actual_non_consumables = {
+        product["productID"] for product in configured_products if product.get("type") == "NonConsumable"
+    }
+    require(actual_non_consumables == expected_non_consumables, "StoreKit non-consumable types do not match the catalog")
+    expected_subscriptions = {
+        product["id"] for product in products if product["type"] == "auto_renewable_subscription"
+    }
+    actual_subscriptions = {
+        product["productID"] for product in configured_subscriptions if product.get("type") == "RecurringSubscription"
+    }
+    require(actual_subscriptions == expected_subscriptions, "StoreKit subscription types do not match the catalog")
     return len(products)
 
 

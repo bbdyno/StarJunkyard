@@ -34,6 +34,12 @@
       "referencePriceUSD": 7.99,
       "group": "maintenance_membership",
       "grants": ["craft_speed_1_10", "daily_time_ticket_plus_1", "monthly_crew_cosmetic"]
+    },
+    {
+      "id": "com.bbdyno.starjunkyard.season.2026.scrapfrontier",
+      "type": "non_consumable",
+      "referencePriceUSD": 9.99,
+      "grants": ["season_2026_scrapfrontier_premium"]
     }
   ]
 }

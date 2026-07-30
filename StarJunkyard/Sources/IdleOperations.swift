@@ -57,12 +57,41 @@ struct IdleOperationsState: Codable, Equatable, Sendable {
     }
 }
 
+struct DailyInstantFinishState: Codable, Equatable, Sendable {
+    var utcDayKey: String?
+    var consumedOperationIDs: [String]
+
+    static let empty = DailyInstantFinishState(utcDayKey: nil, consumedOperationIDs: [])
+
+    mutating func refresh(for date: Date) {
+        let key = Self.dayKey(for: date)
+        guard utcDayKey != key else { return }
+        utcDayKey = key
+        consumedOperationIDs = []
+    }
+
+    func remainingUses(on date: Date, entitled: Bool) -> Int {
+        guard entitled else { return 0 }
+        guard utcDayKey == Self.dayKey(for: date) else { return 1 }
+        return consumedOperationIDs.isEmpty ? 1 : 0
+    }
+
+    static func dayKey(for date: Date) -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let parts = calendar.dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
+    }
+}
+
 enum IdleOperationError: Error, Equatable {
     case slotFull
     case alreadyRunning
     case notComplete
     case freeFinishUnavailable
     case clockSuspect
+    case dailyTicketUnavailable
+    case dailyTicketAlreadyUsed
 }
 
 enum IdleOperationsRules {
@@ -104,6 +133,12 @@ enum IdleOperationsRules {
         let remaining = operation.completesAt.timeIntervalSince(now)
         return remaining > 0 && remaining <= freeFinishWindow
     }
+
+    static func duration(for kind: IdleOperationKind, craftSpeedMultiplier: Double = 1) -> TimeInterval {
+        let base = template(for: kind).duration
+        guard kind == .craft else { return base }
+        return base / max(1, craftSpeedMultiplier)
+    }
 }
 
 enum IdleOperationsEngine {
@@ -123,11 +158,14 @@ enum IdleOperationsEngine {
         _ kind: IdleOperationKind,
         now: Date,
         identifier: String = UUID().uuidString,
+        craftSpeedMultiplier: Double = 1,
         state: inout IdleOperationsState
     ) throws -> TimedIdleOperation {
         observe(now: now, state: &state)
         guard !state.clockSuspect else { throw IdleOperationError.clockSuspect }
-        guard !state.active.contains(where: { $0.kind == kind }) else { throw IdleOperationError.alreadyRunning }
+        if kind != .craft, state.active.contains(where: { $0.kind == kind }) {
+            throw IdleOperationError.alreadyRunning
+        }
         let usedSlots: Int
         let slotLimit: Int
         switch kind {
@@ -146,7 +184,9 @@ enum IdleOperationsEngine {
             recipeID: template.recipeID,
             title: template.title,
             startedAt: now,
-            completesAt: now.addingTimeInterval(template.duration),
+            completesAt: now.addingTimeInterval(
+                IdleOperationsRules.duration(for: kind, craftSpeedMultiplier: craftSpeedMultiplier)
+            ),
             reward: template.reward
         )
         state.active.append(operation)
@@ -159,6 +199,25 @@ enum IdleOperationsEngine {
         guard let index = state.active.firstIndex(where: { $0.id == id }),
               IdleOperationsRules.canFinishFree(state.active[index], now: now)
         else { throw IdleOperationError.freeFinishUnavailable }
+        state.active[index].completesAt = now
+    }
+
+    static func finishWithDailyTicket(
+        id: String,
+        now: Date,
+        entitled: Bool,
+        ticket: inout DailyInstantFinishState,
+        state: inout IdleOperationsState
+    ) throws {
+        observe(now: now, state: &state)
+        guard !state.clockSuspect else { throw IdleOperationError.clockSuspect }
+        guard entitled else { throw IdleOperationError.dailyTicketUnavailable }
+        guard let index = state.active.firstIndex(where: { $0.id == id }),
+              state.active[index].completesAt > now
+        else { throw IdleOperationError.notComplete }
+        ticket.refresh(for: now)
+        guard ticket.consumedOperationIDs.isEmpty else { throw IdleOperationError.dailyTicketAlreadyUsed }
+        ticket.consumedOperationIDs = [id]
         state.active[index].completesAt = now
     }
 

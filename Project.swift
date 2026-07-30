@@ -75,5 +75,18 @@ let project = Project(
             resources: ["content/**"],
             dependencies: [.target(name: "StarJunkyard")]
         )
-    ]
+    ],
+    schemes: [
+        .scheme(
+            name: "StarJunkyard",
+            shared: true,
+            buildAction: .buildAction(targets: ["StarJunkyard", "StarJunkyardTests"]),
+            testAction: .targets(["StarJunkyardTests"]),
+            runAction: .runAction(
+                executable: .executable("StarJunkyard"),
+                options: .options(storeKitConfigurationPath: "StarJunkyard/StarJunkyard.storekit")
+            )
+        )
+    ],
+    additionalFiles: ["StarJunkyard/StarJunkyard.storekit"]
 )

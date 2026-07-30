@@ -35,7 +35,7 @@ class ProjectContractTests(unittest.TestCase):
         self.assertIn("60 stages", summary)
         self.assertIn("3 golden fixtures", summary)
         self.assertIn("2 economy golden fixtures", summary)
-        self.assertIn("5 ethical iOS IAP products", summary)
+        self.assertIn("6 ethical iOS IAP products", summary)
 
     def test_release_accepts_only_verified_production_assets(self) -> None:
         summary = VALIDATOR.validate_project(release=True)
@@ -62,6 +62,9 @@ class ProjectContractTests(unittest.TestCase):
     def test_palette_has_exactly_sixteen_colors(self) -> None:
         colors = VALIDATOR.load_palette("art-source/palettes/common16.gpl")
         self.assertEqual(16, len(colors))
+
+    def test_storekit_configuration_matches_typed_catalog(self) -> None:
+        self.assertEqual(6, VALIDATOR.validate_ios_iap_catalog())
 
     def test_golden_states_match_reference_simulation(self) -> None:
         manifest = VALIDATOR.load_json("content/manifest.json")

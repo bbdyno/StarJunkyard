@@ -205,6 +205,8 @@ final class PixelSceneTests: XCTestCase {
         XCTAssertTrue(migrated.defeatedBossStages.isEmpty)
         XCTAssertTrue(migrated.unlockedModuleIDs.isEmpty)
         XCTAssertEqual(migrated.idleOperations.workbenchSlots, 2)
+        XCTAssertEqual(migrated.dailyInstantFinish, .empty)
+        XCTAssertEqual(migrated.equippedBoraUniform, .base)
     }
 
     func testSchemaTwoSaveMigratesYardDefaults() throws {
@@ -305,6 +307,228 @@ final class PixelSceneTests: XCTestCase {
         let offline = YardEconomy.offlineIncome(rate: 7, elapsed: 12 * 60 * 60)
         XCTAssertEqual(offline.seconds, 8 * 60 * 60)
         XCTAssertEqual(offline.amount, 201_600)
+
+        let paidOffline = YardEconomy.offlineIncome(
+            rate: 7,
+            elapsed: 20 * 60 * 60,
+            entitlements: EntitlementSnapshot(active: [.offlineCap16Hours])
+        )
+        XCTAssertEqual(paidOffline.seconds, 16 * 60 * 60)
+        XCTAssertEqual(paidOffline.amount, 403_200)
+    }
+
+    func testIAPCatalogMapsAllSixProductsAndGrants() throws {
+        let catalog = try IAPCatalog.load(bundle: Bundle(for: Self.self))
+        XCTAssertEqual(catalog.products.count, 6)
+        XCTAssertEqual(Set(catalog.products.map(\.id)), Set(StoreProductID.allCases))
+        XCTAssertEqual(catalog.product(.maintenanceMonthly).type, .autoRenewableSubscription)
+        XCTAssertEqual(
+            Set(catalog.product(.offline16Hours).grants),
+            [.offlineCap16Hours]
+        )
+        XCTAssertEqual(catalog.speedMultiplierHardCap, Decimal(string: "1.8"))
+        XCTAssertEqual(
+            Set(catalog.product(.scrapFrontierSeason2026).grants),
+            [.season2026ScrapFrontierPremium]
+        )
+    }
+
+    func testPremiumStoreUsesLoadedLocalizedPriceAndActualPurchaseNodes() {
+        var save = GameSave.newGame()
+        save.prologueSeen = true
+        let scene = CombatScene(content: sampleContent(), save: save, showPremiumStoreOnLaunch: true)
+        scene.onStorePurchase = { _ in }
+        scene.onStoreRestore = {}
+        let products = StoreProductID.allCases.map {
+            StoreProductDisplay(id: $0, displayName: "현지 상품 " + $0.rawValue, displayPrice: "₩12,000")
+        }
+        scene.updateStorefront(StorefrontSnapshot(state: .ready, entitlements: .none, products: products))
+        let view = SKView(frame: CGRect(origin: .zero, size: CombatScene.logicalSize))
+        scene.didMove(to: view)
+
+        XCTAssertNotNil(findNode(named: "store_product_" + StoreProductID.scrapFrontierSeason2026.rawValue, in: scene))
+        let purchaseName = "store_purchase_" + StoreProductID.scrapFrontierSeason2026.rawValue
+        let price = findNodes(named: purchaseName, in: scene)
+            .compactMap { $0 as? SKLabelNode }
+            .first(where: { $0.text == "₩12,000" })
+        XCTAssertNotNil(price)
+        XCTAssertNotNil(findNode(named: "store_restore", in: scene))
+    }
+
+    func testPremiumStoreDoesNotCreateFakePurchaseButtonsWithoutStoreProducts() {
+        var save = GameSave.newGame()
+        save.prologueSeen = true
+        let scene = CombatScene(content: sampleContent(), save: save, showPremiumStoreOnLaunch: true)
+        scene.onStorePurchase = { _ in XCTFail("Unavailable products must not be purchasable") }
+        scene.updateStorefront(.unavailable(entitlements: .none))
+        let view = SKView(frame: CGRect(origin: .zero, size: CombatScene.logicalSize))
+        scene.didMove(to: view)
+
+        XCTAssertNil(findNode(named: "store_purchase_" + StoreProductID.offline16Hours.rawValue, in: scene))
+        XCTAssertNotNil(findNode(named: "store_product_" + StoreProductID.offline16Hours.rawValue, in: scene))
+    }
+
+    func testStorefrontMessagesDistinguishPendingCancelAndFailure() {
+        XCTAssertTrue(StorePurchaseState.pendingApproval(.starterCrewKit).statusKo.contains("승인 대기"))
+        XCTAssertFalse(StorePurchaseState.pendingApproval(.starterCrewKit).allowsPurchase)
+        XCTAssertTrue(StorePurchaseState.cancelled.statusKo.contains("취소"))
+        XCTAssertTrue(StorePurchaseState.cancelled.allowsPurchase)
+        XCTAssertTrue(StorePurchaseState.offlineRetry(.purchase).statusKo.contains("연결 실패"))
+        XCTAssertTrue(StorePurchaseState.offlineRetry(.purchase).needsRetry)
+        XCTAssertTrue(StorePurchaseState.verificationFailed.statusKo.contains("지급하지 않았습니다"))
+    }
+
+    func testOwnedRustUniformChangesProductionBoraSpriteAndPersistsSelection() {
+        var save = GameSave.newGame()
+        save.prologueSeen = true
+        save.equippedBoraUniform = .rust
+        var persisted: GameSave?
+        let scene = CombatScene(
+            content: sampleContent(),
+            save: save,
+            premiumEntitlements: EntitlementSnapshot(active: [.boraRustUniform, .boraRustAttackFX])
+        )
+        scene.onSave = { persisted = $0 }
+        let view = SKView(frame: CGRect(origin: .zero, size: CombatScene.logicalSize))
+        scene.didMove(to: view)
+
+        let bora = findNode(named: "crew_bora_combat", in: scene) as? SKSpriteNode
+        XCTAssertNotNil(bora?.texture, "Uniform variants must reuse the production Bora pixel texture")
+        XCTAssertEqual(bora?.colorBlendFactor ?? 0, 0.52, accuracy: 0.001)
+        XCTAssertEqual(persisted?.equippedBoraUniform, .rust)
+    }
+
+    func testMissingMonthlyCosmeticAssetStaysExplicitlyLocked() {
+        var save = GameSave.newGame()
+        save.prologueSeen = true
+        let scene = CombatScene(
+            content: sampleContent(),
+            save: save,
+            premiumEntitlements: EntitlementSnapshot(active: [.monthlyCrewCosmetic]),
+            showCrewPanelOnLaunch: true
+        )
+        let view = SKView(frame: CGRect(origin: .zero, size: CombatScene.logicalSize))
+        scene.didMove(to: view)
+
+        let lock = findNode(named: "monthly_cosmetic_asset_locked", in: scene) as? SKLabelNode
+        XCTAssertEqual(lock?.text, "월간 직원 외형 • 전용 픽셀 자산 준비 전 잠김")
+        XCTAssertNil(findNode(named: "equip_bora_monthly", in: scene))
+    }
+
+    func testEntitlementExpiryKeepsRunningThirdWorkbenchOperationUnchanged() throws {
+        let now = Date(timeIntervalSince1970: 50_000)
+        var operations = IdleOperationsState.newGame(now: now)
+        operations.workbenchSlots = 3
+        _ = try IdleOperationsEngine.start(.research, now: now, identifier: "research", state: &operations)
+        _ = try IdleOperationsEngine.start(.craft, now: now, identifier: "craft-1", state: &operations)
+        _ = try IdleOperationsEngine.start(.craft, now: now, identifier: "craft-2", state: &operations)
+        let completions = operations.active.map(\.completesAt)
+        var save = GameSave.newGame(now: now)
+        save.prologueSeen = true
+        save.idleOperations = operations
+        var persisted: GameSave?
+        let scene = CombatScene(content: sampleContent(), save: save, premiumEntitlements: .none)
+        scene.onSave = { persisted = $0 }
+        let view = SKView(frame: CGRect(origin: .zero, size: CombatScene.logicalSize))
+        scene.didMove(to: view)
+
+        XCTAssertEqual(persisted?.idleOperations.workbenchSlots, 2)
+        XCTAssertEqual(persisted?.idleOperations.active.count, 3)
+        XCTAssertEqual(persisted?.idleOperations.active.map(\.completesAt), completions)
+    }
+
+    func testPurchaseLedgerIsIdempotentAndFinishesOnlyAfterPersistence() async throws {
+        let store = temporaryPurchaseLedgerStore()
+        let processor = PurchaseGrantProcessor(ledger: store)
+        let record = purchaseRecord(id: 101, product: .offline16Hours)
+        var finishCount = 0
+
+        let first = try await processor.persistThenFinish(record) {
+            XCTAssertEqual(try? store.load().records.map(\.transactionID), [101])
+            finishCount += 1
+        }
+        let duplicate = try await processor.persistThenFinish(record) {
+            XCTAssertEqual(try? store.load().records.count, 1)
+            finishCount += 1
+        }
+
+        XCTAssertEqual(first, .inserted)
+        XCTAssertEqual(duplicate, .unchanged)
+        XCTAssertEqual(finishCount, 2)
+        XCTAssertTrue(store.loadOrEmpty().entitlementSnapshot().contains(.offlineCap16Hours))
+    }
+
+    func testFailedLedgerWriteDoesNotFinishTransaction() async {
+        let unwritable = PurchaseLedgerStore(
+            directory: URL(fileURLWithPath: "/dev/null/purchase-ledger-test", isDirectory: true)
+        )
+        let processor = PurchaseGrantProcessor(ledger: unwritable)
+        var didFinish = false
+
+        do {
+            try await processor.persistThenFinish(purchaseRecord(id: 102, product: .offline16Hours)) {
+                didFinish = true
+            }
+            XCTFail("An unwritable ledger path must fail")
+        } catch {
+            XCTAssertFalse(didFinish)
+        }
+    }
+
+    func testRefundRevokesNonConsumableWithoutDeletingAuditRecord() throws {
+        let store = temporaryPurchaseLedgerStore()
+        let purchase = purchaseRecord(id: 202, product: .workbenchSlot3)
+        try store.record(purchase)
+        var refund = purchase
+        refund.revocationDate = Date(timeIntervalSince1970: 2_000)
+
+        XCTAssertEqual(try store.record(refund), .updated)
+        let snapshot = try store.load()
+        XCTAssertEqual(snapshot.records.count, 1)
+        XCTAssertTrue(snapshot.records[0].isRevoked)
+        XCTAssertFalse(snapshot.entitlementSnapshot().contains(.workbenchSlot3))
+    }
+
+    func testSubscriptionCancellationKeepsAccessUntilExpiration() throws {
+        let store = temporaryPurchaseLedgerStore()
+        let now = Date(timeIntervalSince1970: 10_000)
+        var subscription = purchaseRecord(id: 303, product: .maintenanceMonthly)
+        subscription.expirationDate = now.addingTimeInterval(3_600)
+        try store.record(subscription, now: now)
+
+        let ledger = try store.load()
+        XCTAssertTrue(ledger.entitlementSnapshot(at: now).contains(.craftSpeed110))
+        XCTAssertFalse(ledger.entitlementSnapshot(at: now.addingTimeInterval(3_601)).contains(.craftSpeed110))
+    }
+
+    func testPurchaseLedgerCloudMergePreservesUniqueTransactionIDs() throws {
+        let local = temporaryPurchaseLedgerStore()
+        let cloud = temporaryPurchaseLedgerStore()
+        try local.record(purchaseRecord(id: 401, product: .starterCrewKit))
+        try cloud.record(purchaseRecord(id: 402, product: .boraRustCosmetic))
+
+        let merged = try local.mergeCloudData(cloud.exportCloudData())
+        XCTAssertEqual(merged.records.map(\.transactionID), [401, 402])
+        XCTAssertTrue(merged.entitlementSnapshot().contains(.boraFounderUniform))
+        XCTAssertTrue(merged.entitlementSnapshot().contains(.boraRustUniform))
+    }
+
+    func testFacilitiesShowLockedPremiumAccessWithoutPurchaseButtons() {
+        var save = GameSave.newGame(now: Date())
+        save.prologueSeen = true
+        let scene = CombatScene(
+            content: sampleContent(),
+            save: save,
+            premiumEntitlements: .none,
+            showFacilityPanelOnLaunch: true
+        )
+        let view = SKView(frame: CGRect(origin: .zero, size: CombatScene.logicalSize))
+        scene.didMove(to: view)
+
+        let status = findNode(named: "premium_access_status", in: scene) as? SKLabelNode
+        XCTAssertEqual(status?.text, "작업대3 잠김 • 16H 잠김 • 멤버십 잠김")
+        XCTAssertNil(findNode(named: "buy_offline_16h", in: scene))
+        XCTAssertNil(findNode(named: "buy_maintenance_monthly", in: scene))
     }
 
     func testFacilityPanelShowsOfflineReportAndActionableRows() {
@@ -379,6 +603,24 @@ final class PixelSceneTests: XCTestCase {
         return GameSaveStore(directory: directory)
     }
 
+    private func temporaryPurchaseLedgerStore() -> PurchaseLedgerStore {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+        return PurchaseLedgerStore(directory: directory)
+    }
+
+    private func purchaseRecord(id: UInt64, product: StoreProductID) -> VerifiedPurchaseRecord {
+        VerifiedPurchaseRecord(
+            transactionID: id,
+            originalTransactionID: id,
+            productID: product,
+            purchaseDate: Date(timeIntervalSince1970: 1_000),
+            expirationDate: nil,
+            revocationDate: nil
+        )
+    }
+
     private func findButtons(in view: UIView) -> [UIButton] {
         let own = view as? UIButton
         return (own.map { [$0] } ?? []) + view.subviews.flatMap(findButtons)
@@ -391,6 +633,11 @@ final class PixelSceneTests: XCTestCase {
     private func findNode(named name: String, in node: SKNode) -> SKNode? {
         if node.name == name { return node }
         return node.children.lazy.compactMap { self.findNode(named: name, in: $0) }.first
+    }
+
+    private func findNodes(named name: String, in node: SKNode) -> [SKNode] {
+        let own = node.name == name ? [node] : []
+        return own + node.children.flatMap { findNodes(named: name, in: $0) }
     }
 
     private func assertIntegralPositions(_ node: SKNode, file: StaticString = #filePath, line: UInt = #line) {
