@@ -13,6 +13,8 @@ final class GameViewController: UIViewController {
     private var saveSelectionScene: SaveSelectionScene?
     private var settingsScene: PixelSettingsScene?
     private var purchaseController: StoreKitPurchaseController?
+    private var seasonScene: PixelSeasonScene?
+    private var seasonPremiumUnlocked = false
     private lazy var cloudSave = GameCenterCloudSave(presenter: self, store: saveStore)
     private lazy var feedback = IOSGameFeedbackService(settings: settingsStore)
     private lazy var operationNotifications = IOSIdleOperationNotificationScheduler()
@@ -74,6 +76,32 @@ final class GameViewController: UIViewController {
             captureSave.prologueSeen = true
             captureSave.tutorialStep = 4
             startGame(with: captureSave, showPremiumStoreOnLaunch: true)
+        } else if ProcessInfo.processInfo.arguments.contains("-capture-season") {
+            let catalog = SeasonContentLoader.loadCatalog()
+            let now = Date()
+            let captureDefinition = catalog.definition(at: now) ?? catalog.current
+            var captureSave = GameSave.newGame(now: now)
+            var progress = SeasonProgress.start(season: captureDefinition, at: now)
+            progress.totalXP = 2_650
+            progress.weeklyAwardedXP["\(captureDefinition.seasonID):w\(captureDefinition.weekIndex(at: now))"] = 1_240
+            let daily = SeasonEngine(catalog: catalog).dailyMissions(
+                for: captureDefinition,
+                dayIndex: captureDefinition.dayIndex(at: now)
+            )
+            for (index, mission) in daily.enumerated() {
+                progress.missionProgress[mission.instanceID] = index == 0
+                    ? mission.definition.target
+                    : max(1, mission.definition.target / (index + 2))
+            }
+            progress.claimedRewardKeys = ["\(captureDefinition.seasonID):free:1"]
+            captureSave.seasonProgress = progress
+            captureSave.credits = 1_350
+            captureSave.parts = 120
+            captureSave.prologueSeen = true
+            captureSave.tutorialStep = 4
+            try? saveStore.save(captureSave)
+            startGame(with: captureSave)
+            presentSeason(save: captureSave)
         } else if ProcessInfo.processInfo.arguments.contains("-capture-operations") {
             let expeditionStart = Date().addingTimeInterval(-31 * 60)
             var captureSave = GameSave.newGame(now: expeditionStart)
@@ -240,6 +268,7 @@ final class GameViewController: UIViewController {
         scene.applyViewport(PixelViewport(view: gameView))
         saveSelectionScene = scene
         settingsScene = nil
+        seasonScene = nil
         combatScene = nil
         gameView.accessibilityLabel = GameText.localized(.accessibilitySaveSelection)
         gameView.accessibilityCustomActions = []
@@ -256,6 +285,7 @@ final class GameViewController: UIViewController {
     ) {
         let initialEntitlements = purchaseController?.entitlements
             ?? purchaseLedgerStore.loadOrEmpty().entitlementSnapshot()
+        seasonPremiumUnlocked = initialEntitlements.contains(.season2026ScrapFrontierPremium)
         let scene = CombatScene(
             content: content,
             save: initialSave,
@@ -264,7 +294,8 @@ final class GameViewController: UIViewController {
             showOperationsPanelOnLaunch: showOperationsPanelOnLaunch,
             showPremiumStoreOnLaunch: showPremiumStoreOnLaunch,
             showCrewPanelOnLaunch: showCrewPanelOnLaunch,
-            settings: settingsStore.load()
+            settings: settingsStore.load(),
+            seasonPremiumUnlocked: seasonPremiumUnlocked
         )
         scene.applyViewport(PixelViewport(view: gameView))
         scene.onSave = { [weak self] save in try? self?.saveStore.save(save) }
@@ -276,6 +307,7 @@ final class GameViewController: UIViewController {
         scene.onLongOperationStarted = { [weak self] operation in
             self?.operationNotifications.operationStarted(operation)
         }
+        scene.onOpenSeason = { [weak self] in self?.presentSeason() }
         if purchaseController != nil {
             scene.onStorePurchase = { [weak self] productID in
                 Task { [weak self] in await self?.purchaseController?.purchase(productID) }
@@ -293,6 +325,7 @@ final class GameViewController: UIViewController {
         combatScene = scene
         saveSelectionScene = nil
         settingsScene = nil
+        seasonScene = nil
         configureCombatAccessibility()
         feedback.syncMusic()
         analytics.record(.combatStarted(stage: initialSave.highestStage))
@@ -372,10 +405,44 @@ final class GameViewController: UIViewController {
         guard let catalog = try? IAPCatalog.load() else { return }
         let controller = StoreKitPurchaseController(catalog: catalog, ledger: purchaseLedgerStore)
         controller.onUpdate = { [weak self] snapshot in
-            self?.combatScene?.updateStorefront(snapshot)
+            guard let self else { return }
+            self.combatScene?.updateStorefront(snapshot)
+            self.updateSeasonPremiumUnlocked(
+                snapshot.entitlements.contains(.season2026ScrapFrontierPremium)
+            )
         }
         purchaseController = controller
         controller.start()
+    }
+
+    func updateSeasonPremiumUnlocked(_ unlocked: Bool) {
+        seasonPremiumUnlocked = unlocked
+        combatScene?.updateSeasonPremiumUnlocked(unlocked)
+        seasonScene?.updatePremiumUnlocked(unlocked)
+    }
+
+    private func presentSeason(save suppliedSave: GameSave? = nil) {
+        guard let save = suppliedSave ?? saveStore.load() else { return }
+        let scene = PixelSeasonScene(
+            save: save,
+            premiumUnlocked: seasonPremiumUnlocked
+        )
+        scene.onSave = { [weak self] save in try? self?.saveStore.save(save) }
+        scene.onAccessibilitySummary = { [weak gameView] summary in
+            gameView?.accessibilityLabel = summary
+        }
+        scene.onClose = { [weak self] in self?.dismissSeason() }
+        scene.applyViewport(PixelViewport(view: gameView))
+        seasonScene = scene
+        saveSelectionScene = nil
+        gameView.accessibilityLabel = scene.accessibilitySummary
+        let duration = settingsStore.load().reduceMotion ? 0 : 0.16
+        gameView.presentScene(scene, transition: .fade(withDuration: duration))
+    }
+
+    private func dismissSeason() {
+        seasonScene = nil
+        startGame(with: saveStore.load() ?? .newGame())
     }
 
     deinit {

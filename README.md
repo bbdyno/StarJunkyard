@@ -13,6 +13,7 @@ iOS/iPadOS 전용 StarJunkyard 저장소다. 루트의 `Project.swift`가 Xcode 
 - [연구·제작·원정 작업 시스템](docs/IDLE_OPERATIONS.md)
 - [픽셀 설정 콘솔과 접근성](docs/PIXEL_SETTINGS_ACCESSIBILITY.md)
 - [StoreKit 2 거래·권한 구현](docs/STOREKIT_IMPLEMENTATION.md)
+- [8주 시즌 라이브옵스](docs/SEASON_LIVEOPS.md)
 
 ## 병렬 작업 상태와 공통 검증
 

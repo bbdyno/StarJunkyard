@@ -36,6 +36,7 @@ class ProjectContractTests(unittest.TestCase):
         self.assertIn("3 golden fixtures", summary)
         self.assertIn("2 economy golden fixtures", summary)
         self.assertIn("6 ethical iOS IAP products", summary)
+        self.assertIn("2 validated eight-week seasons", summary)
 
     def test_release_accepts_only_verified_production_assets(self) -> None:
         summary = VALIDATOR.validate_project(release=True)
@@ -116,6 +117,21 @@ class ProjectContractTests(unittest.TestCase):
         self.assertEqual(0, state["walletAfterLaunch"]["starCores"])
         self.assertTrue(all(value >= 0 for value in state["walletAfterLaunch"].values()))
         self.assertEqual(28_800, state["offlineSecondsApplied"])
+
+    def test_season_contract_rejects_payment_or_ad_missions(self) -> None:
+        for metric in ("purchase_product", "ad_watch"):
+            with self.subTest(metric=metric):
+                season = VALIDATOR.load_json("content/season-current.json")
+                season["dailyMissionPool"][0]["metric"] = metric
+                with self.assertRaisesRegex(VALIDATOR.ContractError, "non-gameplay mission"):
+                    VALIDATOR.validate_season_definition(season, "test season")
+
+    def test_season_contract_keeps_paid_track_non_power(self) -> None:
+        season = VALIDATOR.load_json("content/season-current.json")
+        season["rewardTiers"][0]["premium"]["kind"] = "currency"
+
+        with self.assertRaisesRegex(VALIDATOR.ContractError, "cosmetic or convenience-only"):
+            VALIDATOR.validate_season_definition(season, "test season")
 
 
 if __name__ == "__main__":

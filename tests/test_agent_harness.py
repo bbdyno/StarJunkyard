@@ -58,8 +58,8 @@ class AgentHarnessDefinitionTests(unittest.TestCase):
     def test_repository_definitions_are_valid_and_have_no_codex_branches(self) -> None:
         payload, tasks = HARNESS.load_definitions(ROOT / "agent-harness" / "tasks.json")
 
-        self.assertEqual(5, len(tasks))
-        self.assertEqual({21, 22, 25, 26, 27}, {task.issue for task in tasks.values()})
+        self.assertEqual(6, len(tasks))
+        self.assertEqual({21, 22, 25, 26, 27, 28}, {task.issue for task in tasks.values()})
         for task in tasks.values():
             self.assertTrue(task.branch.startswith("issue/"))
             self.assertNotIn("codex", task.branch.casefold())
