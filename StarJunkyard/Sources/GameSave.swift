@@ -1,7 +1,7 @@
 import Foundation
 
 struct GameSave: Codable, Equatable, Sendable {
-    static let currentSchemaVersion = 3
+    static let currentSchemaVersion = 4
     static let cloudSlotName = "sj_main_v1"
 
     var schemaVersion: Int = currentSchemaVersion
@@ -23,6 +23,9 @@ struct GameSave: Codable, Equatable, Sendable {
     var yardIncomeBank: Int
     var manualTapCount: Int
     var discoveredEnemyIDs: [String]
+    var storyChapter: Int
+    var shelterRepairParts: Int
+    var prologueSeen: Bool
     var tutorialStep: Int
     var combatTick: Int
     var highestStage: Int
@@ -48,6 +51,9 @@ struct GameSave: Codable, Equatable, Sendable {
             yardIncomeBank: 0,
             manualTapCount: 0,
             discoveredEnemyIDs: [],
+            storyChapter: 0,
+            shelterRepairParts: 0,
+            prologueSeen: false,
             tutorialStep: 0,
             combatTick: 0,
             highestStage: 1,
@@ -56,13 +62,15 @@ struct GameSave: Codable, Equatable, Sendable {
     }
 
     var summary: String {
-        "S\(highestStage)  •  고철 \(credits)  •  회수 대기 \(yardIncomeBank)  •  보라 LV.\(crewLevel)"
+        let goal = ShelterRecovery.goal(deliveredParts: shelterRepairParts, highestStage: highestStage)
+        return "S\(highestStage)  •  \(goal.title) \(goal.current)/\(goal.required)  •  고철 \(credits)"
     }
 
     private enum CodingKeys: String, CodingKey {
         case schemaVersion, revision, updatedAt, stageIndex, waveIndex, enemyHP, enemyHPs
         case credits, parts, cutterLevel, droneLevel, magnetLevel, crewLevel
         case pressLevel, sorterLevel, warehouseLevel, yardIncomeBank, manualTapCount, discoveredEnemyIDs
+        case storyChapter, shelterRepairParts, prologueSeen
         case tutorialStep, combatTick, highestStage, cloudBackupEnabled
     }
 
@@ -86,6 +94,9 @@ struct GameSave: Codable, Equatable, Sendable {
         yardIncomeBank: Int,
         manualTapCount: Int,
         discoveredEnemyIDs: [String],
+        storyChapter: Int,
+        shelterRepairParts: Int,
+        prologueSeen: Bool,
         tutorialStep: Int,
         combatTick: Int,
         highestStage: Int,
@@ -110,6 +121,9 @@ struct GameSave: Codable, Equatable, Sendable {
         self.yardIncomeBank = yardIncomeBank
         self.manualTapCount = manualTapCount
         self.discoveredEnemyIDs = discoveredEnemyIDs
+        self.storyChapter = storyChapter
+        self.shelterRepairParts = shelterRepairParts
+        self.prologueSeen = prologueSeen
         self.tutorialStep = tutorialStep
         self.combatTick = combatTick
         self.highestStage = highestStage
@@ -137,6 +151,9 @@ struct GameSave: Codable, Equatable, Sendable {
         yardIncomeBank = try values.decodeIfPresent(Int.self, forKey: .yardIncomeBank) ?? 0
         manualTapCount = try values.decodeIfPresent(Int.self, forKey: .manualTapCount) ?? 0
         discoveredEnemyIDs = try values.decodeIfPresent([String].self, forKey: .discoveredEnemyIDs) ?? []
+        storyChapter = try values.decodeIfPresent(Int.self, forKey: .storyChapter) ?? 0
+        shelterRepairParts = try values.decodeIfPresent(Int.self, forKey: .shelterRepairParts) ?? 0
+        prologueSeen = try values.decodeIfPresent(Bool.self, forKey: .prologueSeen) ?? false
         tutorialStep = try values.decode(Int.self, forKey: .tutorialStep)
         combatTick = try values.decode(Int.self, forKey: .combatTick)
         highestStage = try values.decode(Int.self, forKey: .highestStage)

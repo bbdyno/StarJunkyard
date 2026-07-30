@@ -51,6 +51,11 @@ final class PixelSceneTests: XCTestCase {
         XCTAssertNotNil(findNode(named: "records_open", in: scene))
         XCTAssertNotNil(findNode(named: "manual_salvage_1", in: scene))
         XCTAssertNotNil(findNode(named: "tutorial_panel", in: scene))
+        XCTAssertNotNil(findNode(named: "story_goal", in: scene))
+        XCTAssertNotNil(findNode(named: "story_panel", in: scene))
+        XCTAssertNotNil(findNode(named: "story_continue", in: scene))
+        XCTAssertNotNil(findNode(named: "shelter_reactor", in: scene))
+        XCTAssertNotNil(findNode(named: "shelter_reactor_lamp_1", in: scene))
         XCTAssertNil(findNode(named: "mechanic_mo_debug", in: scene))
         assertIntegralPositions(scene)
     }
@@ -127,13 +132,16 @@ final class PixelSceneTests: XCTestCase {
             """.utf8
         )
         let migrated = try temporarySaveStore().decodeCloudData(data)
-        XCTAssertEqual(migrated.schemaVersion, 3)
+        XCTAssertEqual(migrated.schemaVersion, 4)
         XCTAssertEqual(migrated.enemyHPs, [41])
         XCTAssertEqual(migrated.crewLevel, 1)
         XCTAssertEqual(migrated.pressLevel, 1)
         XCTAssertEqual(migrated.sorterLevel, 0)
         XCTAssertEqual(migrated.yardIncomeBank, 0)
         XCTAssertTrue(migrated.discoveredEnemyIDs.isEmpty)
+        XCTAssertEqual(migrated.storyChapter, 0)
+        XCTAssertEqual(migrated.shelterRepairParts, 0)
+        XCTAssertFalse(migrated.prologueSeen)
     }
 
     func testSchemaTwoSaveMigratesYardDefaults() throws {
@@ -143,10 +151,46 @@ final class PixelSceneTests: XCTestCase {
             """.utf8
         )
         let migrated = try temporarySaveStore().decodeCloudData(data)
-        XCTAssertEqual(migrated.schemaVersion, 3)
+        XCTAssertEqual(migrated.schemaVersion, 4)
         XCTAssertEqual(migrated.pressLevel, 1)
         XCTAssertEqual(migrated.warehouseLevel, 0)
         XCTAssertEqual(migrated.manualTapCount, 0)
+    }
+
+    func testShelterRecoveryDefinesReadableProgression() {
+        XCTAssertEqual(ShelterRecovery.deliveredComponents(enemyClass: "normal"), 1)
+        XCTAssertEqual(ShelterRecovery.deliveredComponents(enemyClass: "elite"), 3)
+        XCTAssertEqual(ShelterRecovery.deliveredComponents(enemyClass: "boss"), 6)
+        XCTAssertEqual(ShelterRecovery.milestone(for: 2), 0)
+        XCTAssertEqual(ShelterRecovery.milestone(for: 3), 1)
+        XCTAssertEqual(ShelterRecovery.milestone(for: 7), 2)
+        XCTAssertEqual(ShelterRecovery.milestone(for: 12), 3)
+
+        let firstGoal = ShelterRecovery.goal(deliveredParts: 1, highestStage: 1)
+        XCTAssertEqual(firstGoal.title, "비상 조명 복구")
+        XCTAssertEqual(firstGoal.current, 1)
+        XCTAssertEqual(firstGoal.required, 3)
+        let bossGoal = ShelterRecovery.goal(deliveredParts: 12, highestStage: 4)
+        XCTAssertEqual(bossGoal.title, "S10 압착왕 코어 회수")
+        XCTAssertEqual(bossGoal.current, 4)
+        XCTAssertEqual(bossGoal.required, 10)
+    }
+
+    func testRecoveredShelterPersistsStoryStateAndSkipsPrologue() {
+        var save = GameSave.newGame()
+        save.shelterRepairParts = 7
+        save.storyChapter = 0
+        save.prologueSeen = true
+        var persisted: GameSave?
+        let scene = CombatScene(content: sampleContent(), save: save)
+        scene.onSave = { persisted = $0 }
+        let view = SKView(frame: CGRect(origin: .zero, size: CombatScene.logicalSize))
+        scene.didMove(to: view)
+
+        XCTAssertNil(findNode(named: "story_panel", in: scene))
+        XCTAssertNotNil(findNode(named: "story_goal", in: scene))
+        XCTAssertEqual(persisted?.shelterRepairParts, 7)
+        XCTAssertTrue(persisted?.prologueSeen == true)
     }
 
     func testYardEconomyBalancesManualAutomationAndOfflineCap() {

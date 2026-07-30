@@ -37,7 +37,9 @@ final class GameViewController: UIViewController {
         gameView.accessibilityTraits = [.allowsDirectInteraction, .updatesFrequently]
         gameView.accessibilityLabel = "저장 선택 화면. 계속하기, 새 게임, Game Center 불러오기를 선택할 수 있습니다."
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("-capture-facility") {
+        if ProcessInfo.processInfo.arguments.contains("-capture-story") {
+            startGame(with: .newGame())
+        } else if ProcessInfo.processInfo.arguments.contains("-capture-facility") {
             var captureSave = GameSave.newGame(now: Date().addingTimeInterval(-15 * 60))
             captureSave.stageIndex = 3
             captureSave.credits = 650
@@ -46,12 +48,15 @@ final class GameViewController: UIViewController {
             captureSave.pressLevel = 3
             captureSave.sorterLevel = 1
             captureSave.discoveredEnemyIDs = ["can_bug", "umbrella_crab", "fan_bat", "fridge_boar"]
+            captureSave.prologueSeen = true
             captureSave.tutorialStep = 4
             startGame(with: captureSave, showFacilityPanelOnLaunch: true)
         } else if ProcessInfo.processInfo.arguments.contains("-capture-combat") {
             var captureSave = GameSave.newGame()
             captureSave.stageIndex = 3
             captureSave.credits = 500
+            captureSave.shelterRepairParts = 7
+            captureSave.prologueSeen = true
             captureSave.tutorialStep = 4
             startGame(with: captureSave)
         } else {
