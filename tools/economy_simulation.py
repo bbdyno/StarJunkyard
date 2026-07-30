@@ -14,7 +14,7 @@ CURRENCIES = ("credits", "parts", "circuits", "alloy", "starCores")
 
 
 def _content() -> dict[str, Any]:
-    return json.loads((ROOT / "content" / "r1_vertical_slice.json").read_text(encoding="utf-8"))
+    return json.loads((ROOT / "content" / "world_r1_r6.json").read_text(encoding="utf-8"))
 
 
 def empty_wallet() -> dict[str, int]:
@@ -58,7 +58,7 @@ def simulate(fixture_input: dict[str, Any], content: dict[str, Any] | None = Non
     content = content or _content()
     stages = content["stages"]
     stage_by_number = {stage["number"]: stage for stage in stages}
-    region_end = content["slice"]["stageEnd"]
+    region_end = content["economy"]["launch"]["requiredStage"]
     wallet = empty_wallet()
     active_seconds = fixture_input["activeSeconds"]
     elapsed = 0

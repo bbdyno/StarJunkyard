@@ -1,14 +1,14 @@
 {
-  "schemaVersion": 1,
-  "contentVersion": "0.2.0",
-  "buildLabel": "r1-s60-economy",
+  "schemaVersion": 2,
+  "contentVersion": "0.3.0",
+  "buildLabel": "r1-r2-production-world-contract",
   "logicalViewport": {
     "width": 360,
     "height": 800,
     "orientation": "portrait"
   },
   "contentFiles": [
-    "content/r1_vertical_slice.json"
+    "content/world_r1_r6.json"
   ],
   "seasonFiles": {
     "current": "content/season-current.json",
@@ -22,6 +22,14 @@
   "economyGoldenFiles": [
     "golden/economy/first_30_minutes.json",
     "golden/economy/first_day.json"
+  ],
+  "regionEconomyGoldenFiles": [
+    "golden/economy/regions/r01.json",
+    "golden/economy/regions/r02.json",
+    "golden/economy/regions/r03.json",
+    "golden/economy/regions/r04.json",
+    "golden/economy/regions/r05.json",
+    "golden/economy/regions/r06.json"
   ],
   "assetManifest": "art-export/asset-manifest.json",
   "palette": "art-source/palettes/common16.gpl"

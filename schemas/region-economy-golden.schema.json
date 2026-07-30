@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://starjunkyard.local/schemas/region-economy-golden.schema.json",
+  "title": "StarJunkyard per-region economy Golden fixture",
+  "type": "object",
+  "required": ["schemaVersion", "fixtureId", "contentVersion", "regionId", "expectedState", "expectedDigest"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "fixtureId": {"type": "string", "minLength": 1},
+    "contentVersion": {"type": "string"},
+    "regionId": {"type": "string", "pattern": "^r0[1-6]$"},
+    "expectedState": {
+      "type": "object",
+      "required": ["regionId", "stageRange", "oneClearBattleWallet", "firstClearWallet", "expectedClearSeconds", "bossTimeLimitsMs", "uniqueEnemyCount", "productionAssetCount", "primaryDropId"]
+    },
+    "expectedDigest": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

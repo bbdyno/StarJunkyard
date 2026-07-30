@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "fixtureId": "combat_stage_001_base",
-  "contentVersion": "0.2.0",
+  "contentVersion": "0.3.0",
   "input": {
     "stage": 1,
     "seed": "42",
@@ -16,19 +16,24 @@
       "criticalDamagePpm": 1700000
     },
     "actions": [
-      {"tick": 80, "type": "overclock", "durationTicks": 160, "attackSpeedPpm": 1600000}
+      {
+        "tick": 80,
+        "type": "overclock",
+        "durationTicks": 160,
+        "attackSpeedPpm": 1600000
+      }
     ]
   },
   "expectedState": {
     "stage": 1,
-    "ticksElapsed": 439,
+    "ticksElapsed": 463,
     "enemyIndex": 8,
     "enemyHp": 0,
     "credits": 80,
     "parts": 24,
     "cleared": true,
-    "rngState": "13514241262775908841",
+    "rngState": "2706198914851145416",
     "rngStream": "54"
   },
-  "expectedDigest": "01e793b3e5cd2fc7527cdf2451bfe1db77d70378de05a337f31bb2eaea119615"
+  "expectedDigest": "200d6e7d16253a341a58423dc741eea32296d0ccbe23f1fdee680f6dd0b5c821"
 }

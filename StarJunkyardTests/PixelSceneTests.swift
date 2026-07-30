@@ -16,9 +16,9 @@ final class PixelSceneTests: XCTestCase {
     func testSharedVerticalSliceDecodes() {
         let bundle = Bundle(for: Self.self)
         let content = ContentLoader.loadVerticalSlice(bundle: bundle)
-        XCTAssertEqual(content.contentVersion, "0.2.0")
-        XCTAssertEqual(content.stages.map(\.number), Array(1...60))
-        XCTAssertEqual(content.enemies.count, 6)
+        XCTAssertEqual(content.contentVersion, "0.3.0")
+        XCTAssertEqual(content.stages.map(\.number), Array(1...120))
+        XCTAssertEqual(content.enemies.count, 16)
         XCTAssertEqual(content.enemies.last(where: { $0.id == "fridge_boar" })?.nameKo, "냉장고멧돼지")
         XCTAssertEqual(content.economy?.offline.efficiencyPpm, 700_000)
         XCTAssertEqual(content.stages[59].encounterClass, .regionBoss)

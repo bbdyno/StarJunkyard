@@ -102,6 +102,16 @@ final class GameViewController: UIViewController {
             try? saveStore.save(captureSave)
             startGame(with: captureSave)
             presentSeason(save: captureSave)
+        } else if ProcessInfo.processInfo.arguments.contains("-capture-r2") {
+            var captureSave = GameSave.newGame()
+            captureSave.stageIndex = 60
+            captureSave.highestStage = 61
+            captureSave.credits = 8_500
+            captureSave.parts = 540
+            captureSave.shelterRepairParts = 30
+            captureSave.prologueSeen = true
+            captureSave.tutorialStep = 4
+            startGame(with: captureSave)
         } else if ProcessInfo.processInfo.arguments.contains("-capture-operations") {
             let expeditionStart = Date().addingTimeInterval(-31 * 60)
             var captureSave = GameSave.newGame(now: expeditionStart)

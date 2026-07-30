@@ -2,6 +2,10 @@
   "schemaVersion": 1,
   "logicalViewport": [360, 800],
   "paletteId": "common16",
+  "paletteFiles": {
+    "common16": "art-source/palettes/common16.gpl",
+    "r02_mall12": "art-source/palettes/r02_mall12.gpl"
+  },
   "assets": [
     {"id": "actor_mo_base", "kind": "actor", "canvas": [48, 64], "pivot": [24, 58], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/sprites/actor_mo_base.png", "sha256": "8ccf15b73840b6255a71937b19099f27911c9fa02c51af1e91330581ad681cb2"},
     {"id": "crew_bora_base", "kind": "actor", "canvas": [48, 64], "pivot": [24, 58], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/sprites/crew_bora_base.png", "sha256": "e9cf43cb440eccc1bc34c85502f91636b10dbfb68157430fffc7494c856cf746"},
@@ -13,7 +17,18 @@
     {"id": "enemy_fridge_boar", "kind": "enemy_wide", "canvas": [64, 48], "pivot": [32, 42], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/sprites/enemy_fridge_boar.png", "sha256": "614c8b01f416cf509b52fbdc91783053731b72acc9ddc62577d7dbbfe1bd91fd"},
     {"id": "elite_vending_knight", "kind": "enemy_large", "canvas": [64, 64], "pivot": [32, 58], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/sprites/elite_vending_knight.png", "sha256": "d424bee5549bea23ea221fe95d222253d319db511816cf9a8688cc22f1f96877"},
     {"id": "boss_cancrab_king", "kind": "boss", "canvas": [128, 96], "pivot": [64, 90], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/sprites/boss_cancrab_king.png", "sha256": "39750d42513e2c9ef1163696cf0e4fed07b0fccae34510821f835a43d1e6f858"},
-    {"id": "background_r01_back_alley", "kind": "background", "canvas": [360, 572], "pivot": [0, 572], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/sprites/background_r01_back_alley.png", "sha256": "d5680068033c5895b16b16511d1d931d41e07cbcc8e396851d3449bbdbb4eaca"}
+    {"id": "elite_tire_matador", "kind": "enemy_large", "canvas": [64, 64], "pivot": [32, 62], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/sprites/elite_tire_matador.png", "sha256": "f22f2e14f61d511894202e63b47f008c5c285f8b8b683dcfe3e817a9a3fded3e"},
+    {"id": "boss_alley_devourer", "kind": "boss", "canvas": [144, 96], "pivot": [72, 90], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/sprites/boss_alley_devourer.png", "sha256": "3f0a5c0e48a5e1ebe272ae00d9fe54b277596e931d9e7ae658c9b70621033d4e"},
+    {"id": "background_r01_back_alley", "kind": "background", "canvas": [360, 572], "pivot": [0, 572], "scalePolicy": "integer_nearest", "status": "production_ready", "file": "art-export/production/sprites/background_r01_back_alley.png", "sha256": "d5680068033c5895b16b16511d1d931d41e07cbcc8e396851d3449bbdbb4eaca"},
+    {"id": "enemy_cart_deer", "kind": "enemy_medium", "canvas": [48, 48], "pivot": [24, 46], "scalePolicy": "integer_nearest", "status": "production_ready", "paletteId": "r02_mall12", "file": "art-export/production/sprites/enemy_cart_deer.png", "sha256": "2ae7b245ba46aacebb057452e6be34dcc0e3a7fd9824da0393330d00ea43dad5"},
+    {"id": "enemy_mannequin_octopus", "kind": "enemy_medium", "canvas": [48, 48], "pivot": [24, 46], "scalePolicy": "integer_nearest", "status": "production_ready", "paletteId": "r02_mall12", "file": "art-export/production/sprites/enemy_mannequin_octopus.png", "sha256": "cb50482fc921ed969ac58ba8cf7e77d72a382b73e59b365bbf5d5f30a3662922"},
+    {"id": "enemy_kiosk_turtle", "kind": "enemy_medium", "canvas": [48, 48], "pivot": [24, 46], "scalePolicy": "integer_nearest", "status": "production_ready", "paletteId": "r02_mall12", "file": "art-export/production/sprites/enemy_kiosk_turtle.png", "sha256": "e75931f99b55112f620061d1f1c93a18513010faf7d994a1171cfbd3d325e4f3"},
+    {"id": "enemy_vacuum_snail", "kind": "enemy_medium", "canvas": [48, 48], "pivot": [24, 46], "scalePolicy": "integer_nearest", "status": "production_ready", "paletteId": "r02_mall12", "file": "art-export/production/sprites/enemy_vacuum_snail.png", "sha256": "0a7bd1b7d9bb4b0614599362754306078f616649f561919a82a4023c66061b81"},
+    {"id": "elite_escalator_centipede", "kind": "enemy_wide", "canvas": [64, 48], "pivot": [32, 46], "scalePolicy": "integer_nearest", "status": "production_ready", "paletteId": "r02_mall12", "file": "art-export/production/sprites/elite_escalator_centipede.png", "sha256": "6fe25c7f26b9a2e473b5dba3265eb70aa88340001e21eccca8a185801ba5e0ef"},
+    {"id": "elite_shutter_peacock", "kind": "enemy_large", "canvas": [64, 64], "pivot": [32, 62], "scalePolicy": "integer_nearest", "status": "production_ready", "paletteId": "r02_mall12", "file": "art-export/production/sprites/elite_shutter_peacock.png", "sha256": "4cc8cd5f09cb633f92343297fd25bbb6399d40dd30dc3843b241d5d2cfad2237"},
+    {"id": "boss_billboard_hydra", "kind": "boss", "canvas": [128, 112], "pivot": [64, 108], "scalePolicy": "integer_nearest", "status": "production_ready", "paletteId": "r02_mall12", "file": "art-export/production/sprites/boss_billboard_hydra.png", "sha256": "72425d717a9cceeb90185981a2dc29a8765f0dcfa86ff70a0b6b2e0c78e56858"},
+    {"id": "boss_empty_throne", "kind": "boss", "canvas": [160, 144], "pivot": [80, 140], "scalePolicy": "integer_nearest", "status": "production_ready", "paletteId": "r02_mall12", "file": "art-export/production/sprites/boss_empty_throne.png", "sha256": "df7392162896eb987acd3ff33f58584c867c9040ca2858fcb482a4a3c5d10bc8"},
+    {"id": "background_r02_closed_megamall", "kind": "background", "canvas": [360, 572], "pivot": [0, 572], "scalePolicy": "integer_nearest", "status": "production_ready", "paletteId": "r02_mall12", "file": "art-export/production/sprites/background_r02_closed_megamall.png", "sha256": "87facf6ab9b0281a2c7e905a74a59aed4e06b8193bed9adf4170ca533b28a794"}
   ],
   "animationProfiles": {
     "actor_mo_base": {"mode": "integer_step", "idleFrames": 4, "attackFrames": 4, "attackFps": 10},

@@ -3,30 +3,57 @@
   "$id": "https://starjunkyard.local/schemas/content.schema.json",
   "title": "StarJunkyard content contract",
   "type": "object",
-  "required": ["schemaVersion", "contentVersion", "slice", "player", "drones", "enemies", "stages", "economy"],
+  "required": ["schemaVersion", "contentVersion", "slice", "player", "drones", "regions", "enemies", "stages", "economy"],
   "additionalProperties": false,
   "properties": {
-    "schemaVersion": {"const": 1},
+    "schemaVersion": {"const": 2},
     "contentVersion": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
     "slice": {
       "type": "object",
-      "required": ["id", "regionId", "stageStart", "stageEnd"],
+      "required": ["id", "regionId", "stageStart", "stageEnd", "productionStageEnd"],
       "additionalProperties": false,
       "properties": {
         "id": {"type": "string"},
         "regionId": {"type": "string"},
         "stageStart": {"type": "integer", "minimum": 1},
-        "stageEnd": {"type": "integer", "minimum": 1}
+        "stageEnd": {"const": 360},
+        "productionStageEnd": {"type": "integer", "minimum": 60, "maximum": 360}
       }
     },
     "player": {"$ref": "#/$defs/player"},
     "drones": {"type": "array", "items": {"$ref": "#/$defs/drone"}, "minItems": 1},
+    "regions": {"type": "array", "items": {"$ref": "#/$defs/region"}, "minItems": 6, "maxItems": 6},
     "enemies": {"type": "array", "items": {"$ref": "#/$defs/enemy"}, "minItems": 1},
     "stages": {"type": "array", "items": {"$ref": "#/$defs/stage"}, "minItems": 1},
     "economy": {"$ref": "#/$defs/economy"}
   },
   "$defs": {
     "positivePpm": {"type": "integer", "minimum": 1, "maximum": 1000000000},
+    "region": {
+      "type": "object",
+      "required": ["id", "number", "nameKo", "stageStart", "stageEnd", "themeKo", "musicKo", "palette", "backgroundSpriteId", "primaryDropId", "baseFormKo", "arrivalStoryKo", "completionStoryKo", "nextRegionId", "enemyIds", "eliteIds", "midBossId", "regionBossId"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^r0[1-6]$"},
+        "number": {"type": "integer", "minimum": 1, "maximum": 6},
+        "nameKo": {"type": "string", "minLength": 1},
+        "stageStart": {"type": "integer", "minimum": 1, "maximum": 360},
+        "stageEnd": {"type": "integer", "minimum": 1, "maximum": 360},
+        "themeKo": {"type": "string", "minLength": 1},
+        "musicKo": {"type": "string", "minLength": 1},
+        "palette": {"type": "array", "items": {"type": "string", "pattern": "^#[A-F0-9]{6}$"}, "minItems": 4, "maxItems": 4},
+        "backgroundSpriteId": {"type": ["string", "null"]},
+        "primaryDropId": {"type": "string", "minLength": 1},
+        "baseFormKo": {"type": "string", "minLength": 1},
+        "arrivalStoryKo": {"type": "string", "minLength": 1},
+        "completionStoryKo": {"type": "string", "minLength": 1},
+        "nextRegionId": {"type": ["string", "null"]},
+        "enemyIds": {"type": "array", "items": {"type": "string"}, "minItems": 4, "maxItems": 4, "uniqueItems": true},
+        "eliteIds": {"type": "array", "items": {"type": "string"}, "minItems": 2, "maxItems": 2, "uniqueItems": true},
+        "midBossId": {"type": "string"},
+        "regionBossId": {"type": "string"}
+      }
+    },
     "player": {
       "type": "object",
       "required": ["id", "baseDamage", "attackIntervalMs", "criticalChancePpm", "criticalDamagePpm", "spriteId"],
@@ -56,23 +83,35 @@
     },
     "enemy": {
       "type": "object",
-      "required": ["id", "nameKo", "class", "hpMultiplierPpm", "weakness", "spriteId"],
+      "required": ["id", "nameKo", "class", "regionId", "hpMultiplierPpm", "weakness", "secondaryWeaknesses", "behaviorId", "behaviorKo", "breakSequenceKo", "spriteId", "assetStatus"],
       "additionalProperties": false,
       "properties": {
         "id": {"type": "string"},
         "nameKo": {"type": "string"},
         "class": {"enum": ["normal", "elite", "boss"]},
+        "regionId": {"type": "string", "pattern": "^r0[1-6]$"},
         "hpMultiplierPpm": {"$ref": "#/$defs/positivePpm"},
         "weakness": {"enum": ["cut", "impact", "heat", "electric", "cooling"]},
-        "spriteId": {"type": "string"}
+        "secondaryWeaknesses": {"type": "array", "items": {"enum": ["cut", "impact", "heat", "electric", "cooling"]}, "uniqueItems": true},
+        "behaviorId": {"type": "string", "minLength": 1},
+        "behaviorKo": {"type": "string", "minLength": 1},
+        "breakSequenceKo": {"type": "string", "minLength": 1},
+        "spriteId": {"type": ["string", "null"]},
+        "assetStatus": {"enum": ["production_ready", "contract_only"]},
+        "bossRole": {"enum": ["mid", "region"]},
+        "timeLimitMs": {"type": "integer", "minimum": 10000, "maximum": 75000}
       }
     },
     "stage": {
       "type": "object",
-      "required": ["number", "baseHp", "baseReward", "wave", "rewardMultiplierPpm", "encounterClass", "expectedClearSeconds", "firstClearReward"],
+      "required": ["number", "regionId", "localStage", "landmarkId", "baseHp", "baseReward", "wave", "rewardMultiplierPpm", "encounterClass", "expectedClearSeconds", "firstClearReward"],
       "additionalProperties": false,
       "properties": {
         "number": {"type": "integer", "minimum": 1},
+        "regionId": {"type": "string", "pattern": "^r0[1-6]$"},
+        "localStage": {"type": "integer", "minimum": 1, "maximum": 60},
+        "landmarkId": {"type": "string", "minLength": 1},
+        "storyBeatId": {"type": "string", "minLength": 1},
         "baseHp": {"type": "integer", "minimum": 1},
         "baseReward": {"type": "integer", "minimum": 1},
         "wave": {"type": "array", "items": {"type": "string"}, "minItems": 1, "maxItems": 8},

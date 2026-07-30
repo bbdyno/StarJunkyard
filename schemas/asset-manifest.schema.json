@@ -3,12 +3,21 @@
   "$id": "https://starjunkyard.local/schemas/asset-manifest.schema.json",
   "title": "StarJunkyard pixel asset manifest",
   "type": "object",
-  "required": ["schemaVersion", "logicalViewport", "paletteId", "assets"],
+  "required": ["schemaVersion", "logicalViewport", "paletteId", "paletteFiles", "assets", "animationProfiles"],
   "additionalProperties": false,
   "properties": {
     "schemaVersion": {"const": 1},
     "logicalViewport": {"const": [360, 800]},
     "paletteId": {"const": "common16"},
+    "paletteFiles": {
+      "type": "object",
+      "required": ["common16", "r02_mall12"],
+      "additionalProperties": {"type": "string"},
+      "properties": {
+        "common16": {"type": "string"},
+        "r02_mall12": {"type": "string"}
+      }
+    },
     "assets": {
       "type": "array",
       "items": {
@@ -17,14 +26,26 @@
         "additionalProperties": false,
         "properties": {
           "id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
-          "kind": {"enum": ["actor", "drone", "enemy_small", "enemy_medium", "enemy_large", "boss", "background", "facility", "ui", "fx"]},
+          "kind": {"enum": ["actor", "drone", "enemy_small", "enemy_medium", "enemy_large", "enemy_wide", "boss", "background", "facility", "ui", "fx"]},
           "canvas": {"type": "array", "items": {"type": "integer", "minimum": 1}, "minItems": 2, "maxItems": 2},
           "pivot": {"type": "array", "items": {"type": "integer", "minimum": 0}, "minItems": 2, "maxItems": 2},
           "scalePolicy": {"const": "integer_nearest"},
           "status": {"enum": ["planned", "placeholder", "production_ready"]},
+          "paletteId": {"enum": ["common16", "r02_mall12"]},
           "file": {"type": "string"},
           "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
         }
+      }
+    },
+    "animationProfiles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["mode"],
+        "properties": {
+          "mode": {"const": "integer_step"}
+        },
+        "additionalProperties": {"type": "integer", "minimum": 1}
       }
     }
   }

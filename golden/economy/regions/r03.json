@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "economy_r03_one_clear",
+  "contentVersion": "0.3.0",
+  "regionId": "r03",
+  "expectedState": {
+    "regionId": "r03",
+    "stageRange": [
+      121,
+      180
+    ],
+    "oneClearBattleWallet": {
+      "credits": 48519536889,
+      "parts": 1386,
+      "circuits": 0,
+      "alloy": 0,
+      "starCores": 0
+    },
+    "firstClearWallet": {
+      "credits": 0,
+      "parts": 0,
+      "circuits": 282,
+      "alloy": 114,
+      "starCores": 3
+    },
+    "expectedClearSeconds": 1827,
+    "bossTimeLimitsMs": {
+      "130": 45000,
+      "140": 45000,
+      "150": 45000,
+      "160": 45000,
+      "170": 45000,
+      "180": 60000
+    },
+    "uniqueEnemyCount": 8,
+    "productionAssetCount": 0,
+    "primaryDropId": "alloy_recipe"
+  },
+  "expectedDigest": "edf7f618f26258f3dc9b26d4eea067e6bf59168153f6e0507ccc5abaa049a327"
+}
