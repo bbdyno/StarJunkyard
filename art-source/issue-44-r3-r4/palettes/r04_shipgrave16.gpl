@@ -1,0 +1,20 @@
+GIMP Palette
+Name: StarJunkyard R04 Ship Grave 16
+Columns: 8
+# Strict R4 ship-grave palette; includes the four world contract anchors.
+ 18  20  28	Outline Ink
+ 13  43  69	Region Deep Ocean
+ 15  64  91	Hull Navy
+ 23 107 135	Region Ocean Blue
+ 31 128 146	Pressure Blue
+ 53 167 160	Region Salvage Teal
+106 202 184	Foam Mint
+242 240 233	Work White
+ 70  45  51	Dark Coral Rust
+145  69  68	Hull Coral Rust
+240 113 103	Region Coral
+246 167 133	Light Coral
+ 50  58  70	Hull Shadow
+ 91 107 119	Wet Iron
+151 165 170	Light Iron
+209 190 142	Ship Brass
