@@ -115,7 +115,7 @@
       "issue": 26,
       "title": "StoreKit 거래 원장과 실제 유료 권한 연결",
       "branch": "issue/26-storekit-ledger",
-      "baseRef": "b62c750df9f382bbf56fe9dbafef73047b53a86f",
+      "baseRef": "a469c5c401a03b36eca0d91af6020b564ed95e0e",
       "worktreeHint": "../StarJunkyard-worktrees/issue-26",
       "ownedPaths": [
         "agent-harness/tasks.json",
