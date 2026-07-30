@@ -4,35 +4,81 @@
   "issue": 44,
   "sourceContract": {
     "path": "issue-38/content/world_r1_r6.json",
-    "sha256": "f533f3e6b1a7468631e55e49c8d6c61cf14b4a42422cff02c2f6ae6ccc1acada"
+    "sha256": "f8922a8ce4d98d01f19477a38b7bb3291c52b20914576a4231067e635818338a"
   },
   "regions": [
     {
       "id": "r03",
       "nameKo": "막차 없는 지하철",
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r03_subway16.gpl",
-      "paletteAnchors": ["#111D33", "#E4572E", "#F3A712", "#7B8794"],
+      "paletteAnchors": [
+        "#111D33",
+        "#E4572E",
+        "#F3A712",
+        "#7B8794"
+      ],
       "eliteStageAllocation": [
-        {"localStage": 5, "entityId": "turnstile_hound"},
-        {"localStage": 15, "entityId": "switchgear_mantis"},
-        {"localStage": 25, "entityId": "turnstile_hound"},
-        {"localStage": 35, "entityId": "switchgear_mantis"},
-        {"localStage": 45, "entityId": "turnstile_hound"},
-        {"localStage": 55, "entityId": "switchgear_mantis"}
+        {
+          "localStage": 5,
+          "entityId": "turnstile_hound"
+        },
+        {
+          "localStage": 15,
+          "entityId": "route_map_spider"
+        },
+        {
+          "localStage": 25,
+          "entityId": "turnstile_hound"
+        },
+        {
+          "localStage": 35,
+          "entityId": "route_map_spider"
+        },
+        {
+          "localStage": 45,
+          "entityId": "turnstile_hound"
+        },
+        {
+          "localStage": 55,
+          "entityId": "route_map_spider"
+        }
       ]
     },
     {
       "id": "r04",
       "nameKo": "침몰선 묘지",
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r04_shipgrave16.gpl",
-      "paletteAnchors": ["#0D2B45", "#176B87", "#35A7A0", "#F07167"],
+      "paletteAnchors": [
+        "#0D2B45",
+        "#176B87",
+        "#35A7A0",
+        "#F07167"
+      ],
       "eliteStageAllocation": [
-        {"localStage": 5, "entityId": "crane_octopus"},
-        {"localStage": 15, "entityId": "diving_bell_manta"},
-        {"localStage": 25, "entityId": "crane_octopus"},
-        {"localStage": 35, "entityId": "diving_bell_manta"},
-        {"localStage": 45, "entityId": "crane_octopus"},
-        {"localStage": 55, "entityId": "diving_bell_manta"}
+        {
+          "localStage": 5,
+          "entityId": "crane_octopus"
+        },
+        {
+          "localStage": 15,
+          "entityId": "buoy_lighthouse_knight"
+        },
+        {
+          "localStage": 25,
+          "entityId": "crane_octopus"
+        },
+        {
+          "localStage": 35,
+          "entityId": "buoy_lighthouse_knight"
+        },
+        {
+          "localStage": 45,
+          "entityId": "crane_octopus"
+        },
+        {
+          "localStage": 55,
+          "entityId": "buoy_lighthouse_knight"
+        }
       ]
     }
   ],
@@ -50,14 +96,30 @@
       "weakness": "impact",
       "secondaryWeaknesses": [],
       "breakSequenceKo": "표 귀 펀칭→몸통 분리",
-      "canvas": [32, 32],
-      "pivot": [16, 28],
+      "canvas": [
+        32,
+        32
+      ],
+      "pivot": [
+        16,
+        28
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r03_subway16.gpl",
       "scalePolicy": "integer_nearest",
-      "status": "planned",
+      "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/enemy_r03_ticket_mouse.png",
+      "imagegenCallArtifacts": ["exec-3091bb55-3829-41eb-b6db-1753d6d574b0.png"],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/enemy_r03_ticket_mouse.png",
-      "file": "art-export/issue-44-r3-r4/production/enemy_r03_ticket_mouse.png"
+      "file": "art-export/issue-44-r3-r4/production/enemy_r03_ticket_mouse.png",
+      "sourceSha256": "de30157d9465f0f08b881c46857409a9fe936bfa294ea08d29fde5d4061a0e13",
+      "sha256": "62f82df58d1d2431fc9c8d2daa9ce16332c3f6db9434332087c5f4d52b0cab16",
+      "verified": {
+        "binaryAlpha": true,
+        "transparentCorners": true,
+        "strictPalette": true,
+        "greenFringePixels": 0
+      },
+      "transparentSha256": "6010ce81ae97015bb95e31d1cf9888926b41e2e3b06f9e4177088d45a162acc3"
     },
     {
       "id": "enemy_r03_fluorescent_snake",
@@ -72,14 +134,30 @@
       "weakness": "impact",
       "secondaryWeaknesses": [],
       "breakSequenceKo": "형광관 1개→안정기 머리",
-      "canvas": [64, 48],
-      "pivot": [32, 42],
+      "canvas": [
+        64,
+        48
+      ],
+      "pivot": [
+        32,
+        42
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r03_subway16.gpl",
       "scalePolicy": "integer_nearest",
-      "status": "planned",
+      "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/enemy_r03_fluorescent_snake.png",
+      "imagegenCallArtifacts": ["exec-69438fda-7525-4566-b095-d20894721c90.png"],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/enemy_r03_fluorescent_snake.png",
-      "file": "art-export/issue-44-r3-r4/production/enemy_r03_fluorescent_snake.png"
+      "file": "art-export/issue-44-r3-r4/production/enemy_r03_fluorescent_snake.png",
+      "sourceSha256": "f735bf8f93409af5b528ce1f85b947f42da777ddc2913d920a39dd4f0b79b945",
+      "sha256": "25baa0836a29f3bcbc7566cf9937c494bd531e13402be6e7e82f5110a7a765a2",
+      "verified": {
+        "binaryAlpha": true,
+        "transparentCorners": true,
+        "strictPalette": true,
+        "greenFringePixels": 0
+      },
+      "transparentSha256": "256f293a4918716a5ef5c64464420107c170b85275bc8072a7e7f41d8b05a86a"
     },
     {
       "id": "enemy_r03_seat_armor",
@@ -94,14 +172,30 @@
       "weakness": "cut",
       "secondaryWeaknesses": [],
       "breakSequenceKo": "등받이→방석→프레임",
-      "canvas": [48, 48],
-      "pivot": [24, 42],
+      "canvas": [
+        48,
+        48
+      ],
+      "pivot": [
+        24,
+        42
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r03_subway16.gpl",
       "scalePolicy": "integer_nearest",
-      "status": "planned",
+      "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/enemy_r03_seat_armor.png",
+      "imagegenCallArtifacts": ["exec-82991eb1-750a-49d4-93a4-f7cb46ce8466.png"],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/enemy_r03_seat_armor.png",
-      "file": "art-export/issue-44-r3-r4/production/enemy_r03_seat_armor.png"
+      "file": "art-export/issue-44-r3-r4/production/enemy_r03_seat_armor.png",
+      "sourceSha256": "82410fda8b68a74d8cabdf6efe43fa9b01acb6a697553902895688d412fb39fd",
+      "sha256": "fb16821a0391df77902ecb1444e01850da109786356bbe5ccc0abdc36a262eb3",
+      "verified": {
+        "binaryAlpha": true,
+        "transparentCorners": true,
+        "strictPalette": true,
+        "greenFringePixels": 0
+      },
+      "transparentSha256": "51027911c7b30be9b5241a9d54beac0f568696fa78e14316216dc97674ca0451"
     },
     {
       "id": "enemy_r03_vent_jellyfish",
@@ -116,14 +210,30 @@
       "weakness": "electric",
       "secondaryWeaknesses": [],
       "breakSequenceKo": "덕트 촉수→팬 코어",
-      "canvas": [48, 48],
-      "pivot": [24, 42],
+      "canvas": [
+        48,
+        48
+      ],
+      "pivot": [
+        24,
+        42
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r03_subway16.gpl",
       "scalePolicy": "integer_nearest",
-      "status": "planned",
+      "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/enemy_r03_vent_jellyfish.png",
+      "imagegenCallArtifacts": ["exec-7436638a-633f-49ce-a9ae-baa94919c92c.png"],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/enemy_r03_vent_jellyfish.png",
-      "file": "art-export/issue-44-r3-r4/production/enemy_r03_vent_jellyfish.png"
+      "file": "art-export/issue-44-r3-r4/production/enemy_r03_vent_jellyfish.png",
+      "sourceSha256": "91b5269c27fd4ba3c8440aad407fd5a7f6cefd74c9b5de777cc711be38250ca4",
+      "sha256": "9414c8417a8549650e1cef3bbfe0c6552b3f3e20191e9fa381a8aed6989e3c19",
+      "verified": {
+        "binaryAlpha": true,
+        "transparentCorners": true,
+        "strictPalette": true,
+        "greenFringePixels": 0
+      },
+      "transparentSha256": "326893c7736d44f02bfe7adab35915bd5b8ee19fcf31bdfd6a048c7e8aca2610"
     },
     {
       "id": "elite_r03_turnstile_hound",
@@ -138,37 +248,68 @@
       "weakness": "electric",
       "secondaryWeaknesses": [],
       "breakSequenceKo": "녹색→황색→적색 머리",
-      "canvas": [64, 64],
-      "pivot": [32, 58],
+      "canvas": [
+        64,
+        64
+      ],
+      "pivot": [
+        32,
+        58
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r03_subway16.gpl",
       "scalePolicy": "integer_nearest",
-      "status": "planned",
+      "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/elite_r03_turnstile_hound.png",
+      "imagegenCallArtifacts": ["exec-cb9f1576-edeb-46ec-9e7f-cca0188645a5.png"],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/elite_r03_turnstile_hound.png",
-      "file": "art-export/issue-44-r3-r4/production/elite_r03_turnstile_hound.png"
+      "file": "art-export/issue-44-r3-r4/production/elite_r03_turnstile_hound.png",
+      "sourceSha256": "c534aad66e8367073449750f87fd52a810089e56f532cc5f10fce3be1bdfc62a",
+      "sha256": "3024ff3c56ea7f0aa60b3c9919a08c6281a775255b5e1a1a50d0a8fe032ca827",
+      "verified": {
+        "binaryAlpha": true,
+        "transparentCorners": true,
+        "strictPalette": true,
+        "greenFringePixels": 0
+      },
+      "transparentSha256": "a684386b1055d1478f1a37e845c8574e07e5351a304858558fdfcc0ee181c263"
     },
     {
-      "id": "elite_r03_switchgear_mantis",
+      "id": "elite_r03_route_map_spider",
       "regionId": "r03",
-      "entityId": "switchgear_mantis",
-      "nameKo": "분기기사마귀",
-      "nameEn": "Switchgear Mantis",
+      "entityId": "route_map_spider",
+      "nameKo": "노선도거미",
+      "nameEn": "Route-Map Spider",
       "class": "elite",
       "kind": "enemy_large",
-      "behaviorId": "switch_track_charge",
-      "behaviorKo": "점등한 분기 선로를 따라 낫팔 돌진",
-      "weakness": "heat",
+      "behaviorId": "reroute_web",
+      "behaviorKo": "노선도 실로 공격 경로 전환",
+      "weakness": "cut",
       "secondaryWeaknesses": [],
-      "breakSequenceKo": "분기등→전철기 낫팔→릴레이 코어",
-      "extension": "1.0 콘텐츠 확장: R3 두 번째 엘리트",
-      "canvas": [64, 64],
-      "pivot": [32, 58],
+      "breakSequenceKo": "환승점 3개→노선 실→중앙 역명판",
+      "canvas": [
+        64,
+        64
+      ],
+      "pivot": [
+        32,
+        58
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r03_subway16.gpl",
       "scalePolicy": "integer_nearest",
-      "status": "planned",
-      "sourceFile": "art-source/issue-44-r3-r4/originals/elite_r03_switchgear_mantis.png",
-      "transparentFile": "art-source/issue-44-r3-r4/transparent/elite_r03_switchgear_mantis.png",
-      "file": "art-export/issue-44-r3-r4/production/elite_r03_switchgear_mantis.png"
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-44-r3-r4/originals/elite_r03_route_map_spider.png",
+      "imagegenCallArtifacts": ["exec-2a3759a5-93f9-4f0f-895f-74ca377d3b98.png"],
+      "transparentFile": "art-source/issue-44-r3-r4/transparent/elite_r03_route_map_spider.png",
+      "file": "art-export/issue-44-r3-r4/production/elite_r03_route_map_spider.png",
+      "sourceSha256": "62e1786b35f94ac549148f128c9f094f5ff408684c96c13cc36c7532d5db5cb3",
+      "sha256": "bc8049c78300d6d7fad4b1c8f702877521e678f5c1698a3e3b100a9f320c47b3",
+      "verified": {
+        "binaryAlpha": true,
+        "transparentCorners": true,
+        "strictPalette": true,
+        "greenFringePixels": 0
+      },
+      "transparentSha256": "daad2f79f680ec505c51f4f90878844520fa151920712550f26b01ee84887a26"
     },
     {
       "id": "boss_r03_last_train_engineer",
@@ -181,16 +322,37 @@
       "behaviorId": "rail_signal_charge",
       "behaviorKo": "선로 돌진과 신호 변경",
       "weakness": "cooling",
-      "secondaryWeaknesses": ["impact"],
+      "secondaryWeaknesses": [
+        "impact"
+      ],
       "breakSequenceKo": "녹→황→적 타이밍 뒤 차륜 인양",
-      "canvas": [128, 96],
-      "pivot": [64, 90],
+      "canvas": [
+        128,
+        96
+      ],
+      "pivot": [
+        64,
+        90
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r03_subway16.gpl",
       "scalePolicy": "integer_nearest",
-      "status": "planned",
+      "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/boss_r03_last_train_engineer.png",
+      "imagegenCallArtifacts": [
+        "exec-9adb8cf9-54ee-4e07-b3ef-9eb5f7aba9db.png",
+        "exec-68447ba5-b97e-4e40-b7c5-e5e939473362.png"
+      ],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/boss_r03_last_train_engineer.png",
-      "file": "art-export/issue-44-r3-r4/production/boss_r03_last_train_engineer.png"
+      "file": "art-export/issue-44-r3-r4/production/boss_r03_last_train_engineer.png",
+      "sourceSha256": "4de27bc66fbe98304b6a988ade77bac7b5dd1fd542dfb5829277c482ed9ffba7",
+      "sha256": "e31a0c5350799cda70398b4f2160ed40fcfa7fb84105ade904cb6e874a3b31a7",
+      "verified": {
+        "binaryAlpha": true,
+        "transparentCorners": true,
+        "strictPalette": true,
+        "greenFringePixels": 0
+      },
+      "transparentSha256": "7c99f0e9eabc1b8ae8e5992b905c670aa74489c71431b12ca900c1f3569b35d0"
     },
     {
       "id": "boss_r03_turnstile_cerberus",
@@ -205,14 +367,30 @@
       "weakness": "electric",
       "secondaryWeaknesses": [],
       "breakSequenceKo": "올바른 표를 세 게이트에 순서 배치",
-      "canvas": [144, 112],
-      "pivot": [72, 106],
+      "canvas": [
+        144,
+        112
+      ],
+      "pivot": [
+        72,
+        106
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r03_subway16.gpl",
       "scalePolicy": "integer_nearest",
-      "status": "planned",
+      "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/boss_r03_turnstile_cerberus.png",
+      "imagegenCallArtifacts": ["exec-41f59f5e-55f1-4734-a2d6-58b7a8792fb8.png"],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/boss_r03_turnstile_cerberus.png",
-      "file": "art-export/issue-44-r3-r4/production/boss_r03_turnstile_cerberus.png"
+      "file": "art-export/issue-44-r3-r4/production/boss_r03_turnstile_cerberus.png",
+      "sourceSha256": "c8dce7c23b26fd82a00d42bd6b1c56193c5fcad161d73d4351a1c8ed685c3863",
+      "sha256": "fe4c3bf49c6e69e5220e11b904f09db60b33b5311bf5cb85401d6427a8fd6b17",
+      "verified": {
+        "binaryAlpha": true,
+        "transparentCorners": true,
+        "strictPalette": true,
+        "greenFringePixels": 0
+      },
+      "transparentSha256": "9fed1b3acf006ae06325875d9caa3bd5834659082b75d570b05b9f6adecb135a"
     },
     {
       "id": "background_r03_last_train_subway",
@@ -227,13 +405,28 @@
       "weakness": "none",
       "secondaryWeaknesses": [],
       "breakSequenceKo": "해당 없음",
-      "canvas": [360, 572],
-      "pivot": [0, 572],
+      "canvas": [
+        360,
+        572
+      ],
+      "pivot": [
+        0,
+        572
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r03_subway16.gpl",
       "scalePolicy": "integer_nearest",
-      "status": "planned",
+      "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/background_r03_last_train_subway.png",
-      "file": "art-export/issue-44-r3-r4/production/background_r03_last_train_subway.png"
+      "imagegenCallArtifacts": ["exec-1a286533-ff36-4651-8f15-4d73e89beda4.png"],
+      "file": "art-export/issue-44-r3-r4/production/background_r03_last_train_subway.png",
+      "sourceSha256": "c14d80a78312a34a8967c85cd9cfef5da69609e35e1573b8377d650a4624a0bf",
+      "sha256": "190bd41ef63c2160364adb58d2d75e00c84d4deb63fe6a9d7e969ca4c11040d2",
+      "verified": {
+        "binaryAlpha": true,
+        "transparentCorners": false,
+        "strictPalette": true,
+        "greenFringePixels": 0
+      }
     },
     {
       "id": "enemy_r04_anchor_crab",
@@ -248,8 +441,14 @@
       "weakness": "impact",
       "secondaryWeaknesses": [],
       "breakSequenceKo": "닻 팔→체인→부표 코어",
-      "canvas": [48, 48],
-      "pivot": [24, 42],
+      "canvas": [
+        48,
+        48
+      ],
+      "pivot": [
+        24,
+        42
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r04_shipgrave16.gpl",
       "scalePolicy": "integer_nearest",
       "status": "planned",
@@ -270,8 +469,14 @@
       "weakness": "cut",
       "secondaryWeaknesses": [],
       "breakSequenceKo": "외부 환→밸브→몸통",
-      "canvas": [48, 48],
-      "pivot": [24, 42],
+      "canvas": [
+        48,
+        48
+      ],
+      "pivot": [
+        24,
+        42
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r04_shipgrave16.gpl",
       "scalePolicy": "integer_nearest",
       "status": "planned",
@@ -292,8 +497,14 @@
       "weakness": "electric",
       "secondaryWeaknesses": [],
       "breakSequenceKo": "전구→케이블→배터리",
-      "canvas": [48, 48],
-      "pivot": [24, 42],
+      "canvas": [
+        48,
+        48
+      ],
+      "pivot": [
+        24,
+        42
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r04_shipgrave16.gpl",
       "scalePolicy": "integer_nearest",
       "status": "planned",
@@ -314,8 +525,14 @@
       "weakness": "heat",
       "secondaryWeaknesses": [],
       "breakSequenceKo": "문짝→상자→소라 코어",
-      "canvas": [64, 48],
-      "pivot": [32, 42],
+      "canvas": [
+        64,
+        48
+      ],
+      "pivot": [
+        32,
+        42
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r04_shipgrave16.gpl",
       "scalePolicy": "integer_nearest",
       "status": "planned",
@@ -336,8 +553,14 @@
       "weakness": "cut",
       "secondaryWeaknesses": [],
       "breakSequenceKo": "표시 암→균형추→회전축",
-      "canvas": [64, 64],
-      "pivot": [32, 58],
+      "canvas": [
+        64,
+        64
+      ],
+      "pivot": [
+        32,
+        58
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r04_shipgrave16.gpl",
       "scalePolicy": "integer_nearest",
       "status": "planned",
@@ -346,27 +569,32 @@
       "file": "art-export/issue-44-r3-r4/production/elite_r04_crane_octopus.png"
     },
     {
-      "id": "elite_r04_diving_bell_manta",
+      "id": "elite_r04_buoy_lighthouse_knight",
       "regionId": "r04",
-      "entityId": "diving_bell_manta",
-      "nameKo": "잠수종가오리",
-      "nameEn": "Diving-Bell Manta",
+      "entityId": "buoy_lighthouse_knight",
+      "nameKo": "부표등대기사",
+      "nameEn": "Buoy-Lighthouse Knight",
       "class": "elite",
       "kind": "enemy_large",
-      "behaviorId": "sonar_pressure_sweep",
-      "behaviorKo": "소나 접시를 펴 세 방향 압력파 발사",
-      "weakness": "impact",
+      "behaviorId": "rotating_beacon_lock",
+      "behaviorKo": "회전등으로 표적 잠금",
+      "weakness": "electric",
       "secondaryWeaknesses": [],
-      "breakSequenceKo": "소나 지느러미→잠수종 외피→압력 코어",
-      "extension": "1.0 콘텐츠 확장: R4 두 번째 엘리트",
-      "canvas": [64, 64],
-      "pivot": [32, 58],
+      "breakSequenceKo": "부표 장갑→회전등→계류 체인",
+      "canvas": [
+        64,
+        64
+      ],
+      "pivot": [
+        32,
+        58
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r04_shipgrave16.gpl",
       "scalePolicy": "integer_nearest",
       "status": "planned",
-      "sourceFile": "art-source/issue-44-r3-r4/originals/elite_r04_diving_bell_manta.png",
-      "transparentFile": "art-source/issue-44-r3-r4/transparent/elite_r04_diving_bell_manta.png",
-      "file": "art-export/issue-44-r3-r4/production/elite_r04_diving_bell_manta.png"
+      "sourceFile": "art-source/issue-44-r3-r4/originals/elite_r04_buoy_lighthouse_knight.png",
+      "transparentFile": "art-source/issue-44-r3-r4/transparent/elite_r04_buoy_lighthouse_knight.png",
+      "file": "art-export/issue-44-r3-r4/production/elite_r04_buoy_lighthouse_knight.png"
     },
     {
       "id": "boss_r04_sunken_container_whale",
@@ -379,10 +607,18 @@
       "behaviorId": "current_container_burst",
       "behaviorKo": "물살과 상자 분출",
       "weakness": "heat",
-      "secondaryWeaknesses": ["cut"],
+      "secondaryWeaknesses": [
+        "cut"
+      ],
       "breakSequenceKo": "부력 밸브 2개→상자 자석 회수",
-      "canvas": [160, 112],
-      "pivot": [80, 106],
+      "canvas": [
+        160,
+        112
+      ],
+      "pivot": [
+        80,
+        106
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r04_shipgrave16.gpl",
       "scalePolicy": "integer_nearest",
       "status": "planned",
@@ -401,10 +637,18 @@
       "behaviorId": "pressure_pulse_blackout",
       "behaviorKo": "압력 맥박과 암전",
       "weakness": "electric",
-      "secondaryWeaknesses": ["cooling"],
+      "secondaryWeaknesses": [
+        "cooling"
+      ],
       "breakSequenceKo": "박자 4회 입력 뒤 기억 전구 회수",
-      "canvas": [128, 112],
-      "pivot": [64, 106],
+      "canvas": [
+        128,
+        112
+      ],
+      "pivot": [
+        64,
+        106
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r04_shipgrave16.gpl",
       "scalePolicy": "integer_nearest",
       "status": "planned",
@@ -425,8 +669,14 @@
       "weakness": "none",
       "secondaryWeaknesses": [],
       "breakSequenceKo": "해당 없음",
-      "canvas": [360, 572],
-      "pivot": [0, 572],
+      "canvas": [
+        360,
+        572
+      ],
+      "pivot": [
+        0,
+        572
+      ],
       "paletteFile": "art-source/issue-44-r3-r4/palettes/r04_shipgrave16.gpl",
       "scalePolicy": "integer_nearest",
       "status": "planned",

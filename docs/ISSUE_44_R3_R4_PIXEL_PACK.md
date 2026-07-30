@@ -5,10 +5,9 @@
 ## 콘텐츠 출처와 수량
 
 - 원본 계약: #38 worktree의 `content/world_r1_r6.json`
-- 읽은 파일 SHA-256: `f533f3e6b1a7468631e55e49c8d6c61cf14b4a42422cff02c2f6ae6ccc1acada`
+- 읽은 파일 SHA-256: `f8922a8ce4d98d01f19477a38b7bb3291c52b20914576a4231067e635818338a`
 - 지역마다 일반 4, 엘리트 2, 보스 2, 배경 1의 총 9개다.
-- #38 데이터와 GDD 19.2/19.3에 있던 일반 4, 엘리트 1, 보스 2의 ID·한글 이름·행동·약점·파괴 순서를 변경하지 않는다.
-- 두 번째 엘리트는 #44의 1.0 콘텐츠 확장 계약이며 #38 통합 담당이 generator/schema/stage wave에 반영한다.
+- #38 데이터의 일반 4, 엘리트 2, 보스 2의 ID·한글 이름·행동·약점·파괴 순서를 변경하지 않는다.
 
 | 지역 | 구분 | entity ID | 이름 | 행동 | 약점 |
 |---|---|---|---|---|---|
@@ -17,7 +16,7 @@
 | R3 | 일반 | `seat_armor` | 좌석갑옷 / Subway-Seat Armor | 좌석을 접어 장갑 전환 | cut |
 | R3 | 일반 | `vent_jellyfish` | 환풍기해파리 / Vent-Fan Jellyfish | 환풍으로 부유 | electric |
 | R3 | 엘리트 | `turnstile_hound` | 개찰구견 / Turnstile Hound | 세 머리 신호 속성 순환 | electric |
-| R3 | 엘리트 확장 | `switchgear_mantis` | 분기기사마귀 / Switchgear Mantis | 점등한 분기 선로를 따라 낫팔 돌진 | heat |
+| R3 | 엘리트 | `route_map_spider` | 노선도거미 / Route-Map Spider | 노선도 실로 공격 경로 전환 | cut |
 | R3 | 중간 보스 | `last_train_engineer` | 막차 기관수 / Last-Train Engineer | 선로 돌진과 신호 변경 | cooling, impact |
 | R3 | 지역 보스 | `turnstile_cerberus` | 개찰구 케르베로스 / Turnstile Cerberus | 세 게이트 물기와 표 검사 | electric |
 | R4 | 일반 | `anchor_crab` | 앵커게 / Anchor Crab | 체인 세 칸으로 지면 고정 | impact |
@@ -25,11 +24,11 @@
 | R4 | 일반 | `bulb_angler` | 전구아귀 / Bulb Angler | 전구 미끼로 암전 | electric |
 | R4 | 일반 | `container_hermit` | 컨테이너소라 / Container Hermit | 상자 방패 전개 | heat |
 | R4 | 엘리트 | `crane_octopus` | 크레인문어 / Crane Octopus | 네 암 중 공격 암 선택 절단 | cut |
-| R4 | 엘리트 확장 | `diving_bell_manta` | 잠수종가오리 / Diving-Bell Manta | 소나 접시를 펴 세 방향 압력파 발사 | impact |
+| R4 | 엘리트 | `buoy_lighthouse_knight` | 부표등대기사 / Buoy-Lighthouse Knight | 회전등으로 표적 잠금 | electric |
 | R4 | 중간 보스 | `sunken_container_whale` | 침몰 컨테이너 고래 / Sunken Container Whale | 물살과 상자 분출 | heat, cut |
 | R4 | 지역 보스 | `nameless_ship_heart` | 무명 함선의 심장 / Heart of the Nameless Ship | 압력 맥박과 암전 | electric, cooling |
 
-R3 엘리트 스테이지는 local S5/25/45에 `turnstile_hound`, S15/35/55에 `switchgear_mantis`를 배치한다. R4는 local S5/25/45에 `crane_octopus`, S15/35/55에 `diving_bell_manta`를 배치한다. 같은 엘리트를 연속 사용하지 않으며 각 3회다.
+R3 엘리트 스테이지는 local S5/25/45에 `turnstile_hound`, S15/35/55에 `route_map_spider`를 배치한다. R4는 local S5/25/45에 `crane_octopus`, S15/35/55에 `buoy_lighthouse_knight`를 배치한다. 같은 엘리트를 연속 사용하지 않으며 각 3회다.
 
 ## 실루엣 계약
 
@@ -38,7 +37,7 @@ R3 엘리트 스테이지는 local S5/25/45에 `turnstile_hound`, S15/35/55에 `
 - 좌석갑옷: 지하철 등받이 방패와 접힌 방석 가슴판, 좌석 프레임 다리의 직립형이다.
 - 환풍기해파리: 원형 팬 코어가 위에 있고 네 개의 덕트 촉수가 아래로 늘어진 부유형이다.
 - 개찰구견: 가로 회전봉 다리와 녹·황·적 세 신호 머리의 낮고 넓은 사족형이다.
-- 분기기사마귀: 세로 신호함 흉곽과 철도 분기기 형태의 긴 낫팔을 가진 높은 이족형이다. 개찰구견과 높이·몸 방향·팔 구조가 겹치지 않는다.
+- 노선도거미: 노선도 판 중앙 몸, 세 개의 원형 환승점, 색 노선 실과 여덟 가는 철사 다리의 넓고 낮은 거미형이다. 개찰구견의 사족·세 머리·회전봉과 겹치지 않는다.
 - 막차 기관수: 기관차 보일러 몸과 기관수 모자, 큰 차륜, 신호 레버를 가진 단일 전면 보스다.
 - 개찰구 케르베로스: 세 개의 개찰 게이트 입과 표 투입구, 회전봉 발이 각각 읽히는 초대형 사족형이다.
 - 앵커게: 닻 팔 두 개와 세 칸 체인 다리, 중앙 부표 코어의 낮은 갑각형이다.
@@ -46,7 +45,7 @@ R3 엘리트 스테이지는 local S5/25/45에 `turnstile_hound`, S15/35/55에 `
 - 전구아귀: 케이블 낚싯대 끝 전구와 큰 배터리 턱이 분리되어 보이는 전진형이다.
 - 컨테이너소라: 열린 컨테이너 문 방패와 뒤로 드러난 나선 코어의 넓은 지상형이다.
 - 크레인문어: 회전 운전실 머리와 서로 다른 네 크레인 암, 뒤쪽 균형추가 있는 방사형이다.
-- 잠수종가오리: 잠수종 몸통, 넓은 소나 접시 지느러미와 한 줄 체인 꼬리의 수평 부유형이다. 크레인문어의 방사형 팔과 겹치지 않는다.
+- 부표등대기사: 세로 원통 부표 갑옷, 머리 위 회전등, 한 손 닻 창과 한 손 표적 잠금 방패, 아래 계류 체인의 높은 기사형이다. 크레인문어의 방사형 네 팔과 겹치지 않는다.
 - 침몰 컨테이너 고래: 컨테이너 적재 등, 두 부력 밸브, 큰 고래 턱의 장축형이다.
 - 무명 함선의 심장: 선체 프레임 안 거대한 4실 심장과 네 기억 전구, 압력 링의 대칭형이다.
 
@@ -77,4 +76,4 @@ python3 tools/issue44_build_r3_r4_pixel_pack.py --verify-contract
 python3 tools/issue44_build_r3_r4_pixel_pack.py --all --verify-complete --contact-sheets
 ```
 
-`production_ready`는 strict PNG의 크기, binary alpha, 투명 모서리, 지역 팔레트 부분집합, 초록 fringe 0개, 원본/투명 중간물/strict PNG SHA-256 검사를 모두 통과한 뒤 빌더만 기록한다. 접촉 시트에는 각 적의 한·영 이름, ID, 등급, 행동, 약점과 4배 nearest-neighbor 미리보기를 함께 둔다.
+`production_ready`는 strict PNG의 크기, binary alpha, 투명 모서리, 지역 팔레트 부분집합, 초록 fringe 0개, 원본/투명 중간물/strict PNG SHA-256 검사를 모두 통과한 뒤 빌더만 기록한다. `imagegenCallArtifacts`는 distinct asset마다 실제 별도 내장 ImageGen 호출의 고유 `exec-*.png` 증거를 남기며, 수정 호출도 순서대로 보존한다. 접촉 시트에는 각 적의 한·영 이름, ID, 등급, 행동, 약점과 4배 nearest-neighbor 미리보기를 함께 둔다.

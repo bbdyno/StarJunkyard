@@ -246,12 +246,15 @@ def build_contact_sheet(fragment: dict[str, Any], region_id: str) -> Path:
         if asset["class"] == "background":
             preview = ImageOps.fit(image, (154, 154), Image.Resampling.NEAREST)
         else:
-            scale = min(4, max(2, 152 // max(image.width, image.height)))
+            scale = max(1, min(4, 152 // max(image.width, image.height)))
             preview = image.resize((image.width * scale, image.height * scale), Image.Resampling.NEAREST)
         preview_x = x + 16 + (158 - preview.width) // 2
         preview_y = y + 45 + (158 - preview.height) // 2
         sheet.alpha_composite(preview, (preview_x, preview_y))
-        draw.text((x + 16, y + 12), f"{asset['nameKo']} / {asset['nameEn']}", font=font(16), fill=WHITE)
+        display_name = f"{asset['nameKo']} / {asset['nameEn']}"
+        if len(display_name) > 43:
+            display_name = asset["nameKo"]
+        draw.text((x + 16, y + 12), display_name, font=font(16), fill=WHITE)
         draw.text((x + 184, y + 56), asset["id"], font=font(13), fill=ACCENT)
         draw.text((x + 184, y + 86), f"CLASS  {asset['class']}", font=font(13), fill=MUTED)
         draw.text((x + 184, y + 112), f"WEAK  {asset['weakness']}", font=font(13), fill=MUTED)
@@ -290,6 +293,9 @@ def verify_fragment(fragment: dict[str, Any], *, require_complete: bool) -> None
         for asset in assets:
             if asset["status"] != "production_ready":
                 raise ValueError(f"{asset['id']}: still {asset['status']}")
+            call_artifacts = asset.get("imagegenCallArtifacts", [])
+            if not call_artifacts or len(call_artifacts) != len(set(call_artifacts)):
+                raise ValueError(f"{asset['id']}: distinct ImageGen call evidence missing")
             output = ROOT / asset["file"]
             if not output.is_file() or sha256(output) != asset.get("sha256"):
                 raise ValueError(f"{asset['id']}: output/hash mismatch")

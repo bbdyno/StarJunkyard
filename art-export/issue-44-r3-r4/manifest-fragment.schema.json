@@ -70,6 +70,12 @@
           "secondaryWeaknesses": {"type": "array", "items": {"enum": ["impact", "cut", "electric", "heat", "cooling"]}},
           "breakSequenceKo": {"type": "string"},
           "extension": {"type": "string"},
+          "imagegenCallArtifacts": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "pattern": "^exec-[a-f0-9-]+\\.png$"}
+          },
           "canvas": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 1}},
           "pivot": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 0}},
           "paletteFile": {"type": "string"},
