@@ -62,7 +62,12 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private var prologueSeen: Bool
     private var defeatedBossStages: Set<Int>
     private var unlockedBlueprintIDs: Set<String>
+    private var unlockedDroneIDs: Set<String>
+    private var equippedDroneIDs: [String]
     private var unlockedModuleIDs: Set<String>
+    private var equippedModuleIDs: [String]
+    private var crewRoleAssignments: [String: String]
+    private var crewMasteryLevels: [String: Int]
     private var storyLogIDs: Set<String>
     private var bossFailureCounts: [String: Int]
     private var pendingBossDismantleStage: Int?
@@ -94,6 +99,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private let mechanicMotion = SKNode()
     private let droneAnchor = SKNode()
     private let droneMotion = SKNode()
+    private let secondaryDroneAnchor = SKNode()
+    private let secondaryDroneMotion = SKNode()
     private let crewAnchor = SKNode()
     private let crewMotion = SKNode()
     private let enemyLayer = SKNode()
@@ -169,7 +176,12 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         prologueSeen = save.prologueSeen
         defeatedBossStages = Set(save.defeatedBossStages)
         unlockedBlueprintIDs = Set(save.unlockedBlueprintIDs)
+        unlockedDroneIDs = Set(save.unlockedDroneIDs)
+        equippedDroneIDs = save.equippedDroneIDs
         unlockedModuleIDs = Set(save.unlockedModuleIDs)
+        equippedModuleIDs = save.equippedModuleIDs
+        crewRoleAssignments = save.crewRoleAssignments
+        crewMasteryLevels = save.crewMasteryLevels
         storyLogIDs = Set(save.storyLogIDs)
         bossFailureCounts = save.bossFailureCounts
         pendingBossDismantleStage = save.pendingBossDismantleStage
@@ -195,6 +207,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         anchorPoint = .zero
         backgroundColor = PixelPalette.ink
         scaleMode = .aspectFit
+        reconcileFormationProgression()
     }
 
     @available(*, unavailable)
@@ -205,7 +218,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     override func didMove(to view: SKView) {
         removeAllChildren()
         [laneRoot, combatLayer, hudLayer, controlsLayer, adaptiveRailLayer, mechanicAnchor,
-         mechanicMotion, droneAnchor, droneMotion, crewAnchor, crewMotion, enemyLayer,
+         mechanicMotion, droneAnchor, droneMotion, secondaryDroneAnchor, secondaryDroneMotion,
+         crewAnchor, crewMotion, enemyLayer,
          effectsLayer, rainLayer, tutorialLayer, storyLayer, storyOverlayLayer, bossLayer, shelterReactor,
          shopLayer].forEach { $0.removeAllChildren() }
         shelterLamps.removeAll()
@@ -329,7 +343,11 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             return
         }
         if !shopLayer.isHidden {
-            if names.contains("buy_cutter") { buy(.cutter) }
+            if let droneName = names.first(where: { $0.hasPrefix("equip_drone_") }) {
+                selectDrone(String(droneName.dropFirst("equip_drone_".count)))
+            } else if names.contains("cycle_module") { cycleEquippedModule() }
+            else if names.contains("cycle_crew_role") { cycleCrewRole() }
+            else if names.contains("buy_cutter") { buy(.cutter) }
             else if names.contains("buy_drone") { buy(.drone) }
             else if names.contains("buy_magnet") { buy(.magnet) }
             else if names.contains("buy_crew") { buy(.crew) }
@@ -415,26 +433,33 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             fireDamage(
                 base: content.player.baseDamage * 3 + (cutterLevel - 1) * 6,
                 source: CGPoint(x: 126, y: 304),
-                steps: 6
+                steps: 6,
+                affinity: activeModule?.affinity ?? .cut,
+                powerPPM: activeModule?.powerPPM ?? 1_000_000
             )
         }
         if combatTick >= nextDroneAttackTick {
             nextDroneAttackTick = combatTick + 20
             playDroneAttack()
-            fireDamage(
-                base: content.drones[0].baseDamage * 2 + (droneLevel - 1) * 4,
-                source: CGPoint(x: 150, y: 420),
-                steps: 5
-            )
+            for (slot, droneID) in equippedDroneIDs.enumerated() {
+                guard let drone = content.drones.first(where: { $0.id == droneID }) else { continue }
+                fireDamage(
+                    base: drone.baseDamage * 2 + (droneLevel - 1) * 4,
+                    source: CGPoint(x: slot == 0 ? 150 : 210, y: slot == 0 ? 420 : 430),
+                    steps: 5,
+                    affinity: FormationProgression.affinity(forDroneRole: drone.role)
+                )
+            }
         }
         if combatTick >= nextCrewAttackTick {
             nextCrewAttackTick = combatTick + 30
             playCrewAttack()
             fireDamage(
-                base: 5 + (crewLevel - 1) * 5,
+                base: FormationProgression.crewDamage(masteryLevel: crewMasteryLevel, role: activeCrewRole),
                 source: CGPoint(x: 72, y: 248),
                 steps: 7,
-                color: PixelPalette.sparkOrange
+                color: PixelPalette.sparkOrange,
+                affinity: activeCrewRole.affinity
             )
         }
 
@@ -444,7 +469,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             let names = remaining.map { $0.spec.nameKo }.joined(separator: ", ")
             let durability = remaining.reduce(0) { $0 + $1.hp }
             let goal = ShelterRecovery.goal(deliveredParts: shelterRepairParts, highestStage: max(save.highestStage, stage.number))
-            onAccessibilitySummary?("전투 화면. 스테이지 \(stage.number). 적 \(remaining.count)체 \(names). 남은 내구도 \(durability). 현재 목표 \(goal.title) \(goal.current)/\(goal.required). 보라 직원이 협동 공격 중입니다.")
+            let moduleName = activeModule?.nameKo ?? "모듈 미장착"
+            onAccessibilitySummary?("전투 화면. 스테이지 \(stage.number). 적 \(remaining.count)체 \(names). 남은 내구도 \(durability). 현재 목표 \(goal.title) \(goal.current)/\(goal.required). 드론 \(equippedDroneIDs.count)기 편성, 보라 \(activeCrewRole.nameKo), \(moduleName). 협동 공격 중입니다.")
         }
         updateHUD()
         if combatTick.isMultiple(of: 200) { persist() }
@@ -458,14 +484,23 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         base: Int,
         source: CGPoint,
         steps: Int,
-        color: SKColor? = nil
+        color: SKColor? = nil,
+        affinity: DamageAffinity,
+        powerPPM: Int = 1_000_000
     ) {
         guard let target = currentTarget else { return }
         let critical = rng.bounded(1_000_000) < UInt32(content.player.criticalChancePpm)
-        let damage = critical ? base * content.player.criticalDamagePpm / 1_000_000 : base
+        let criticalBase = critical ? base * content.player.criticalDamagePpm / 1_000_000 : base
+        let resolution = FormationProgression.resolveDamage(
+            base: criticalBase,
+            affinity: affinity,
+            enemyWeakness: target.spec.weakness,
+            powerPPM: powerPPM
+        )
         let token = target.token
-        spawnProjectile(from: source, to: target.root.position, critical: critical, color: color, steps: steps) { [weak self] in
-            self?.applyDamage(damage, to: token)
+        let projectileColor = resolution.weaknessApplied ? PixelPalette.warningAmber : color
+        spawnProjectile(from: source, to: target.root.position, critical: critical, color: projectileColor, steps: steps) { [weak self] in
+            self?.applyDamage(resolution.damage, to: token)
         }
     }
 
@@ -490,6 +525,18 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         YardEconomy.manualDamage(cutterLevel: cutterLevel)
     }
 
+    private var activeModule: FormationProgression.ModuleSpec? {
+        FormationProgression.module(id: equippedModuleIDs.first)
+    }
+
+    private var activeCrewRole: CrewRole {
+        CrewRole(rawValue: crewRoleAssignments["bora"] ?? "") ?? .breaker
+    }
+
+    private var crewMasteryLevel: Int {
+        max(1, crewMasteryLevels["bora"] ?? crewLevel)
+    }
+
     private var manualReward: Int {
         YardEconomy.manualReward(cutterLevel: cutterLevel)
     }
@@ -511,13 +558,21 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
     private func manualSalvage(token: Int) {
         guard let enemy = activeEnemies.first(where: { $0.token == token }), enemy.hp > 0 else { return }
+        let module = activeModule
+        let resolvedDamage = FormationProgression.resolveDamage(
+            base: manualDamage,
+            affinity: module?.affinity ?? .cut,
+            enemyWeakness: enemy.spec.weakness,
+            powerPPM: module?.powerPPM ?? 1_000_000
+        )
         onFeedback?(.manualSalvage)
         credits += manualReward
         manualTapCount += 1
         playMechanicAttack()
         let feedback = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
         configureLabel(feedback, size: 10, color: PixelPalette.warningAmber, alignment: .center)
-        feedback.text = "직접 해체  -" + String(manualDamage) + "  +" + String(manualReward)
+        feedback.text = (resolvedDamage.weaknessApplied ? "약점 해체  -" : "직접 해체  -")
+            + String(resolvedDamage.damage) + "  +" + String(manualReward)
         feedback.position = CGPoint(x: enemy.root.position.x, y: enemy.root.position.y + 78)
         feedback.zPosition = 90
         effectsLayer.addChild(feedback)
@@ -527,7 +582,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             .fadeOut(withDuration: 0.10),
             .removeFromParent()
         ]))
-        applyDamage(manualDamage, to: token)
+        applyDamage(resolvedDamage.damage, to: token)
         updateHUD()
         if manualTapCount.isMultiple(of: 10) { persist() }
     }
@@ -825,6 +880,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             storyLogIDs.insert(reward.storyLogID)
             if stageNumber == 10 { storyChapter = max(storyChapter, 2) }
         }
+        reconcileFormationProgression()
         pendingBossDismantleStage = nil
         pendingBossBaseParts = 0
         pendingBossToken = nil
@@ -876,6 +932,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             stageIndex = (stageIndex + 1) % content.stages.count
             waveIndex = 0
             rng = PCG32(seed: UInt64(content.stages[stageIndex].number), stream: 54)
+            reconcileFormationProgression()
         }
         if tutorialStep == 2 && credits >= cutterCost {
             tutorialStep = 3
@@ -941,10 +998,19 @@ final class CombatScene: SKScene, AdaptivePixelScene {
                 .removeFromParent()
             ]))
         }
-        let damage = 8 + cutterLevel * 2 + crewLevel * 4
+        let baseDamage = 8 + cutterLevel * 2 + crewMasteryLevel * 4
+        let role = activeCrewRole
+        let damageByToken = Dictionary(uniqueKeysWithValues: activeEnemies.filter { $0.hp > 0 }.map { enemy in
+            let resolution = FormationProgression.resolveDamage(
+                base: baseDamage,
+                affinity: role.affinity,
+                enemyWeakness: enemy.spec.weakness
+            )
+            return (enemy.token, resolution.damage)
+        })
         run(.sequence([
             .wait(forDuration: 0.26),
-            .run { [weak self] in tokens.forEach { self?.applyDamage(damage, to: $0) } }
+            .run { [weak self] in tokens.forEach { self?.applyDamage(damageByToken[$0] ?? baseDamage, to: $0) } }
         ]))
     }
 
@@ -1035,15 +1101,32 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
         droneAnchor.position = CGPoint(x: 128, y: 420)
         droneAnchor.zPosition = 34
-        droneMotion.addChild(PixelArt.asset(content.drones[0].spriteId))
         droneAnchor.addChild(droneMotion)
         droneAnchor.run(stepLoop(points: [0, 2, 0, -2], duration: 0.11), withKey: "hover")
         combatLayer.addChild(droneAnchor)
+
+        secondaryDroneAnchor.position = CGPoint(x: 188, y: 430)
+        secondaryDroneAnchor.zPosition = 33
+        secondaryDroneAnchor.addChild(secondaryDroneMotion)
+        secondaryDroneAnchor.run(stepLoop(points: [0, 2, 0, -2], duration: 0.13), withKey: "hover")
+        combatLayer.addChild(secondaryDroneAnchor)
+        refreshDroneFormationArt()
 
         enemyLayer.zPosition = 20
         effectsLayer.zPosition = 50
         combatLayer.addChild(enemyLayer)
         combatLayer.addChild(effectsLayer)
+    }
+
+    private func refreshDroneFormationArt() {
+        let motions = [droneMotion, secondaryDroneMotion]
+        for (index, motion) in motions.enumerated() {
+            motion.removeAllChildren()
+            guard index < equippedDroneIDs.count,
+                  let drone = content.drones.first(where: { $0.id == equippedDroneIDs[index] })
+            else { continue }
+            motion.addChild(PixelArt.asset(drone.spriteId))
+        }
     }
 
     private func buildHUD() {
@@ -1446,6 +1529,38 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         }
     }
 
+    private var progressionStage: Int {
+        max(save.highestStage, content.stages[stageIndex].number)
+    }
+
+    private var nextFreeUnlockText: String {
+        FormationProgression.nextUnlockDescription(
+            highestStage: progressionStage,
+            defeatedBossStages: defeatedBossStages,
+            drones: content.drones
+        )
+    }
+
+    private func reconcileFormationProgression() {
+        let result = FormationProgression.reconcile(
+            highestStage: max(save.highestStage, content.stages[stageIndex].number),
+            defeatedBossStages: defeatedBossStages,
+            drones: content.drones,
+            unlockedDroneIDs: unlockedDroneIDs.sorted(),
+            equippedDroneIDs: equippedDroneIDs,
+            unlockedModuleIDs: unlockedModuleIDs.sorted(),
+            equippedModuleIDs: equippedModuleIDs
+        )
+        unlockedDroneIDs = Set(result.unlockedDroneIDs)
+        equippedDroneIDs = result.equippedDroneIDs
+        unlockedModuleIDs = Set(result.unlockedModuleIDs)
+        equippedModuleIDs = result.equippedModuleIDs
+        let role = CrewRole(rawValue: crewRoleAssignments["bora"] ?? "") ?? .breaker
+        crewRoleAssignments["bora"] = role.rawValue
+        crewLevel = max(crewLevel, crewMasteryLevels["bora"] ?? 1)
+        crewMasteryLevels["bora"] = crewLevel
+    }
+
     private enum ShopItem { case cutter, drone, magnet, crew }
 
     private var cutterCost: Int { 10 * cutterLevel }
@@ -1458,21 +1573,32 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         addShopItem(name: "buy_cutter", title: "강화 절단날 LV.\(cutterLevel + 1)", effect: "직접·자동 절단 피해 증가", cost: cutterCost, y: 450)
         addShopItem(name: "buy_drone", title: "리벳 출력 코일 LV.\(droneLevel + 1)", effect: "드론 자동 피해 +4", cost: droneCost, y: 365)
         addShopItem(name: "buy_magnet", title: "자석 바구니 LV.\(magnetLevel + 1)", effect: "괴수마다 부품 +1", cost: magnetCost, y: 280)
+        addModuleLoadoutRow(y: 210)
         finishManagement(status: status)
     }
 
     private func openCrew(status: String = "보라는 전투 중 계속 공격하고 주기적으로 모와 협동합니다") {
-        beginManagement(.crew, title: "직원 숙소", subtitle: "고용 직원 1명 • 보라가 자동 해체 중")
-        let bora = PixelArt.asset("crew_bora_base", scale: 1.15)
-        bora.position = CGPoint(x: 88, y: 445)
+        beginManagement(.crew, title: "직원·드론 편성", subtitle: "무료 해금 동료를 선택해 적 약점에 맞추세요")
+        let bora = PixelArt.asset("crew_bora_base", scale: 0.9)
+        bora.position = CGPoint(x: 70, y: 470)
         bora.zPosition = 4
         shopLayer.addChild(bora)
-        addShopLabel("보라  LV.\(crewLevel)", x: 134, y: 470, size: 14, color: PixelPalette.warningAmber, alignment: .left)
-        addShopLabel("개인 공격  \(5 + (crewLevel - 1) * 5)", x: 134, y: 440, size: 9, color: PixelPalette.workWhite, alignment: .left)
-        addShopLabel("협동 해체  전체 +\(8 + cutterLevel * 2 + crewLevel * 4)", x: 134, y: 414, size: 9, color: PixelPalette.lightTeal, alignment: .left)
-        addShopItem(name: "buy_crew", title: "보라 작업 숙련 LV.\(crewLevel + 1)", effect: "개인 피해 +5 • 협동 전체 +4", cost: crewCost, y: 300)
-        addShopLabel("다음 직원 슬롯", x: 50, y: 266, size: 8, color: PixelPalette.midIron, alignment: .left)
-        addShopLabel("S10 보스 격파 후 개방", x: 308, y: 266, size: 8, color: PixelPalette.midIron, alignment: .right)
+        addShopLabel("보라  숙련 LV.\(crewMasteryLevel)", x: 112, y: 488, size: 12, color: PixelPalette.warningAmber, alignment: .left)
+        addShopLabel(activeCrewRole.nameKo + " • " + activeCrewRole.affinity.nameKo + " 공격", x: 112, y: 458, size: 8, color: PixelPalette.lightTeal, alignment: .left)
+        let roleButton = PixelArt.panel(size: CGSize(width: 104, height: 42), name: "cycle_crew_role")
+        roleButton.position = CGPoint(x: 214, y: 426)
+        roleButton.zPosition = 3
+        roleButton.name = "cycle_crew_role"
+        shopLayer.addChild(roleButton)
+        addShopHitArea(name: "cycle_crew_role", position: CGPoint(x: 214, y: 426), size: CGSize(width: 104, height: 42))
+        addShopLabel("역할 변경  〉", x: 266, y: 447, size: 8, color: PixelPalette.warningAmber, name: "cycle_crew_role")
+
+        addShopLabel("드론 슬롯 \(equippedDroneIDs.count)/\(FormationProgression.droneSlotCount(highestStage: progressionStage))", x: 42, y: 410, size: 9, color: PixelPalette.workWhite, alignment: .left)
+        for (index, drone) in content.drones.prefix(2).enumerated() {
+            addDroneFormationCard(drone, x: index == 0 ? 38 : 186, y: 315)
+        }
+        addShopItem(name: "buy_crew", title: "보라 작업 숙련 LV.\(crewMasteryLevel + 1)", effect: "역할 피해·협동 해체 증가", cost: crewCost, y: 230)
+        addShopLabel(nextFreeUnlockText, x: 180, y: 212, size: 7, color: PixelPalette.lightTeal, name: "formation_next_unlock")
         finishManagement(status: status)
     }
 
@@ -1491,6 +1617,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         addFacilityItem(.press, level: pressLevel, y: 385)
         addFacilityItem(.sorter, level: sorterLevel, y: 305)
         addFacilityItem(.warehouse, level: warehouseLevel, y: 225)
+        addShopLabel("무료 편성 경로 • " + nextFreeUnlockText, x: 180, y: 207, size: 7, color: PixelPalette.lightTeal, name: "formation_next_unlock")
         finishManagement(status: status)
     }
 
@@ -1662,6 +1789,44 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         addShopLabel("고철 \(cost)", x: 308, y: y + 33, size: 9, color: credits >= cost ? PixelPalette.warningAmber : PixelPalette.midIron, name: name, alignment: .right)
     }
 
+    private func addModuleLoadoutRow(y: Int) {
+        let name = "cycle_module"
+        let button = PixelArt.panel(size: CGSize(width: 292, height: 54), name: name)
+        button.position = CGPoint(x: 34, y: y)
+        button.zPosition = 2
+        button.name = name
+        shopLayer.addChild(button)
+        addShopHitArea(name: name, position: CGPoint(x: 34, y: y), size: CGSize(width: 292, height: 54))
+        let moduleName = activeModule?.nameKo ?? "해금된 모듈 없음"
+        let affinity = activeModule.map { $0.affinity.nameKo + " • 약점 일치 +50%" } ?? nextFreeUnlockText
+        addShopLabel("장착  " + moduleName, x: 50, y: y + 37, size: 9, color: PixelPalette.workWhite, name: name, alignment: .left)
+        addShopLabel(affinity, x: 50, y: y + 17, size: 7, color: PixelPalette.lightTeal, name: name, alignment: .left)
+        addShopLabel("교체  〉", x: 308, y: y + 27, size: 8, color: activeModule == nil ? PixelPalette.midIron : PixelPalette.warningAmber, name: name, alignment: .right)
+    }
+
+    private func addDroneFormationCard(_ drone: VerticalSliceContent.Drone, x: Int, y: Int) {
+        let name = "equip_drone_" + drone.id
+        let unlocked = unlockedDroneIDs.contains(drone.id)
+        let equipped = equippedDroneIDs.contains(drone.id)
+        let card = PixelArt.panel(size: CGSize(width: 136, height: 76), name: name)
+        card.position = CGPoint(x: x, y: y)
+        card.zPosition = 2
+        card.name = name
+        shopLayer.addChild(card)
+        addShopHitArea(name: name, position: CGPoint(x: x, y: y), size: CGSize(width: 136, height: 76))
+
+        let art = PixelArt.asset(drone.spriteId, scale: 0.72)
+        art.position = CGPoint(x: x + 34, y: y + 42)
+        art.alpha = unlocked ? 1 : 0.35
+        art.zPosition = 4
+        art.name = name
+        shopLayer.addChild(art)
+        addShopLabel(drone.nameKo, x: x + 64, y: y + 55, size: 9, color: unlocked ? PixelPalette.workWhite : PixelPalette.midIron, name: name, alignment: .left)
+        let affinity = FormationProgression.affinity(forDroneRole: drone.role).nameKo
+        let status = equipped ? "편성 중 • " + affinity : (unlocked ? "선택 • " + affinity : "S\(drone.unlockStage) 무료")
+        addShopLabel(status, x: x + 64, y: y + 27, size: 7, color: equipped ? PixelPalette.warningAmber : PixelPalette.lightTeal, name: name, alignment: .left)
+    }
+
     private func addFacilityItem(_ facility: YardFacility, level: Int, y: Int) {
         let name = "buy_\(facility.rawValue)"
         let cost = YardEconomy.upgradeCost(facility, currentLevel: level)
@@ -1721,6 +1886,41 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         shopLayer.addChild(hitArea)
     }
 
+    private func selectDrone(_ droneID: String) {
+        guard let drone = content.drones.first(where: { $0.id == droneID }) else { return }
+        guard unlockedDroneIDs.contains(droneID) else {
+            openCrew(status: "\(drone.nameKo)는 S\(drone.unlockStage) 도달 시 무료 해금됩니다")
+            return
+        }
+        equippedDroneIDs = FormationProgression.selectingDrone(
+            droneID,
+            formation: equippedDroneIDs,
+            unlockedDroneIDs: unlockedDroneIDs,
+            slotCount: FormationProgression.droneSlotCount(highestStage: progressionStage)
+        )
+        refreshDroneFormationArt()
+        persist()
+        openCrew(status: drone.nameKo + " 편성 완료 • " + FormationProgression.affinity(forDroneRole: drone.role).nameKo + " 약점 담당")
+    }
+
+    private func cycleEquippedModule() {
+        equippedModuleIDs = FormationProgression.cyclingModule(
+            equippedModuleIDs: equippedModuleIDs,
+            unlockedModuleIDs: unlockedModuleIDs
+        )
+        persist()
+        let status = activeModule.map { $0.nameKo + " 장착 • " + $0.affinity.nameKo + " 약점 피해 +50%" }
+            ?? "아직 해금된 모듈이 없습니다 • " + nextFreeUnlockText
+        openShop(status: status)
+    }
+
+    private func cycleCrewRole() {
+        let role = FormationProgression.nextRole(after: activeCrewRole)
+        crewRoleAssignments["bora"] = role.rawValue
+        persist()
+        openCrew(status: "보라 역할 변경 • " + role.nameKo + " / " + role.affinity.nameKo + " 약점 담당")
+    }
+
     private func buy(_ item: ShopItem) {
         let cost: Int
         switch item {
@@ -1748,6 +1948,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             shopStatusLabel.text = "자석 바구니 장착"
         case .crew:
             crewLevel += 1
+            crewMasteryLevels["bora"] = crewLevel
             shopStatusLabel.text = "보라 숙련 상승 • 개인·협동 피해 증가"
         }
         shopStatusLabel.fontColor = PixelPalette.recoveryGreen
@@ -1806,10 +2007,12 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func refreshLoadout() {
-        loadoutLabel.text = "직접 +\(manualDamage) • 자동 +\(passiveIncomeRate)/초 • 회수 대기 \(yardIncomeBank)"
-        (controlsLayer.childNode(withName: "//shop_open_subtitle") as? SKLabelNode)?.text = "직접 +\(manualDamage)"
-        (controlsLayer.childNode(withName: "//crew_open_subtitle") as? SKLabelNode)?.text = "보라 LV.\(crewLevel)"
-        (controlsLayer.childNode(withName: "//facility_open_subtitle") as? SKLabelNode)?.text = "+\(passiveIncomeRate)/초"
+        let moduleText = activeModule?.affinity.nameKo ?? "모듈 없음"
+        let slots = FormationProgression.droneSlotCount(highestStage: progressionStage)
+        loadoutLabel.text = "\(moduleText) • 드론 \(equippedDroneIDs.count)/\(slots) • 자동 +\(passiveIncomeRate)/초"
+        (controlsLayer.childNode(withName: "//shop_open_subtitle") as? SKLabelNode)?.text = moduleText
+        (controlsLayer.childNode(withName: "//crew_open_subtitle") as? SKLabelNode)?.text = activeCrewRole.nameKo
+        (controlsLayer.childNode(withName: "//facility_open_subtitle") as? SKLabelNode)?.text = "다음 무료 해금"
         (controlsLayer.childNode(withName: "//records_open_subtitle") as? SKLabelNode)?.text = "\(discoveredEnemyIDs.count)/\(content.enemies.count)"
     }
 
@@ -1850,12 +2053,14 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
     private func playDroneAttack() {
         guard !gameSettings.reduceMotion else { return }
-        droneMotion.removeAction(forKey: "attack")
-        droneMotion.run(.sequence([
-            .moveTo(x: 3, duration: 0), .wait(forDuration: 0.05),
-            .moveTo(x: -2, duration: 0), .wait(forDuration: 0.05),
-            .moveTo(x: 0, duration: 0)
-        ]), withKey: "attack")
+        for motion in [droneMotion, secondaryDroneMotion] where !motion.children.isEmpty {
+            motion.removeAction(forKey: "attack")
+            motion.run(.sequence([
+                .moveTo(x: 3, duration: 0), .wait(forDuration: 0.05),
+                .moveTo(x: -2, duration: 0), .wait(forDuration: 0.05),
+                .moveTo(x: 0, duration: 0)
+            ]), withKey: "attack")
+        }
     }
 
     private func playCrewAttack() {
@@ -2023,7 +2228,9 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         currencyLabel.text = "고철 \(credits)  •  +\(passiveIncomeRate)/초"
         locationLabel.text = "피난처 7호 • 복구 부품 \(shelterRepairParts) • 회수 \(yardIncomeBank)"
         let living = activeEnemies.filter { $0.hp > 0 }
-        groupLabel.text = living.count > 1 ? "폐품 괴수 \(living.count)체 동시 출현" : (living.first?.spec.nameKo ?? "다음 무리 탐색")
+        groupLabel.text = living.count > 1
+            ? "폐품 괴수 \(living.count)체 • 선두 약점 \(weaknessName(living.first?.spec.weakness))"
+            : living.first.map { $0.spec.nameKo + " • 약점 " + weaknessName($0.spec.weakness) } ?? "다음 무리 탐색"
         let charge = combatTick >= overclockUntilTick ? 1 : CGFloat(max(0, overclockUntilTick - combatTick)) / 160
         overclockFill.size.width = floor(62 * charge)
         if combatTick >= overclockUntilTick { overclockFill.color = PixelPalette.warningAmber }
@@ -2037,11 +2244,12 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         let available = max(96, min(140, lane.minX - safe.minX - 24))
         let leftX = max(safe.minX + 10, lane.minX - available - 12)
         let rightX = min(safe.maxX - available - 10, lane.maxX + 12)
-        addRail(name: "ipad_crew_rail", title: "CREW / 직원", x: leftX, width: available, lines: [
-            "모  절단 LV.\(cutterLevel)",
-            "리벳  출력 LV.\(droneLevel)",
-            "보라  숙련 LV.\(crewLevel)",
-            "직접 \(manualDamage) / 협동 가동"
+        let droneNames = equippedDroneIDs.compactMap { id in content.drones.first(where: { $0.id == id })?.nameKo }.joined(separator: "+")
+        addRail(name: "ipad_crew_rail", title: "CREW / 편성", x: leftX, width: available, lines: [
+            "드론  " + (droneNames.isEmpty ? "미편성" : droneNames),
+            "보라  \(activeCrewRole.nameKo) LV.\(crewMasteryLevel)",
+            "모듈  \(activeModule?.nameKo ?? "미장착")",
+            nextFreeUnlockText
         ], accent: PixelPalette.lightTeal)
         let remaining = activeEnemies.filter { $0.hp > 0 }
         let goal = ShelterRecovery.goal(deliveredParts: shelterRepairParts, highestStage: max(save.highestStage, content.stages[stageIndex].number))
@@ -2051,6 +2259,17 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             goal.title,
             "복구  \(goal.current)/\(goal.required)"
         ], accent: PixelPalette.warningAmber)
+    }
+
+    private func weaknessName(_ weakness: String?) -> String {
+        switch weakness {
+        case "cut": "절단"
+        case "impact": "충격"
+        case "electric", "magnetic": "자력"
+        case "heat": "열"
+        case "cooling": "냉각"
+        default: "미확인"
+        }
     }
 
     private func addRail(name: String, title: String, x: CGFloat, width: CGFloat, lines: [String], accent: SKColor) {
@@ -2101,7 +2320,12 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         save.prologueSeen = prologueSeen
         save.defeatedBossStages = defeatedBossStages.sorted()
         save.unlockedBlueprintIDs = unlockedBlueprintIDs.sorted()
+        save.unlockedDroneIDs = unlockedDroneIDs.sorted()
+        save.equippedDroneIDs = equippedDroneIDs
         save.unlockedModuleIDs = unlockedModuleIDs.sorted()
+        save.equippedModuleIDs = equippedModuleIDs
+        save.crewRoleAssignments = crewRoleAssignments
+        save.crewMasteryLevels = crewMasteryLevels
         save.storyLogIDs = storyLogIDs.sorted()
         save.bossFailureCounts = bossFailureCounts
         save.pendingBossDismantleStage = pendingBossDismantleStage

@@ -1,7 +1,7 @@
 import Foundation
 
 struct GameSave: Codable, Equatable, Sendable {
-    static let currentSchemaVersion = 6
+    static let currentSchemaVersion = 7
     static let cloudSlotName = "sj_main_v1"
 
     var schemaVersion: Int = currentSchemaVersion
@@ -28,7 +28,12 @@ struct GameSave: Codable, Equatable, Sendable {
     var prologueSeen: Bool
     var defeatedBossStages: [Int]
     var unlockedBlueprintIDs: [String]
+    var unlockedDroneIDs: [String]
+    var equippedDroneIDs: [String]
     var unlockedModuleIDs: [String]
+    var equippedModuleIDs: [String]
+    var crewRoleAssignments: [String: String]
+    var crewMasteryLevels: [String: Int]
     var storyLogIDs: [String]
     var bossFailureCounts: [String: Int]
     var pendingBossDismantleStage: Int?
@@ -64,7 +69,12 @@ struct GameSave: Codable, Equatable, Sendable {
             prologueSeen: false,
             defeatedBossStages: [],
             unlockedBlueprintIDs: [],
+            unlockedDroneIDs: [],
+            equippedDroneIDs: [],
             unlockedModuleIDs: [],
+            equippedModuleIDs: [],
+            crewRoleAssignments: ["bora": CrewRole.breaker.rawValue],
+            crewMasteryLevels: ["bora": 1],
             storyLogIDs: [],
             bossFailureCounts: [:],
             pendingBossDismantleStage: nil,
@@ -87,7 +97,9 @@ struct GameSave: Codable, Equatable, Sendable {
         case credits, parts, cutterLevel, droneLevel, magnetLevel, crewLevel
         case pressLevel, sorterLevel, warehouseLevel, yardIncomeBank, manualTapCount, discoveredEnemyIDs
         case storyChapter, shelterRepairParts, prologueSeen
-        case defeatedBossStages, unlockedBlueprintIDs, unlockedModuleIDs, storyLogIDs, bossFailureCounts
+        case defeatedBossStages, unlockedBlueprintIDs, unlockedDroneIDs, equippedDroneIDs
+        case unlockedModuleIDs, equippedModuleIDs, crewRoleAssignments, crewMasteryLevels
+        case storyLogIDs, bossFailureCounts
         case pendingBossDismantleStage, pendingBossBaseParts
         case idleOperations
         case tutorialStep, combatTick, highestStage, cloudBackupEnabled
@@ -118,7 +130,12 @@ struct GameSave: Codable, Equatable, Sendable {
         prologueSeen: Bool,
         defeatedBossStages: [Int],
         unlockedBlueprintIDs: [String],
+        unlockedDroneIDs: [String],
+        equippedDroneIDs: [String],
         unlockedModuleIDs: [String],
+        equippedModuleIDs: [String],
+        crewRoleAssignments: [String: String],
+        crewMasteryLevels: [String: Int],
         storyLogIDs: [String],
         bossFailureCounts: [String: Int],
         pendingBossDismantleStage: Int?,
@@ -153,7 +170,12 @@ struct GameSave: Codable, Equatable, Sendable {
         self.prologueSeen = prologueSeen
         self.defeatedBossStages = defeatedBossStages
         self.unlockedBlueprintIDs = unlockedBlueprintIDs
+        self.unlockedDroneIDs = unlockedDroneIDs
+        self.equippedDroneIDs = equippedDroneIDs
         self.unlockedModuleIDs = unlockedModuleIDs
+        self.equippedModuleIDs = equippedModuleIDs
+        self.crewRoleAssignments = crewRoleAssignments
+        self.crewMasteryLevels = crewMasteryLevels
         self.storyLogIDs = storyLogIDs
         self.bossFailureCounts = bossFailureCounts
         self.pendingBossDismantleStage = pendingBossDismantleStage
@@ -191,7 +213,14 @@ struct GameSave: Codable, Equatable, Sendable {
         prologueSeen = try values.decodeIfPresent(Bool.self, forKey: .prologueSeen) ?? false
         defeatedBossStages = try values.decodeIfPresent([Int].self, forKey: .defeatedBossStages) ?? []
         unlockedBlueprintIDs = try values.decodeIfPresent([String].self, forKey: .unlockedBlueprintIDs) ?? []
+        unlockedDroneIDs = try values.decodeIfPresent([String].self, forKey: .unlockedDroneIDs) ?? []
+        equippedDroneIDs = try values.decodeIfPresent([String].self, forKey: .equippedDroneIDs) ?? []
         unlockedModuleIDs = try values.decodeIfPresent([String].self, forKey: .unlockedModuleIDs) ?? []
+        equippedModuleIDs = try values.decodeIfPresent([String].self, forKey: .equippedModuleIDs) ?? []
+        crewRoleAssignments = try values.decodeIfPresent([String: String].self, forKey: .crewRoleAssignments)
+            ?? ["bora": CrewRole.breaker.rawValue]
+        crewMasteryLevels = try values.decodeIfPresent([String: Int].self, forKey: .crewMasteryLevels)
+            ?? ["bora": crewLevel]
         storyLogIDs = try values.decodeIfPresent([String].self, forKey: .storyLogIDs) ?? []
         bossFailureCounts = try values.decodeIfPresent([String: Int].self, forKey: .bossFailureCounts) ?? [:]
         pendingBossDismantleStage = try values.decodeIfPresent(Int.self, forKey: .pendingBossDismantleStage)

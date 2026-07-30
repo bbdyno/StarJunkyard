@@ -192,7 +192,7 @@ final class PixelSceneTests: XCTestCase {
             """.utf8
         )
         let migrated = try temporarySaveStore().decodeCloudData(data)
-        XCTAssertEqual(migrated.schemaVersion, 6)
+        XCTAssertEqual(migrated.schemaVersion, GameSave.currentSchemaVersion)
         XCTAssertEqual(migrated.enemyHPs, [41])
         XCTAssertEqual(migrated.crewLevel, 1)
         XCTAssertEqual(migrated.pressLevel, 1)
@@ -214,7 +214,7 @@ final class PixelSceneTests: XCTestCase {
             """.utf8
         )
         let migrated = try temporarySaveStore().decodeCloudData(data)
-        XCTAssertEqual(migrated.schemaVersion, 6)
+        XCTAssertEqual(migrated.schemaVersion, GameSave.currentSchemaVersion)
         XCTAssertEqual(migrated.pressLevel, 1)
         XCTAssertEqual(migrated.warehouseLevel, 0)
         XCTAssertEqual(migrated.manualTapCount, 0)
