@@ -305,6 +305,120 @@ final class PixelSceneTests: XCTestCase {
         let offline = YardEconomy.offlineIncome(rate: 7, elapsed: 12 * 60 * 60)
         XCTAssertEqual(offline.seconds, 8 * 60 * 60)
         XCTAssertEqual(offline.amount, 201_600)
+
+        let paidOffline = YardEconomy.offlineIncome(
+            rate: 7,
+            elapsed: 20 * 60 * 60,
+            entitlements: EntitlementSnapshot(active: [.offlineCap16Hours])
+        )
+        XCTAssertEqual(paidOffline.seconds, 16 * 60 * 60)
+        XCTAssertEqual(paidOffline.amount, 403_200)
+    }
+
+    func testIAPCatalogMapsAllFiveProductsAndGrants() throws {
+        let catalog = try IAPCatalog.load(bundle: Bundle(for: Self.self))
+        XCTAssertEqual(catalog.products.count, 5)
+        XCTAssertEqual(Set(catalog.products.map(\.id)), Set(StoreProductID.allCases))
+        XCTAssertEqual(catalog.product(.maintenanceMonthly).type, .autoRenewableSubscription)
+        XCTAssertEqual(
+            Set(catalog.product(.offline16Hours).grants),
+            [.offlineCap16Hours]
+        )
+        XCTAssertEqual(catalog.speedMultiplierHardCap, Decimal(string: "1.8"))
+    }
+
+    func testPurchaseLedgerIsIdempotentAndFinishesOnlyAfterPersistence() async throws {
+        let store = temporaryPurchaseLedgerStore()
+        let processor = PurchaseGrantProcessor(ledger: store)
+        let record = purchaseRecord(id: 101, product: .offline16Hours)
+        var finishCount = 0
+
+        let first = try await processor.persistThenFinish(record) {
+            XCTAssertEqual(try? store.load().records.map(\.transactionID), [101])
+            finishCount += 1
+        }
+        let duplicate = try await processor.persistThenFinish(record) {
+            XCTAssertEqual(try? store.load().records.count, 1)
+            finishCount += 1
+        }
+
+        XCTAssertEqual(first, .inserted)
+        XCTAssertEqual(duplicate, .unchanged)
+        XCTAssertEqual(finishCount, 2)
+        XCTAssertTrue(store.loadOrEmpty().entitlementSnapshot().contains(.offlineCap16Hours))
+    }
+
+    func testFailedLedgerWriteDoesNotFinishTransaction() async {
+        let unwritable = PurchaseLedgerStore(
+            directory: URL(fileURLWithPath: "/dev/null/purchase-ledger-test", isDirectory: true)
+        )
+        let processor = PurchaseGrantProcessor(ledger: unwritable)
+        var didFinish = false
+
+        do {
+            try await processor.persistThenFinish(purchaseRecord(id: 102, product: .offline16Hours)) {
+                didFinish = true
+            }
+            XCTFail("An unwritable ledger path must fail")
+        } catch {
+            XCTAssertFalse(didFinish)
+        }
+    }
+
+    func testRefundRevokesNonConsumableWithoutDeletingAuditRecord() throws {
+        let store = temporaryPurchaseLedgerStore()
+        let purchase = purchaseRecord(id: 202, product: .workbenchSlot3)
+        try store.record(purchase)
+        var refund = purchase
+        refund.revocationDate = Date(timeIntervalSince1970: 2_000)
+
+        XCTAssertEqual(try store.record(refund), .updated)
+        let snapshot = try store.load()
+        XCTAssertEqual(snapshot.records.count, 1)
+        XCTAssertTrue(snapshot.records[0].isRevoked)
+        XCTAssertFalse(snapshot.entitlementSnapshot().contains(.workbenchSlot3))
+    }
+
+    func testSubscriptionCancellationKeepsAccessUntilExpiration() throws {
+        let store = temporaryPurchaseLedgerStore()
+        let now = Date(timeIntervalSince1970: 10_000)
+        var subscription = purchaseRecord(id: 303, product: .maintenanceMonthly)
+        subscription.expirationDate = now.addingTimeInterval(3_600)
+        try store.record(subscription, now: now)
+
+        let ledger = try store.load()
+        XCTAssertTrue(ledger.entitlementSnapshot(at: now).contains(.craftSpeed110))
+        XCTAssertFalse(ledger.entitlementSnapshot(at: now.addingTimeInterval(3_601)).contains(.craftSpeed110))
+    }
+
+    func testPurchaseLedgerCloudMergePreservesUniqueTransactionIDs() throws {
+        let local = temporaryPurchaseLedgerStore()
+        let cloud = temporaryPurchaseLedgerStore()
+        try local.record(purchaseRecord(id: 401, product: .starterCrewKit))
+        try cloud.record(purchaseRecord(id: 402, product: .boraRustCosmetic))
+
+        let merged = try local.mergeCloudData(cloud.exportCloudData())
+        XCTAssertEqual(merged.records.map(\.transactionID), [401, 402])
+        XCTAssertTrue(merged.entitlementSnapshot().contains(.boraFounderUniform))
+        XCTAssertTrue(merged.entitlementSnapshot().contains(.boraRustUniform))
+    }
+
+    func testFacilitiesShowLockedPremiumAccessWithoutPurchaseButtons() {
+        var save = GameSave.newGame(now: Date())
+        save.prologueSeen = true
+        let scene = CombatScene(
+            content: sampleContent(),
+            save: save,
+            premiumEntitlements: .none,
+            showFacilityPanelOnLaunch: true
+        )
+        let view = SKView(frame: CGRect(origin: .zero, size: CombatScene.logicalSize))
+        scene.didMove(to: view)
+
+        let status = findNode(named: "premium_access_status", in: scene) as? SKLabelNode
+        XCTAssertEqual(status?.text, "작업대3 잠김 • 16H 잠김 • 멤버십 잠김")
+        XCTAssertNil(findNode(named: "buy_offline_16h", in: scene))
+        XCTAssertNil(findNode(named: "buy_maintenance_monthly", in: scene))
     }
 
     func testFacilityPanelShowsOfflineReportAndActionableRows() {
@@ -377,6 +491,24 @@ final class PixelSceneTests: XCTestCase {
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
         addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
         return GameSaveStore(directory: directory)
+    }
+
+    private func temporaryPurchaseLedgerStore() -> PurchaseLedgerStore {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+        return PurchaseLedgerStore(directory: directory)
+    }
+
+    private func purchaseRecord(id: UInt64, product: StoreProductID) -> VerifiedPurchaseRecord {
+        VerifiedPurchaseRecord(
+            transactionID: id,
+            originalTransactionID: id,
+            productID: product,
+            purchaseDate: Date(timeIntervalSince1970: 1_000),
+            expirationDate: nil,
+            revocationDate: nil
+        )
     }
 
     private func findButtons(in view: UIView) -> [UIButton] {

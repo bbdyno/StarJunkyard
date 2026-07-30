@@ -34,6 +34,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private let content: VerticalSliceContent
     private let enemyByID: [String: VerticalSliceContent.Enemy]
     private var save: GameSave
+    private var premiumEntitlements: EntitlementSnapshot
     private var stageIndex: Int
     private var waveIndex: Int
     private var restoredEnemyHPs: [Int]?
@@ -131,6 +132,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private let bossPhaseLabel = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
     private let shopLayer = SKNode()
     private let shopStatusLabel = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
+    private var activeManagementPanel: ManagementPanel?
 
     private enum ManagementPanel: Equatable {
         case equipment
@@ -146,6 +148,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     init(
         content: VerticalSliceContent,
         save: GameSave,
+        premiumEntitlements: EntitlementSnapshot = .none,
         showFacilityPanelOnLaunch: Bool = false,
         showOperationsPanelOnLaunch: Bool = false,
         showCrewPanelOnLaunch: Bool = false,
@@ -154,6 +157,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         self.content = content
         enemyByID = Dictionary(uniqueKeysWithValues: content.enemies.map { ($0.id, $0) })
         self.save = save
+        self.premiumEntitlements = premiumEntitlements
         stageIndex = min(max(0, save.stageIndex), max(0, content.stages.count - 1))
         let waveCount = content.stages[stageIndex].wave.count
         waveIndex = min(max(0, save.waveIndex), max(0, waveCount - 1))
@@ -199,7 +203,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
                 warehouseLevel: warehouseLevel,
                 crewLevel: crewLevel
             ),
-            elapsed: Date().timeIntervalSince(save.updatedAt)
+            elapsed: Date().timeIntervalSince(save.updatedAt),
+            entitlements: premiumEntitlements
         )
         offlineSeconds = offline.seconds
         offlineAmount = offline.amount
@@ -279,6 +284,18 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         tutorialLayer.position.y = topShift
         storyLayer.position.y = topShift
         rebuildAdaptiveRails()
+    }
+
+    func updatePremiumEntitlements(_ entitlements: EntitlementSnapshot) {
+        premiumEntitlements = entitlements
+        refreshLoadout()
+        guard !shopLayer.isHidden else { return }
+        switch activeManagementPanel {
+        case .equipment: openShop(status: "App Store 권한 상태를 갱신했습니다")
+        case .crew: openCrew(status: "직원 외형 권한 상태를 갱신했습니다")
+        case .facilities: openFacilities(status: "시설 편의 권한 상태를 갱신했습니다")
+        case .records, .none: break
+        }
     }
 
     func setLowPowerMode(_ enabled: Bool) {
@@ -1604,11 +1621,18 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         }
         addShopItem(name: "buy_crew", title: "보라 작업 숙련 LV.\(crewMasteryLevel + 1)", effect: "역할 피해·협동 해체 증가", cost: crewCost, y: 230)
         addShopLabel(nextFreeUnlockText, x: 180, y: 212, size: 7, color: PixelPalette.lightTeal, name: "formation_next_unlock")
+        let founderState = premiumEntitlements.contains(.boraFounderUniform) ? "창업복 활성" : "창업복 잠김"
+        let rustState = premiumEntitlements.contains(.boraRustUniform) ? "녹슨 정비복 활성" : "녹슨 정비복 잠김"
+        addShopLabel(founderState + " • " + rustState, x: 180, y: 194, size: 6, color: PixelPalette.lightIron, name: "premium_skin_status")
         finishManagement(status: status)
     }
 
     private func openFacilities(status: String = "회수 대기 고철은 사라지지 않습니다") {
-        beginManagement(.facilities, title: "폐품장 시설", subtitle: "자동 생산 +\(passiveIncomeRate)/초 • 오프라인 최대 8시간")
+        beginManagement(
+            .facilities,
+            title: "폐품장 시설",
+            subtitle: "자동 생산 +\(passiveIncomeRate)/초 • 오프라인 최대 \(premiumEntitlements.offlineCapHours)시간"
+        )
         addShopHitArea(name: "operations_open", position: CGPoint(x: 214, y: 580), size: CGSize(width: 108, height: 28))
         addShopLabel("작업 관리 〉", x: 316, y: 596, size: 8, color: PixelPalette.warningAmber, name: "operations_open", alignment: .right)
         let collect = PixelArt.panel(size: CGSize(width: 292, height: 54), name: "collect_yard_income")
@@ -1622,7 +1646,17 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         addFacilityItem(.press, level: pressLevel, y: 385)
         addFacilityItem(.sorter, level: sorterLevel, y: 305)
         addFacilityItem(.warehouse, level: warehouseLevel, y: 225)
-        addShopLabel("무료 편성 경로 • " + nextFreeUnlockText, x: 180, y: 207, size: 7, color: PixelPalette.lightTeal, name: "formation_next_unlock")
+        let slotState = premiumEntitlements.contains(.workbenchSlot3) ? "작업대3 활성" : "작업대3 잠김"
+        let offlineState = premiumEntitlements.contains(.offlineCap16Hours) ? "16H 활성" : "16H 잠김"
+        let membershipState = premiumEntitlements.contains(.craftSpeed110) ? "멤버십 활성" : "멤버십 잠김"
+        addShopLabel(
+            slotState + " • " + offlineState + " • " + membershipState,
+            x: 180,
+            y: 207,
+            size: 8,
+            color: PixelPalette.lightIron,
+            name: "premium_access_status"
+        )
         finishManagement(status: status)
     }
 
@@ -1731,6 +1765,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func beginManagement(_ panelType: ManagementPanel, title: String, subtitle: String) {
+        activeManagementPanel = panelType
         shopLayer.removeAllChildren()
         shopLayer.isHidden = false
         let shade = SKSpriteNode(color: PixelPalette.ink.withAlphaComponent(0.84), size: Self.logicalSize)
@@ -1777,7 +1812,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private func finishManagement(status: String) {
         configureLabel(shopStatusLabel, size: 8, color: PixelPalette.workWhite, alignment: .center)
         shopStatusLabel.text = status
-        shopStatusLabel.position = CGPoint(x: 180, y: 184)
+        shopStatusLabel.position = CGPoint(x: 180, y: 174)
         shopStatusLabel.zPosition = 4
         shopLayer.addChild(shopStatusLabel)
     }
@@ -2007,6 +2042,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func closeShop() {
+        activeManagementPanel = nil
         shopLayer.isHidden = true
         shopLayer.removeAllChildren()
     }

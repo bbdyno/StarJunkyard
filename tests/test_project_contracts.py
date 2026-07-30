@@ -63,6 +63,9 @@ class ProjectContractTests(unittest.TestCase):
         colors = VALIDATOR.load_palette("art-source/palettes/common16.gpl")
         self.assertEqual(16, len(colors))
 
+    def test_storekit_configuration_matches_typed_catalog(self) -> None:
+        self.assertEqual(5, VALIDATOR.validate_ios_iap_catalog())
+
     def test_golden_states_match_reference_simulation(self) -> None:
         manifest = VALIDATOR.load_json("content/manifest.json")
         for relative_path in manifest["goldenFiles"]:

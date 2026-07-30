@@ -8,9 +8,11 @@ final class GameViewController: UIViewController {
     private let settingsStore: GameSettingsStore
     private let consentStore: AnalyticsConsentStore
     private let analytics: any GameAnalytics
+    private let purchaseLedgerStore: PurchaseLedgerStore
     private var combatScene: CombatScene?
     private var saveSelectionScene: SaveSelectionScene?
     private var settingsScene: PixelSettingsScene?
+    private var purchaseController: StoreKitPurchaseController?
     private lazy var cloudSave = GameCenterCloudSave(presenter: self, store: saveStore)
     private lazy var feedback = IOSGameFeedbackService(settings: settingsStore)
     private lazy var operationNotifications = IOSIdleOperationNotificationScheduler()
@@ -20,7 +22,8 @@ final class GameViewController: UIViewController {
         saveStore: GameSaveStore = GameSaveStore(),
         settingsStore: GameSettingsStore = GameSettingsStore(),
         consentStore: AnalyticsConsentStore = AnalyticsConsentStore(),
-        analytics: (any GameAnalytics)? = nil
+        analytics: (any GameAnalytics)? = nil,
+        purchaseLedgerStore: PurchaseLedgerStore = PurchaseLedgerStore()
     ) {
         self.content = content
         self.saveStore = saveStore
@@ -30,6 +33,7 @@ final class GameViewController: UIViewController {
             consentStore: consentStore,
             destination: LocalGameAnalyticsRecorder()
         )
+        self.purchaseLedgerStore = purchaseLedgerStore
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -52,6 +56,7 @@ final class GameViewController: UIViewController {
         gameView.accessibilityTraits = [.allowsDirectInteraction, .updatesFrequently]
         gameView.accessibilityLabel = GameText.localized(.accessibilitySaveSelection)
         analytics.record(.appLaunched)
+        startStoreKit()
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-capture-settings") ||
             ProcessInfo.processInfo.arguments.contains("-capture-settings-en") {
@@ -146,6 +151,12 @@ final class GameViewController: UIViewController {
             name: UIApplication.didEnterBackgroundNotification,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appWillEnterForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
     }
 
     override var prefersStatusBarHidden: Bool { true }
@@ -166,6 +177,12 @@ final class GameViewController: UIViewController {
     @objc private func appEnteredBackground() {
         guard let save = saveStore.load(), save.cloudBackupEnabled else { return }
         cloudSave.upload(save) { _ in }
+    }
+
+    @objc private func appWillEnterForeground() {
+        Task { [weak self] in
+            await self?.purchaseController?.refreshEntitlements()
+        }
     }
 
     private func presentSaveSelection(status: String? = nil, isError: Bool = false) {
@@ -234,6 +251,7 @@ final class GameViewController: UIViewController {
         let scene = CombatScene(
             content: content,
             save: initialSave,
+            premiumEntitlements: purchaseLedgerStore.loadOrEmpty().entitlementSnapshot(),
             showFacilityPanelOnLaunch: showFacilityPanelOnLaunch,
             showOperationsPanelOnLaunch: showOperationsPanelOnLaunch,
             showCrewPanelOnLaunch: showCrewPanelOnLaunch,
@@ -325,6 +343,16 @@ final class GameViewController: UIViewController {
                 }
             )
         ]
+    }
+
+    private func startStoreKit() {
+        guard let catalog = try? IAPCatalog.load() else { return }
+        let controller = StoreKitPurchaseController(catalog: catalog, ledger: purchaseLedgerStore)
+        controller.onUpdate = { [weak self] _, entitlements in
+            self?.combatScene?.updatePremiumEntitlements(entitlements)
+        }
+        purchaseController = controller
+        controller.start()
     }
 
     deinit {
