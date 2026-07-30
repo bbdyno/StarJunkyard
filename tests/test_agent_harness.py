@@ -59,7 +59,7 @@ class AgentHarnessDefinitionTests(unittest.TestCase):
         payload, tasks = HARNESS.load_definitions(ROOT / "agent-harness" / "tasks.json")
 
         self.assertEqual(6, len(tasks))
-        self.assertEqual({21, 22, 25, 26, 27}, {task.issue for task in tasks.values()})
+        self.assertEqual({21, 22, 25, 26, 27, 28}, {task.issue for task in tasks.values()})
         for task in tasks.values():
             self.assertTrue(task.branch.startswith("issue/"))
             self.assertNotIn("codex", task.branch.casefold())
