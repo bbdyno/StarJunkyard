@@ -71,9 +71,14 @@ final class GameSaveStore: @unchecked Sendable {
     }
 
     private func decode(_ data: Data) throws -> GameSave {
-        let save = try decoder.decode(GameSave.self, from: data)
-        guard save.schemaVersion == GameSave.currentSchemaVersion else {
+        var save = try decoder.decode(GameSave.self, from: data)
+        guard (1...GameSave.currentSchemaVersion).contains(save.schemaVersion) else {
             throw GameSaveStoreError.unsupportedSchema(save.schemaVersion)
+        }
+        if save.schemaVersion == 1 {
+            save.schemaVersion = GameSave.currentSchemaVersion
+            save.enemyHPs = save.enemyHP.map { [$0] }
+            save.crewLevel = 1
         }
         return save
     }

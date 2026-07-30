@@ -36,7 +36,19 @@ final class GameViewController: UIViewController {
         gameView.isAccessibilityElement = true
         gameView.accessibilityTraits = [.allowsDirectInteraction, .updatesFrequently]
         gameView.accessibilityLabel = "저장 선택 화면. 계속하기, 새 게임, Game Center 불러오기를 선택할 수 있습니다."
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-capture-combat") {
+            var captureSave = GameSave.newGame()
+            captureSave.stageIndex = 3
+            captureSave.credits = 500
+            captureSave.tutorialStep = 4
+            startGame(with: captureSave)
+        } else {
+            presentSaveSelection()
+        }
+        #else
         presentSaveSelection()
+        #endif
 
         NotificationCenter.default.addObserver(
             self,
@@ -54,6 +66,12 @@ final class GameViewController: UIViewController {
 
     override var prefersStatusBarHidden: Bool { true }
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .portrait }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        let viewport = PixelViewport(view: gameView)
+        (gameView.scene as? AdaptivePixelScene)?.applyViewport(viewport)
+    }
 
     @objc private func powerModeChanged() {
         let lowPower = ProcessInfo.processInfo.isLowPowerModeEnabled
@@ -114,6 +132,7 @@ final class GameViewController: UIViewController {
             }
         }
         if let status { scene.setStatus(status, isError: isError) }
+        scene.applyViewport(PixelViewport(view: gameView))
         saveSelectionScene = scene
         combatScene = nil
         gameView.accessibilityLabel = "저장 선택 화면. 저장된 진행을 계속하거나 새 게임을 시작할 수 있습니다."
@@ -125,7 +144,7 @@ final class GameViewController: UIViewController {
         save.updatedAt = Date()
         try? saveStore.save(save)
         let scene = CombatScene(content: content, save: save)
-        scene.scaleMode = .aspectFit
+        scene.applyViewport(PixelViewport(view: gameView))
         scene.onSave = { [weak self] save in try? self?.saveStore.save(save) }
         scene.onAccessibilitySummary = { [weak gameView] summary in gameView?.accessibilityLabel = summary }
         scene.onReturnToSaveSelection = { [weak self] in self?.presentSaveSelection() }

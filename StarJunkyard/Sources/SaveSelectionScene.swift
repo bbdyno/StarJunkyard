@@ -1,8 +1,8 @@
 import SpriteKit
 
 @MainActor
-final class SaveSelectionScene: SKScene {
-    static let logicalSize = CGSize(width: 360, height: 800)
+final class SaveSelectionScene: SKScene, AdaptivePixelScene {
+    static let logicalSize = PixelViewport.laneSize
 
     var onContinue: (() -> Void)?
     var onNewGame: (() -> Void)?
@@ -14,6 +14,10 @@ final class SaveSelectionScene: SKScene {
     private let statusLabel = SKLabelNode(fontNamed: "AppleSDGothicNeo-Medium")
     private let continueLabel = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
     private var newGameArmed = false
+    private var viewport = PixelViewport.phoneFallback
+    private let backdrop = SKSpriteNode(color: PixelPalette.ink, size: logicalSize)
+    private let laneRoot = SKNode()
+    private let adaptiveRailLayer = SKNode()
 
     init(localSave: GameSave?) {
         self.localSave = localSave
@@ -29,11 +33,28 @@ final class SaveSelectionScene: SKScene {
 
     override func didMove(to view: SKView) {
         removeAllChildren()
+        laneRoot.removeAllChildren()
+        adaptiveRailLayer.removeAllChildren()
+        backdrop.zPosition = -1_000
+        addChild(backdrop)
+        addChild(laneRoot)
+        addChild(adaptiveRailLayer)
         buildBackground()
         buildStory()
         buildSavePanel()
         buildButtons()
         refresh(save: localSave)
+        applyViewport(PixelViewport(view: view))
+    }
+
+    func applyViewport(_ viewport: PixelViewport) {
+        self.viewport = viewport
+        size = viewport.sceneSize
+        laneRoot.position = viewport.laneFrame.origin
+        backdrop.anchorPoint = .zero
+        backdrop.position = .zero
+        backdrop.size = viewport.sceneSize
+        rebuildAdaptiveRails()
     }
 
     func refresh(save: GameSave?) {
@@ -41,6 +62,7 @@ final class SaveSelectionScene: SKScene {
         summaryLabel.text = save?.summary ?? "저장 없음  •  새 폐품장을 시작하세요"
         continueLabel.text = save == nil ? "저장된 게임 없음" : "계속하기"
         continueLabel.fontColor = save == nil ? PixelPalette.midIron : PixelPalette.warningAmber
+        if adaptiveRailLayer.parent != nil { rebuildAdaptiveRails() }
     }
 
     func setStatus(_ message: String, isError: Bool = false) {
@@ -76,24 +98,24 @@ final class SaveSelectionScene: SKScene {
         let yard = PixelArt.asset("background_r01_back_alley")
         yard.position = CGPoint(x: 180, y: 514)
         yard.zPosition = -20
-        addChild(yard)
+        laneRoot.addChild(yard)
 
         let mechanic = PixelArt.asset("actor_mo_base", scale: 2)
         mechanic.position = CGPoint(x: 82, y: 468)
         mechanic.zPosition = 3
         mechanic.run(stepLoop(points: [0, 1, 0, -1], duration: 0.15))
-        addChild(mechanic)
+        laneRoot.addChild(mechanic)
 
         let drone = PixelArt.asset("drone_riv0_base")
         drone.position = CGPoint(x: 148, y: 570)
         drone.zPosition = 4
         drone.run(stepLoop(points: [0, 2, 0, -2], duration: 0.11))
-        addChild(drone)
+        laneRoot.addChild(drone)
 
         let shade = SKSpriteNode(color: PixelPalette.ink.withAlphaComponent(0.78), size: CGSize(width: 360, height: 800))
         shade.anchorPoint = .zero
         shade.zPosition = 10
-        addChild(shade)
+        laneRoot.addChild(shade)
     }
 
     private func buildStory() {
@@ -102,14 +124,14 @@ final class SaveSelectionScene: SKScene {
         title.text = "STAR JUNKYARD"
         title.position = CGPoint(x: 180, y: 728)
         title.zPosition = 20
-        addChild(title)
+        laneRoot.addChild(title)
 
         let subtitle = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
         configure(subtitle, size: 13, color: PixelPalette.workWhite)
         subtitle.text = "별을 줍는 고물상"
         subtitle.position = CGPoint(x: 180, y: 696)
         subtitle.zPosition = 20
-        addChild(subtitle)
+        laneRoot.addChild(subtitle)
 
         let story = [
             "살아 움직이는 우주 폐기물을 해체하고",
@@ -121,7 +143,7 @@ final class SaveSelectionScene: SKScene {
             label.text = line
             label.position = CGPoint(x: 180, y: 648 - index * 20)
             label.zPosition = 20
-            addChild(label)
+            laneRoot.addChild(label)
         }
     }
 
@@ -129,7 +151,7 @@ final class SaveSelectionScene: SKScene {
         let panel = PixelArt.panel(size: CGSize(width: 324, height: 92), name: "save_slot")
         panel.position = CGPoint(x: 18, y: 492)
         panel.zPosition = 20
-        addChild(panel)
+        laneRoot.addChild(panel)
 
         let slot = SKLabelNode(fontNamed: "Menlo-Bold")
         configure(slot, size: 10, color: PixelPalette.warningAmber)
@@ -137,18 +159,18 @@ final class SaveSelectionScene: SKScene {
         slot.text = "LOCAL SLOT 01"
         slot.position = CGPoint(x: 34, y: 555)
         slot.zPosition = 22
-        addChild(slot)
+        laneRoot.addChild(slot)
 
         configure(summaryLabel, size: 11, color: PixelPalette.workWhite)
         summaryLabel.position = CGPoint(x: 180, y: 522)
         summaryLabel.zPosition = 22
-        addChild(summaryLabel)
+        laneRoot.addChild(summaryLabel)
 
         configure(statusLabel, size: 9, color: PixelPalette.lightTeal)
         statusLabel.text = "로컬 저장이 원본입니다. 클라우드는 선택 백업입니다."
         statusLabel.position = CGPoint(x: 180, y: 474)
         statusLabel.zPosition = 22
-        addChild(statusLabel)
+        laneRoot.addChild(statusLabel)
     }
 
     private func buildButtons() {
@@ -162,7 +184,7 @@ final class SaveSelectionScene: SKScene {
         hint.text = "로그인 없이도 새 게임과 로컬 저장은 항상 가능합니다."
         hint.position = CGPoint(x: 180, y: 156)
         hint.zPosition = 20
-        addChild(hint)
+        laneRoot.addChild(hint)
     }
 
     private func addButton(
@@ -176,7 +198,7 @@ final class SaveSelectionScene: SKScene {
         panel.position = CGPoint(x: 38, y: y)
         panel.zPosition = 20
         panel.name = name
-        addChild(panel)
+        laneRoot.addChild(panel)
 
         let label = suppliedLabel ?? SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
         configure(label, size: 12, color: color)
@@ -184,7 +206,55 @@ final class SaveSelectionScene: SKScene {
         label.position = CGPoint(x: 180, y: y + 25)
         label.zPosition = 22
         label.name = name
-        addChild(label)
+        laneRoot.addChild(label)
+    }
+
+    private func rebuildAdaptiveRails() {
+        adaptiveRailLayer.removeAllChildren()
+        guard viewport.usesTabletRails else { return }
+        let lane = viewport.laneFrame
+        let safe = viewport.safeFrame
+        let width = max(96, min(140, lane.minX - safe.minX - 24))
+        addRail(
+            name: "ipad_game_rail",
+            title: "GAME LOOP",
+            x: max(safe.minX + 10, lane.minX - width - 12),
+            width: width,
+            lines: ["괴수 무리 해체", "고철·부품 회수", "모·리벳·보라 성장", "S10 보스 도전"],
+            accent: PixelPalette.lightTeal
+        )
+        addRail(
+            name: "ipad_save_rail",
+            title: "SAVE SLOT",
+            x: min(safe.maxX - width - 10, lane.maxX + 12),
+            width: width,
+            lines: [localSave == nil ? "로컬 저장 없음" : "로컬 진행 발견", "Game Center 선택", "로컬이 원본", "언제든 수동 백업"],
+            accent: PixelPalette.warningAmber
+        )
+    }
+
+    private func addRail(name: String, title: String, x: CGFloat, width: CGFloat, lines: [String], accent: SKColor) {
+        let panel = PixelArt.panel(size: CGSize(width: floor(width), height: 230), name: name)
+        panel.name = name
+        panel.position = CGPoint(x: floor(x), y: floor(viewport.safeFrame.midY - 115))
+        panel.zPosition = 20
+        adaptiveRailLayer.addChild(panel)
+        let titleLabel = SKLabelNode(fontNamed: "Menlo-Bold")
+        configure(titleLabel, size: 10, color: accent)
+        titleLabel.horizontalAlignmentMode = .left
+        titleLabel.text = title
+        titleLabel.position = CGPoint(x: 12, y: 202)
+        titleLabel.zPosition = 2
+        panel.addChild(titleLabel)
+        for (index, line) in lines.enumerated() {
+            let label = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
+            configure(label, size: 8, color: index == 0 ? PixelPalette.workWhite : PixelPalette.lightIron)
+            label.horizontalAlignmentMode = .left
+            label.text = line
+            label.position = CGPoint(x: 12, y: 164 - index * 32)
+            label.zPosition = 2
+            panel.addChild(label)
+        }
     }
 
     private func configure(_ label: SKLabelNode, size: CGFloat, color: SKColor) {

@@ -196,9 +196,11 @@ def validate_assets(asset_manifest: dict[str, Any], required_ids: set[str], pale
     require(len(asset_ids) == len(set(asset_ids)), "asset ids must be unique")
     require(required_ids <= set(asset_ids), f"missing asset ids: {sorted(required_ids - set(asset_ids))}")
     require("background_r01_back_alley" in asset_ids, "R1 combat background is missing")
+    require("crew_bora_base" in asset_ids, "Bora crew sprite is missing")
     profiles = asset_manifest.get("animationProfiles", {})
     require(profiles.get("actor_mo_base", {}).get("attackFrames") == 4, "Mo needs four attack steps")
     require(profiles.get("drone_riv0_base", {}).get("hoverFrames") == 4, "Rivet needs four hover steps")
+    require(profiles.get("crew_bora_base", {}).get("attackFrames") == 4, "Bora needs four attack steps")
     require(profiles.get("enemy_normal", {}).get("hitFrames") == 3, "normal enemies need three hit steps")
     allowed_canvas: dict[str, set[tuple[int, int]]] = {
         "actor": {(48, 64)},
@@ -206,6 +208,7 @@ def validate_assets(asset_manifest: dict[str, Any], required_ids: set[str], pale
         "enemy_small": {(32, 32)},
         "enemy_medium": {(48, 48)},
         "enemy_large": {(64, 64)},
+        "enemy_wide": {(64, 48)},
     }
 
     for asset in assets:
@@ -247,6 +250,22 @@ def validate_golden(manifest: dict[str, Any], content: dict[str, Any]) -> None:
         require(fixture.get("expectedDigest") == digest, f"{relative_path}: expected digest is {digest}")
 
 
+def validate_ios_iap_catalog() -> int:
+    catalog = load_json("content/ios-iap-catalog.json")
+    require(catalog.get("schemaVersion") == 1, "iOS IAP catalog schema mismatch")
+    require(catalog.get("platform") == "ios", "IAP catalog must be iOS-only")
+    target = Decimal(str(catalog["speedMultiplierTarget"]))
+    hard_cap = Decimal(str(catalog["speedMultiplierHardCap"]))
+    require(Decimal("1") <= target <= hard_cap < Decimal("2"), "paid speed limits must stay below 2x")
+    products = catalog.get("products", [])
+    identifiers = [product["id"] for product in products]
+    require(len(identifiers) == len(set(identifiers)), "IAP product ids must be unique")
+    require(all(identifier.startswith("com.bbdyno.starjunkyard.") for identifier in identifiers), "invalid IAP product prefix")
+    allowed_types = {"non_consumable", "auto_renewable_subscription"}
+    require(all(product["type"] in allowed_types for product in products), "unsupported launch IAP type")
+    return len(products)
+
+
 def validate_no_shared_runtime() -> None:
     violations: list[str] = []
     for directory in COMMON_DIRS:
@@ -268,12 +287,14 @@ def validate_project(release: bool = False) -> list[str]:
     required_ids = validate_content(content, manifest)
     validate_assets(asset_manifest, required_ids, palette, release)
     validate_golden(manifest, content)
+    iap_count = validate_ios_iap_catalog()
     validate_no_shared_runtime()
     return [
         f"content {manifest['contentVersion']}",
         f"{len(content['stages'])} stages",
         f"{len(asset_manifest['assets'])} pixel assets ({'release' if release else 'development'} mode)",
         f"{len(manifest['goldenFiles'])} golden fixtures",
+        f"{iap_count} ethical iOS IAP products",
     ]
 
 
