@@ -24,10 +24,11 @@ class ProjectContractTests(unittest.TestCase):
         summary = VALIDATOR.validate_project(release=False)
         self.assertIn("20 stages", summary)
         self.assertIn("3 golden fixtures", summary)
+        self.assertIn("5 ethical iOS IAP products", summary)
 
     def test_release_accepts_only_verified_production_assets(self) -> None:
         summary = VALIDATOR.validate_project(release=True)
-        self.assertIn("9 pixel assets (release mode)", summary)
+        self.assertIn("11 pixel assets (release mode)", summary)
 
         asset_manifest = VALIDATOR.load_json("art-export/asset-manifest.json")
         self.assertTrue(
