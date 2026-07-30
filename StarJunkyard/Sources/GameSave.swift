@@ -1,7 +1,7 @@
 import Foundation
 
 struct GameSave: Codable, Equatable, Sendable {
-    static let currentSchemaVersion = 7
+    static let currentSchemaVersion = 8
     static let cloudSlotName = "sj_main_v1"
 
     var schemaVersion: Int = currentSchemaVersion
@@ -39,6 +39,8 @@ struct GameSave: Codable, Equatable, Sendable {
     var pendingBossDismantleStage: Int?
     var pendingBossBaseParts: Int
     var idleOperations: IdleOperationsState
+    var dailyInstantFinish: DailyInstantFinishState
+    var equippedBoraUniform: BoraUniform
     var tutorialStep: Int
     var combatTick: Int
     var highestStage: Int
@@ -80,6 +82,8 @@ struct GameSave: Codable, Equatable, Sendable {
             pendingBossDismantleStage: nil,
             pendingBossBaseParts: 0,
             idleOperations: .newGame(now: now),
+            dailyInstantFinish: .empty,
+            equippedBoraUniform: .base,
             tutorialStep: 0,
             combatTick: 0,
             highestStage: 1,
@@ -101,7 +105,7 @@ struct GameSave: Codable, Equatable, Sendable {
         case unlockedModuleIDs, equippedModuleIDs, crewRoleAssignments, crewMasteryLevels
         case storyLogIDs, bossFailureCounts
         case pendingBossDismantleStage, pendingBossBaseParts
-        case idleOperations
+        case idleOperations, dailyInstantFinish, equippedBoraUniform
         case tutorialStep, combatTick, highestStage, cloudBackupEnabled
     }
 
@@ -141,6 +145,8 @@ struct GameSave: Codable, Equatable, Sendable {
         pendingBossDismantleStage: Int?,
         pendingBossBaseParts: Int,
         idleOperations: IdleOperationsState,
+        dailyInstantFinish: DailyInstantFinishState,
+        equippedBoraUniform: BoraUniform,
         tutorialStep: Int,
         combatTick: Int,
         highestStage: Int,
@@ -181,6 +187,8 @@ struct GameSave: Codable, Equatable, Sendable {
         self.pendingBossDismantleStage = pendingBossDismantleStage
         self.pendingBossBaseParts = pendingBossBaseParts
         self.idleOperations = idleOperations
+        self.dailyInstantFinish = dailyInstantFinish
+        self.equippedBoraUniform = equippedBoraUniform
         self.tutorialStep = tutorialStep
         self.combatTick = combatTick
         self.highestStage = highestStage
@@ -226,6 +234,8 @@ struct GameSave: Codable, Equatable, Sendable {
         pendingBossDismantleStage = try values.decodeIfPresent(Int.self, forKey: .pendingBossDismantleStage)
         pendingBossBaseParts = try values.decodeIfPresent(Int.self, forKey: .pendingBossBaseParts) ?? 0
         idleOperations = try values.decodeIfPresent(IdleOperationsState.self, forKey: .idleOperations) ?? .newGame(now: updatedAt)
+        dailyInstantFinish = try values.decodeIfPresent(DailyInstantFinishState.self, forKey: .dailyInstantFinish) ?? .empty
+        equippedBoraUniform = try values.decodeIfPresent(BoraUniform.self, forKey: .equippedBoraUniform) ?? .base
         tutorialStep = try values.decode(Int.self, forKey: .tutorialStep)
         combatTick = try values.decode(Int.self, forKey: .combatTick)
         highestStage = try values.decode(Int.self, forKey: .highestStage)

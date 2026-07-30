@@ -20,11 +20,64 @@ enum StorePurchaseState: Equatable, Sendable {
     case offlineRetry(StoreOperation)
     case verificationFailed
     case failed(String)
+
+    var allowsPurchase: Bool {
+        switch self {
+        case .ready, .restored, .cancelled: true
+        default: false
+        }
+    }
+
+    var needsRetry: Bool {
+        switch self {
+        case .offlineRetry, .verificationFailed, .failed: true
+        default: false
+        }
+    }
+
+    var allowsRestore: Bool {
+        switch self {
+        case .loadingProducts, .purchasing, .pendingApproval, .restoring: false
+        default: true
+        }
+    }
+
+    var statusKo: String {
+        switch self {
+        case .idle: "App Store 상품 정보를 준비하고 있습니다"
+        case .loadingProducts: "상품과 현지 가격을 불러오는 중입니다"
+        case .ready: "상품을 선택하면 App Store 구매 확인창이 열립니다"
+        case .purchasing: "App Store에서 구매를 확인하는 중입니다"
+        case .pendingApproval: "보호자 승인 대기 중 • 승인 후 자동 지급됩니다"
+        case .cancelled: "구매를 취소했습니다 • 결제된 항목은 없습니다"
+        case .restoring: "이 Apple ID의 구매 내역을 복원하는 중입니다"
+        case .restored: "구매 복원과 권한 확인을 완료했습니다"
+        case .offlineRetry: "App Store 연결 실패 • 네트워크 확인 후 다시 시도하세요"
+        case .verificationFailed: "거래 검증 실패 • 지급하지 않았습니다"
+        case .failed(let message): message
+        }
+    }
+}
+
+struct StoreProductDisplay: Equatable, Sendable {
+    let id: StoreProductID
+    let displayName: String
+    let displayPrice: String
+}
+
+struct StorefrontSnapshot: Equatable, Sendable {
+    let state: StorePurchaseState
+    let entitlements: EntitlementSnapshot
+    let products: [StoreProductDisplay]
+
+    static func unavailable(entitlements: EntitlementSnapshot) -> StorefrontSnapshot {
+        StorefrontSnapshot(state: .idle, entitlements: entitlements, products: [])
+    }
 }
 
 @MainActor
 final class StoreKitPurchaseController {
-    typealias UpdateHandler = @MainActor (StorePurchaseState, EntitlementSnapshot) -> Void
+    typealias UpdateHandler = @MainActor (StorefrontSnapshot) -> Void
 
     private let catalog: IAPCatalog
     private let ledger: PurchaseLedgerStore
@@ -33,9 +86,14 @@ final class StoreKitPurchaseController {
     private var retryOperation: StoreOperation?
 
     private(set) var products: [StoreProductID: Product] = [:]
+    private(set) var productDisplays: [StoreProductDisplay] = []
     private(set) var state: StorePurchaseState = .idle
     private(set) var entitlements: EntitlementSnapshot
     var onUpdate: UpdateHandler?
+
+    var snapshot: StorefrontSnapshot {
+        StorefrontSnapshot(state: state, entitlements: entitlements, products: productDisplays)
+    }
 
     init(catalog: IAPCatalog, ledger: PurchaseLedgerStore) {
         self.catalog = catalog
@@ -63,6 +121,8 @@ final class StoreKitPurchaseController {
     }
 
     func loadProductsAndEntitlements() async {
+        products = [:]
+        productDisplays = []
         setState(.loadingProducts)
         do {
             let loaded = try await Product.products(for: catalog.products.map { $0.id.rawValue })
@@ -73,6 +133,11 @@ final class StoreKitPurchaseController {
                 retryOperation = .loadProducts
                 setState(.offlineRetry(.loadProducts))
                 return
+            }
+            productDisplays = catalog.products.compactMap { definition in
+                products[definition.id].map {
+                    StoreProductDisplay(id: definition.id, displayName: $0.displayName, displayPrice: $0.displayPrice)
+                }
             }
             guard await refreshCurrentEntitlements() else { return }
             retryOperation = nil
@@ -202,12 +267,12 @@ final class StoreKitPurchaseController {
 
     private func setState(_ state: StorePurchaseState) {
         self.state = state
-        onUpdate?(state, entitlements)
+        onUpdate?(snapshot)
     }
 
     private func publishEntitlements() {
         entitlements = ledger.loadOrEmpty().entitlementSnapshot()
-        onUpdate?(state, entitlements)
+        onUpdate?(snapshot)
     }
 
     deinit {

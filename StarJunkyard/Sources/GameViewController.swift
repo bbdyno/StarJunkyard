@@ -69,6 +69,11 @@ final class GameViewController: UIViewController {
                 ? Locale(identifier: "en")
                 : Locale(identifier: "ko")
             presentSettings(locale: locale)
+        } else if ProcessInfo.processInfo.arguments.contains("-capture-premium-store") {
+            var captureSave = GameSave.newGame()
+            captureSave.prologueSeen = true
+            captureSave.tutorialStep = 4
+            startGame(with: captureSave, showPremiumStoreOnLaunch: true)
         } else if ProcessInfo.processInfo.arguments.contains("-capture-operations") {
             let expeditionStart = Date().addingTimeInterval(-31 * 60)
             var captureSave = GameSave.newGame(now: expeditionStart)
@@ -246,14 +251,18 @@ final class GameViewController: UIViewController {
         with initialSave: GameSave,
         showFacilityPanelOnLaunch: Bool = false,
         showOperationsPanelOnLaunch: Bool = false,
-        showCrewPanelOnLaunch: Bool = false
+        showCrewPanelOnLaunch: Bool = false,
+        showPremiumStoreOnLaunch: Bool = false
     ) {
+        let initialEntitlements = purchaseController?.entitlements
+            ?? purchaseLedgerStore.loadOrEmpty().entitlementSnapshot()
         let scene = CombatScene(
             content: content,
             save: initialSave,
-            premiumEntitlements: purchaseLedgerStore.loadOrEmpty().entitlementSnapshot(),
+            premiumEntitlements: initialEntitlements,
             showFacilityPanelOnLaunch: showFacilityPanelOnLaunch,
             showOperationsPanelOnLaunch: showOperationsPanelOnLaunch,
+            showPremiumStoreOnLaunch: showPremiumStoreOnLaunch,
             showCrewPanelOnLaunch: showCrewPanelOnLaunch,
             settings: settingsStore.load()
         )
@@ -267,6 +276,20 @@ final class GameViewController: UIViewController {
         scene.onLongOperationStarted = { [weak self] operation in
             self?.operationNotifications.operationStarted(operation)
         }
+        if purchaseController != nil {
+            scene.onStorePurchase = { [weak self] productID in
+                Task { [weak self] in await self?.purchaseController?.purchase(productID) }
+            }
+            scene.onStoreRestore = { [weak self] in
+                Task { [weak self] in await self?.purchaseController?.restorePurchases() }
+            }
+            scene.onStoreRetry = { [weak self] in
+                Task { [weak self] in await self?.purchaseController?.retryLastOperation() }
+            }
+        }
+        scene.updateStorefront(
+            purchaseController?.snapshot ?? .unavailable(entitlements: initialEntitlements)
+        )
         combatScene = scene
         saveSelectionScene = nil
         settingsScene = nil
@@ -348,8 +371,8 @@ final class GameViewController: UIViewController {
     private func startStoreKit() {
         guard let catalog = try? IAPCatalog.load() else { return }
         let controller = StoreKitPurchaseController(catalog: catalog, ledger: purchaseLedgerStore)
-        controller.onUpdate = { [weak self] _, entitlements in
-            self?.combatScene?.updatePremiumEntitlements(entitlements)
+        controller.onUpdate = { [weak self] snapshot in
+            self?.combatScene?.updateStorefront(snapshot)
         }
         purchaseController = controller
         controller.start()

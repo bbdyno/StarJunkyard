@@ -63,6 +63,21 @@
       "productID" : "com.bbdyno.starjunkyard.cosmetic.bora.rust",
       "referenceName" : "Bora Rust Cosmetic",
       "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "08D34E06-6B69-48CB-A63F-938820EE45D0",
+      "localizations" : [
+        {
+          "description" : "2026 고철전선 시즌의 유료 보상 트랙을 영구 해금합니다.",
+          "displayName" : "고철전선 2026 시즌 패스",
+          "locale" : "ko_KR"
+        }
+      ],
+      "productID" : "com.bbdyno.starjunkyard.season.2026.scrapfrontier",
+      "referenceName" : "Scrap Frontier 2026 Season Pass",
+      "type" : "NonConsumable"
     }
   ],
   "settings" : {

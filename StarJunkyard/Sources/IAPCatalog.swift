@@ -6,6 +6,7 @@ enum StoreProductID: String, CaseIterable, Codable, Sendable {
     case offline16Hours = "com.bbdyno.starjunkyard.offline.16h"
     case boraRustCosmetic = "com.bbdyno.starjunkyard.cosmetic.bora.rust"
     case maintenanceMonthly = "com.bbdyno.starjunkyard.maintenance.monthly"
+    case scrapFrontierSeason2026 = "com.bbdyno.starjunkyard.season.2026.scrapfrontier"
 
     var expectedType: StoreProductType {
         self == .maintenanceMonthly ? .autoRenewableSubscription : .nonConsumable
@@ -23,6 +24,30 @@ enum StoreProductID: String, CaseIterable, Codable, Sendable {
             [.boraRustUniform, .boraRustAttackFX]
         case .maintenanceMonthly:
             [.craftSpeed110, .dailyTimeTicketPlus1, .monthlyCrewCosmetic]
+        case .scrapFrontierSeason2026:
+            [.season2026ScrapFrontierPremium]
+        }
+    }
+
+    var benefitKo: String {
+        switch self {
+        case .starterCrewKit: "창업 정비복 · 공격 효과 · 배지"
+        case .workbenchSlot3: "세 번째 작업대 영구 해금"
+        case .offline16Hours: "오프라인 적립 8시간 → 16시간"
+        case .boraRustCosmetic: "녹슨 정비복 · 전용 공격 효과"
+        case .maintenanceMonthly: "제작 +10% · 매일 즉시완료권 1장"
+        case .scrapFrontierSeason2026: "고철전선 시즌 유료 보상 트랙"
+        }
+    }
+
+    var fallbackNameKo: String {
+        switch self {
+        case .starterCrewKit: "보라 창업 정비 키트"
+        case .workbenchSlot3: "작업대 3번 슬롯"
+        case .offline16Hours: "오프라인 적립 16시간"
+        case .boraRustCosmetic: "보라 녹슨 정비복"
+        case .maintenanceMonthly: "월간 정비 멤버십"
+        case .scrapFrontierSeason2026: "고철전선 2026 시즌 패스"
         }
     }
 }
@@ -43,6 +68,7 @@ enum PremiumEntitlement: String, CaseIterable, Codable, Sendable {
     case craftSpeed110 = "craft_speed_1_10"
     case dailyTimeTicketPlus1 = "daily_time_ticket_plus_1"
     case monthlyCrewCosmetic = "monthly_crew_cosmetic"
+    case season2026ScrapFrontierPremium = "season_2026_scrapfrontier_premium"
 }
 
 struct EntitlementSnapshot: Codable, Equatable, Sendable {
@@ -56,6 +82,36 @@ struct EntitlementSnapshot: Codable, Equatable, Sendable {
 
     var offlineCapHours: Int {
         contains(.offlineCap16Hours) ? 16 : 8
+    }
+
+    var workbenchSlots: Int {
+        contains(.workbenchSlot3) ? 3 : 2
+    }
+
+    var craftSpeedMultiplier: Double {
+        contains(.craftSpeed110) ? 1.10 : 1
+    }
+}
+
+enum BoraUniform: String, Codable, CaseIterable, Sendable {
+    case base
+    case founder
+    case rust
+
+    var nameKo: String {
+        switch self {
+        case .base: "기본 작업복"
+        case .founder: "창업 정비복"
+        case .rust: "녹슨 정비복"
+        }
+    }
+
+    func isUnlocked(by entitlements: EntitlementSnapshot) -> Bool {
+        switch self {
+        case .base: true
+        case .founder: entitlements.contains(.boraFounderUniform)
+        case .rust: entitlements.contains(.boraRustUniform)
+        }
     }
 }
 

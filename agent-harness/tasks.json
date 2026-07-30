@@ -109,6 +109,29 @@
         "docs/**"
       ],
       "validationProfile": "full-ios"
+    },
+    {
+      "id": "issue-26",
+      "issue": 26,
+      "title": "StoreKit 거래 원장과 실제 유료 권한 연결",
+      "branch": "issue/26-storekit-ledger",
+      "baseRef": "b62c750df9f382bbf56fe9dbafef73047b53a86f",
+      "worktreeHint": "../StarJunkyard-worktrees/issue-26",
+      "ownedPaths": [
+        "agent-harness/tasks.json",
+        "Project.swift",
+        "README.md",
+        "Tuist.swift",
+        "StarJunkyard/Sources/**",
+        "StarJunkyardTests/**",
+        "StarJunkyard/StarJunkyard.storekit",
+        "content/ios-iap-catalog.json",
+        "docs/**",
+        "tests/test_agent_harness.py",
+        "tests/test_project_contracts.py",
+        "tools/validate_project.py"
+      ],
+      "validationProfile": "full-ios"
     }
   ]
 }
