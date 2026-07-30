@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "catalogPath": "content/ios-iap-catalog.json",
+  "configurationPath": "StarJunkyard/StarJunkyard.storekit",
+  "runtimeSourceRoot": "StarJunkyard/Sources",
+  "runtimeMarkers": ["import StoreKit", "Product.products("],
+  "configurationRequiredWhenRuntimeMarkerExists": true,
+  "productIdentityPolicy": "configuration_must_exactly_match_current_catalog",
+  "pricePresentationPolicy": "storekit_localized_display_price_only",
+  "referencePricePolicy": "planning_only_never_customer_facing",
+  "externalBlocker": "ASC-IAP"
+}

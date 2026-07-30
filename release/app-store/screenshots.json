@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "status": "capture_after_final_feature_integration",
+  "format": ["png", "jpeg", "jpg"],
+  "opaque": true,
+  "minimumPerRequiredDisplay": 1,
+  "maximumPerDisplay": 10,
+  "requiredDisplays": [
+    {
+      "id": "iphone-6.9-portrait",
+      "acceptedPixelSizes": [[1260, 2736], [1290, 2796], [1320, 2868]],
+      "captureScenes": ["returning-player save selection", "crew combat with readable enemies", "workbench upgrade decision", "story objective and starship progress"]
+    },
+    {
+      "id": "ipad-13-portrait",
+      "acceptedPixelSizes": [[2064, 2752], [2048, 2732]],
+      "captureScenes": ["iPad safe-area game overview", "crew combat with readable enemies", "workbench upgrade decision", "story objective and starship progress"]
+    }
+  ],
+  "externalBlocker": "ASC-SCREENSHOTS"
+}
