@@ -469,7 +469,9 @@
       "scalePolicy": "integer_nearest",
       "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/enemy_r04_anchor_crab.png",
-      "imagegenCallArtifacts": ["exec-d8659775-8a33-4674-a5dd-7e17b23d99ff.png"],
+      "imagegenCallArtifacts": [
+        "exec-d8659775-8a33-4674-a5dd-7e17b23d99ff.png"
+      ],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/enemy_r04_anchor_crab.png",
       "file": "art-export/issue-44-r3-r4/production/enemy_r04_anchor_crab.png",
       "sourceSha256": "a29441918840f394b601c328407cc72c0a0221a4d6ff101fe7b7e55037dabc88",
@@ -507,7 +509,9 @@
       "scalePolicy": "integer_nearest",
       "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/enemy_r04_lifebuoy_puffer.png",
-      "imagegenCallArtifacts": ["exec-14acf1d0-ec48-4be4-9688-64b2927362ba.png"],
+      "imagegenCallArtifacts": [
+        "exec-14acf1d0-ec48-4be4-9688-64b2927362ba.png"
+      ],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/enemy_r04_lifebuoy_puffer.png",
       "file": "art-export/issue-44-r3-r4/production/enemy_r04_lifebuoy_puffer.png",
       "sourceSha256": "699a12f7247ed5cec5ddd4c320c38737a4ece0edaea07caf9e6ed842652c1a38",
@@ -545,7 +549,9 @@
       "scalePolicy": "integer_nearest",
       "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/enemy_r04_bulb_angler.png",
-      "imagegenCallArtifacts": ["exec-b0fdf0b0-a9ce-4420-a4e5-e5b4b33e84f0.png"],
+      "imagegenCallArtifacts": [
+        "exec-b0fdf0b0-a9ce-4420-a4e5-e5b4b33e84f0.png"
+      ],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/enemy_r04_bulb_angler.png",
       "file": "art-export/issue-44-r3-r4/production/enemy_r04_bulb_angler.png",
       "sourceSha256": "82f1c308ec126441504a206805518a9c4462bfffe5602c8cfacb7f7484e96b34",
@@ -583,7 +589,9 @@
       "scalePolicy": "integer_nearest",
       "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/enemy_r04_container_hermit.png",
-      "imagegenCallArtifacts": ["exec-53784221-df3b-4fe2-bdd8-95888463938a.png"],
+      "imagegenCallArtifacts": [
+        "exec-53784221-df3b-4fe2-bdd8-95888463938a.png"
+      ],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/enemy_r04_container_hermit.png",
       "file": "art-export/issue-44-r3-r4/production/enemy_r04_container_hermit.png",
       "sourceSha256": "d81440c2affa2b4cc4c1d9c6e2c9d18794ed3be3d86f447783e7322531fe0d10",
@@ -621,7 +629,9 @@
       "scalePolicy": "integer_nearest",
       "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/elite_r04_crane_octopus.png",
-      "imagegenCallArtifacts": ["exec-18881708-4e52-4701-a160-8c743f995211.png"],
+      "imagegenCallArtifacts": [
+        "exec-18881708-4e52-4701-a160-8c743f995211.png"
+      ],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/elite_r04_crane_octopus.png",
       "file": "art-export/issue-44-r3-r4/production/elite_r04_crane_octopus.png",
       "sourceSha256": "274584bd2db670bdfe484cb0c485a5fc26a1e16e0aaa99d720e8730ccbdaf26d",
@@ -659,7 +669,9 @@
       "scalePolicy": "integer_nearest",
       "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/elite_r04_buoy_lighthouse_knight.png",
-      "imagegenCallArtifacts": ["exec-b798407c-a806-43ad-b35e-595d854345fe.png"],
+      "imagegenCallArtifacts": [
+        "exec-b798407c-a806-43ad-b35e-595d854345fe.png"
+      ],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/elite_r04_buoy_lighthouse_knight.png",
       "file": "art-export/issue-44-r3-r4/production/elite_r04_buoy_lighthouse_knight.png",
       "sourceSha256": "c4ba3a2ca4e6c272d9e569a789e0c280ff25bd0ba4a894ac8acf99003a781356",
@@ -699,7 +711,9 @@
       "scalePolicy": "integer_nearest",
       "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/boss_r04_sunken_container_whale.png",
-      "imagegenCallArtifacts": ["exec-7f03f155-e059-46ec-9302-9bd1c0518f02.png"],
+      "imagegenCallArtifacts": [
+        "exec-7f03f155-e059-46ec-9302-9bd1c0518f02.png"
+      ],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/boss_r04_sunken_container_whale.png",
       "file": "art-export/issue-44-r3-r4/production/boss_r04_sunken_container_whale.png",
       "sourceSha256": "0b4ef7c7bdd3ee16dec03e1f469a840c466ddbc1333009a8811ec8a9e0b07db2",
@@ -739,7 +753,9 @@
       "scalePolicy": "integer_nearest",
       "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/boss_r04_nameless_ship_heart.png",
-      "imagegenCallArtifacts": ["exec-7d9b31e6-881e-44ca-a47a-cb49a513743d.png"],
+      "imagegenCallArtifacts": [
+        "exec-7d9b31e6-881e-44ca-a47a-cb49a513743d.png"
+      ],
       "transparentFile": "art-source/issue-44-r3-r4/transparent/boss_r04_nameless_ship_heart.png",
       "file": "art-export/issue-44-r3-r4/production/boss_r04_nameless_ship_heart.png",
       "sourceSha256": "672e4e9302186a579ca83d08f7b003cfc4028c9162fdc9f4daddde4deb54e599",
@@ -777,7 +793,9 @@
       "scalePolicy": "integer_nearest",
       "status": "production_ready",
       "sourceFile": "art-source/issue-44-r3-r4/originals/background_r04_sunken_ship_graveyard.png",
-      "imagegenCallArtifacts": ["exec-1ea338c7-2ad2-4256-81f4-670f31f34ab9.png"],
+      "imagegenCallArtifacts": [
+        "exec-1ea338c7-2ad2-4256-81f4-670f31f34ab9.png"
+      ],
       "file": "art-export/issue-44-r3-r4/production/background_r04_sunken_ship_graveyard.png",
       "sourceSha256": "05ff480d775425333116f5b0a19247510827ae5e32e5a2b9e1fa856e66965141",
       "sha256": "4a74deb9f29f091d026d8896a64b0aa8049d49ebe6dc8525ec239cd470ae2b46",
