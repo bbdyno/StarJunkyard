@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "repository": "StarJunkyard-iOS",
+  "branchPolicy": {
+    "requiredPrefix": "issue/",
+    "forbiddenFragments": ["codex"]
+  },
+  "validationProfiles": {
+    "full-ios": [
+      {
+        "name": "Python contract tests",
+        "command": ["python3", "-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"]
+      },
+      {
+        "name": "Release contracts and pixel assets",
+        "command": ["python3", "tools/validate_project.py", "--release"]
+      },
+      {
+        "name": "Generate Xcode project",
+        "command": ["tuist", "generate", "--no-open"]
+      },
+      {
+        "name": "iOS XCTest",
+        "command": [
+          "xcodebuild",
+          "-project", "StarJunkyard.xcodeproj",
+          "-scheme", "StarJunkyard",
+          "-configuration", "Debug",
+          "-quiet",
+          "-destination", "platform=iOS Simulator,id={simulator_id}",
+          "-derivedDataPath", "{derived_data_path}",
+          "CODE_SIGNING_ALLOWED=NO",
+          "test"
+        ]
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "id": "issue-21",
+      "issue": 21,
+      "title": "멀티에이전트 worktree 및 검증 하네스",
+      "branch": "issue/21-agent-harness",
+      "baseRef": "af39c591b977b281f6816dab28d24f55437a45c0",
+      "worktreeHint": "../StarJunkyard-worktrees/issue-21",
+      "ownedPaths": [
+        "agent-harness/**",
+        "Tuist/README.md",
+        "tools/agent_harness.py",
+        "tests/test_agent_harness.py",
+        "docs/AGENT_HARNESS.md",
+        "README.md"
+      ],
+      "validationProfile": "full-ios"
+    },
+    {
+      "id": "issue-22",
+      "issue": 22,
+      "title": "S10 보스전과 피난처 1장 엔딩",
+      "branch": "issue/22-r1-boss-finale",
+      "baseRef": "af39c591b977b281f6816dab28d24f55437a45c0",
+      "worktreeHint": "../StarJunkyard-worktrees/issue-22",
+      "ownedPaths": [
+        "StarJunkyard/Sources/**",
+        "StarJunkyardTests/**",
+        "docs/IOS_VERTICAL_SLICE.md"
+      ],
+      "validationProfile": "full-ios"
+    },
+    {
+      "id": "issue-25",
+      "issue": 25,
+      "title": "R1 S60 콘텐츠와 경제 시뮬레이션",
+      "branch": "issue/25-r1-s60-economy",
+      "baseRef": "af39c591b977b281f6816dab28d24f55437a45c0",
+      "worktreeHint": "../StarJunkyard-worktrees/issue-25",
+      "ownedPaths": [
+        "content/**",
+        "schemas/**",
+        "golden/**",
+        "StarJunkyard/Sources/ContentModels.swift",
+        "StarJunkyard/Sources/GameContent.swift",
+        "StarJunkyard/Sources/GameSave.swift",
+        "StarJunkyard/Sources/R1Economy.swift",
+        "StarJunkyardTests/**",
+        "tests/**",
+        "tools/economy_simulation.py",
+        "tools/generate_r1_content.py",
+        "tools/reference_simulation.py",
+        "tools/validate_project.py",
+        "docs/**"
+      ],
+      "validationProfile": "full-ios"
+    },
+    {
+      "id": "issue-27",
+      "issue": 27,
+      "title": "iOS 제품 기반",
+      "branch": "issue/27-product-foundation",
+      "baseRef": "af39c591b977b281f6816dab28d24f55437a45c0",
+      "worktreeHint": "../StarJunkyard-worktrees/issue-27",
+      "ownedPaths": [
+        "Project.swift",
+        "README.md",
+        "StarJunkyard/Resources/**",
+        "StarJunkyard/Sources/**",
+        "StarJunkyardTests/**",
+        "content/ios-iap-catalog.json",
+        "docs/**"
+      ],
+      "validationProfile": "full-ios"
+    }
+  ]
+}
