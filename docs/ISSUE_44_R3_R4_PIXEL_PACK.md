@@ -77,3 +77,12 @@ python3 tools/issue44_build_r3_r4_pixel_pack.py --all --verify-complete --contac
 ```
 
 `production_ready`는 strict PNG의 크기, binary alpha, 투명 모서리, 지역 팔레트 부분집합, 초록 fringe 0개, 원본/투명 중간물/strict PNG SHA-256 검사를 모두 통과한 뒤 빌더만 기록한다. `imagegenCallArtifacts`는 distinct asset마다 실제 별도 내장 ImageGen 호출의 고유 `exec-*.png` 증거를 남기며, 수정 호출도 순서대로 보존한다. 접촉 시트에는 각 적의 한·영 이름, ID, 등급, 행동, 약점과 4배 nearest-neighbor 미리보기를 함께 둔다.
+
+## 최종 QA 결과
+
+| 지역 | 별도 원본 | strict export | 알파 | 팔레트 | 초록 fringe | 접촉 시트 |
+|---|---:|---:|---|---|---:|---|
+| R3 | 9 | 9 | 0/255 only | R3 16색 부분집합 | 0 | `docs/screenshots/issue-44-r03-contact-sheet.png` |
+| R4 | 9 | 9 | 0/255 only | R4 16색 부분집합 | 0 | `docs/screenshots/issue-44-r04-contact-sheet.png` |
+
+내장 ImageGen은 distinct asset 18개에 각각 호출했다. R3 막차 기관수는 원본 압력계에 생긴 금지 영문을 제거하기 위한 targeted edit 1회를 추가해 총 호출 증거는 19개다. 원본 18개, 투명 중간물 16개, 불투명 배경 원본 2개, strict PNG 18개의 SHA-256을 fragment에 고정했다. R3/R4 접촉 시트의 100% production pixel과 확대 미리보기를 직접 확인해 의미 불명 도형, 복제 실루엣, 잘린 부위, 안티앨리어싱, 초록 테두리가 없음을 승인했다.

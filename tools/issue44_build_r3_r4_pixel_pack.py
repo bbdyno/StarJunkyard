@@ -32,6 +32,11 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def image_data(image: Image.Image) -> list[Any]:
+    flattened = getattr(image, "get_flattened_data", None)
+    return list(flattened() if flattened is not None else image.getdata())
+
+
 def load_fragment() -> dict[str, Any]:
     return json.loads(FRAGMENT_PATH.read_text(encoding="utf-8"))
 
@@ -135,12 +140,14 @@ def inspect_pixels(
     transparent: bool,
 ) -> dict[str, int | bool]:
     rgba = image.convert("RGBA")
-    alphas = set(rgba.getchannel("A").getdata())
+    rgba_values = image_data(rgba)
+    alpha_values = image_data(rgba.getchannel("A"))
+    alphas = set(alpha_values)
     if not alphas <= {0, 255}:
         raise ValueError(f"partial alpha values remain: {sorted(alphas - {0, 255})[:8]}")
     colors = {
         (red, green, blue)
-        for red, green, blue, alpha in rgba.getdata()
+        for red, green, blue, alpha in rgba_values
         if alpha == 255
     }
     outside = colors - palette
@@ -160,12 +167,12 @@ def inspect_pixels(
     # Exact chroma green and highly dominant residual greens are forbidden.
     green_fringe = sum(
         1
-        for red, green, blue, alpha in rgba.getdata()
+        for red, green, blue, alpha in rgba_values
         if alpha == 255 and green > 220 and green > red * 1.65 and green > blue * 1.65
     )
     if green_fringe:
         raise ValueError(f"detected {green_fringe} possible chroma fringe pixels")
-    opaque = sum(1 for alpha in rgba.getchannel("A").getdata() if alpha == 255)
+    opaque = sum(1 for alpha in alpha_values if alpha == 255)
     coverage = opaque / (rgba.width * rgba.height)
     if transparent and not 0.04 <= coverage <= 0.88:
         raise ValueError(f"implausible sprite coverage: {coverage:.3f}")
