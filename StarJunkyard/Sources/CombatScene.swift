@@ -81,6 +81,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private let offlineAmount: Int
     private let showFacilityPanelOnLaunch: Bool
     private let showOperationsPanelOnLaunch: Bool
+    private let showCrewPanelOnLaunch: Bool
     private var tutorialStep: Int
     private var accumulator: TimeInterval = 0
     private var lastUpdateTime: TimeInterval = 0
@@ -147,6 +148,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         save: GameSave,
         showFacilityPanelOnLaunch: Bool = false,
         showOperationsPanelOnLaunch: Bool = false,
+        showCrewPanelOnLaunch: Bool = false,
         settings: GameSettings = .default
     ) {
         self.content = content
@@ -189,6 +191,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         idleOperations = save.idleOperations
         self.showFacilityPanelOnLaunch = showFacilityPanelOnLaunch
         self.showOperationsPanelOnLaunch = showOperationsPanelOnLaunch
+        self.showCrewPanelOnLaunch = showCrewPanelOnLaunch
         let offline = YardEconomy.offlineIncome(
             rate: YardEconomy.passiveIncome(
                 pressLevel: pressLevel,
@@ -248,6 +251,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         setLowPowerMode(ProcessInfo.processInfo.isLowPowerModeEnabled)
         if showOperationsPanelOnLaunch {
             openOperations()
+        } else if showCrewPanelOnLaunch {
+            openCrew(status: "무료 해금 편성과 약점 모듈을 선택하세요")
         } else if showFacilityPanelOnLaunch {
             openFacilities(status: offlineReportText)
         } else if !prologueSeen {
