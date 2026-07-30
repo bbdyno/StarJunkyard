@@ -8,6 +8,7 @@ iOS/iPadOS 전용 StarJunkyard 저장소다. 루트의 `Project.swift`가 Xcode 
 - [iOS 도트 전투 버티컬 슬라이스](docs/IOS_VERTICAL_SLICE.md)
 - [버티컬 슬라이스 검증 매트릭스](docs/VERIFICATION_MATRIX.md)
 - [R1 프로덕션 픽셀 아트와 애니메이션](docs/PIXEL_ART_IMPLEMENTATION.md)
+- [R1–R6 프로덕션 월드와 픽셀 팩](docs/R2_PRODUCTION_PACK.md)
 - [멀티에이전트 worktree 및 검증 하네스](docs/AGENT_HARNESS.md)
 - [현지화·설정·분석·피드백 제품 기반](docs/PRODUCT_FOUNDATION.md)
 - [연구·제작·원정 작업 시스템](docs/IDLE_OPERATIONS.md)
@@ -38,3 +39,9 @@ python3 tools/release_regression.py
 ```
 
 Apple 계정·법무·지원/개인정보 URL·최종 스크린샷·IAP 승인·TestFlight·심사 제출처럼 외부 권한이 필요한 항목은 [출시 체크리스트](release/app-store/RELEASE_CHECKLIST.md)에 별도로 기록한다.
+
+## 프로덕션 월드
+
+런타임 콘텐츠는 R1 끝골목 폐기장부터 R6 버려진 달 도시와 기계 행성까지 S001–S360을 제공한다. 여섯 지역은 각각 고유 배경, 일반 적 4종, 엘리트 2종, 보스 2종과 지역별 기지·스토리 목표를 사용한다. 공통 매니페스트에는 프로덕션 에셋 58개가 등록되며 `contract_only`, null 스프라이트, 추상 폴백을 허용하지 않는다.
+
+지역별 iPhone 17/iPad (A16) 전투 캡처는 `docs/screenshots/r3-*`부터 `r6-*`까지 보관한다. 개발 빌드에서 `-capture-r2` … `-capture-r6` 실행 인자로 각 지역 첫 스테이지를 재현할 수 있다.

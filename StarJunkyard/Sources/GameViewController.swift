@@ -102,6 +102,18 @@ final class GameViewController: UIViewController {
             try? saveStore.save(captureSave)
             startGame(with: captureSave)
             presentSeason(save: captureSave)
+        } else if let captureStageIndex = Self.regionCaptureStageIndex(
+            arguments: ProcessInfo.processInfo.arguments
+        ) {
+            var captureSave = GameSave.newGame()
+            captureSave.stageIndex = captureStageIndex
+            captureSave.highestStage = captureStageIndex + 1
+            captureSave.credits = 8_500
+            captureSave.parts = 540
+            captureSave.shelterRepairParts = 30
+            captureSave.prologueSeen = true
+            captureSave.tutorialStep = 4
+            startGame(with: captureSave)
         } else if ProcessInfo.processInfo.arguments.contains("-capture-operations") {
             let expeditionStart = Date().addingTimeInterval(-31 * 60)
             var captureSave = GameSave.newGame(now: expeditionStart)
@@ -190,6 +202,16 @@ final class GameViewController: UIViewController {
             name: UIApplication.willEnterForegroundNotification,
             object: nil
         )
+    }
+
+    private static func regionCaptureStageIndex(arguments: [String]) -> Int? {
+        [
+            ("-capture-r2", 60),
+            ("-capture-r3", 120),
+            ("-capture-r4", 180),
+            ("-capture-r5", 240),
+            ("-capture-r6", 300)
+        ].first(where: { arguments.contains($0.0) })?.1
     }
 
     override var prefersStatusBarHidden: Bool { true }

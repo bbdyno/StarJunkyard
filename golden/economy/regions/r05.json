@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "economy_r05_one_clear",
+  "contentVersion": "0.3.0",
+  "regionId": "r05",
+  "expectedState": {
+    "regionId": "r05",
+    "stageRange": [
+      241,
+      300
+    ],
+    "oneClearBattleWallet": {
+      "credits": 3642425842290788,
+      "parts": 1386,
+      "circuits": 0,
+      "alloy": 0,
+      "starCores": 0
+    },
+    "firstClearWallet": {
+      "credits": 0,
+      "parts": 0,
+      "circuits": 470,
+      "alloy": 190,
+      "starCores": 5
+    },
+    "expectedClearSeconds": 1827,
+    "bossTimeLimitsMs": {
+      "250": 45000,
+      "260": 45000,
+      "270": 45000,
+      "280": 45000,
+      "290": 45000,
+      "300": 60000
+    },
+    "uniqueEnemyCount": 8,
+    "productionAssetCount": 8,
+    "primaryDropId": "alien_relic"
+  },
+  "expectedDigest": "3e33dc0cc76bfc8fe84171664d8ba43197b23fb916eabca48f67b21bc563570c"
+}

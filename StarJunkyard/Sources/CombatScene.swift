@@ -1,6 +1,194 @@
 import SpriteKit
 
 @MainActor
+struct RegionalFacilitySpec {
+    let name: String
+    let label: String
+    let x: Int
+    let blocks: [PixelArt.Block]
+
+    var blockSignature: String {
+        blocks.map { "\($0.x),\($0.y),\($0.width),\($0.height)" }.joined(separator: "|")
+    }
+}
+
+@MainActor
+enum RegionalFacilityCatalog {
+    static func facilities(for regionID: String) -> [RegionalFacilitySpec] {
+        switch regionID {
+        case "r03": subway
+        case "r04": shipyard
+        case "r05": orbit
+        case "r06": civilization
+        default: mall
+        }
+    }
+
+    private static let mall = [
+        RegionalFacilitySpec(name: "facility_conveyor", label: "운반", x: 9, blocks: [
+            .init(x: 0, y: 5, width: 20, height: 3, color: PixelPalette.lightIron),
+            .init(x: 2, y: 1, width: 4, height: 4, color: PixelPalette.darkTeal),
+            .init(x: 14, y: 1, width: 4, height: 4, color: PixelPalette.darkTeal),
+            .init(x: 7, y: 8, width: 6, height: 5, color: PixelPalette.warningAmber)
+        ]),
+        RegionalFacilitySpec(name: "facility_compactor", label: "압축", x: 41, blocks: [
+            .init(x: 0, y: 0, width: 3, height: 15, color: PixelPalette.lightIron),
+            .init(x: 17, y: 0, width: 3, height: 15, color: PixelPalette.lightIron),
+            .init(x: 0, y: 12, width: 20, height: 3, color: PixelPalette.lightIron),
+            .init(x: 8, y: 7, width: 4, height: 5, color: PixelPalette.warningAmber),
+            .init(x: 4, y: 4, width: 12, height: 3, color: PixelPalette.darkTeal)
+        ]),
+        RegionalFacilitySpec(name: "facility_furnace", label: "용광", x: 75, blocks: [
+            .init(x: 1, y: 0, width: 18, height: 15, color: PixelPalette.lightIron),
+            .init(x: 4, y: 3, width: 12, height: 8, color: PixelPalette.sparkOrange),
+            .init(x: 8, y: 5, width: 4, height: 6, color: PixelPalette.warningAmber),
+            .init(x: 14, y: 15, width: 4, height: 4, color: PixelPalette.darkTeal)
+        ]),
+        RegionalFacilitySpec(name: "facility_beacon", label: "출항", x: 109, blocks: [
+            .init(x: 8, y: 0, width: 4, height: 12, color: PixelPalette.lightIron),
+            .init(x: 4, y: 0, width: 12, height: 3, color: PixelPalette.darkTeal),
+            .init(x: 5, y: 12, width: 10, height: 4, color: PixelPalette.lightTeal),
+            .init(x: 1, y: 13, width: 3, height: 2, color: PixelPalette.lightTeal),
+            .init(x: 16, y: 13, width: 3, height: 2, color: PixelPalette.lightTeal)
+        ])
+    ]
+
+    private static let subway = [
+        RegionalFacilitySpec(name: "facility_rail", label: "선로", x: 9, blocks: [
+            .init(x: 0, y: 3, width: 20, height: 2, color: PixelPalette.lightIron),
+            .init(x: 0, y: 10, width: 20, height: 2, color: PixelPalette.lightIron),
+            .init(x: 2, y: 1, width: 2, height: 13, color: PixelPalette.darkTeal),
+            .init(x: 9, y: 1, width: 2, height: 13, color: PixelPalette.darkTeal),
+            .init(x: 16, y: 1, width: 2, height: 13, color: PixelPalette.darkTeal)
+        ]),
+        RegionalFacilitySpec(name: "facility_train", label: "차량", x: 41, blocks: [
+            .init(x: 1, y: 4, width: 18, height: 10, color: PixelPalette.lightIron),
+            .init(x: 4, y: 14, width: 12, height: 3, color: PixelPalette.darkTeal),
+            .init(x: 4, y: 9, width: 5, height: 3, color: PixelPalette.lightTeal),
+            .init(x: 11, y: 9, width: 5, height: 3, color: PixelPalette.lightTeal),
+            .init(x: 3, y: 1, width: 4, height: 3, color: PixelPalette.ink),
+            .init(x: 13, y: 1, width: 4, height: 3, color: PixelPalette.ink)
+        ]),
+        RegionalFacilitySpec(name: "facility_signal", label: "신호", x: 75, blocks: [
+            .init(x: 9, y: 0, width: 3, height: 10, color: PixelPalette.lightIron),
+            .init(x: 5, y: 8, width: 11, height: 11, color: PixelPalette.darkTeal),
+            .init(x: 8, y: 10, width: 5, height: 3, color: PixelPalette.recoveryGreen),
+            .init(x: 8, y: 14, width: 5, height: 3, color: PixelPalette.warningAmber),
+            .init(x: 5, y: 0, width: 11, height: 3, color: PixelPalette.ink)
+        ]),
+        RegionalFacilitySpec(name: "facility_power", label: "전력", x: 109, blocks: [
+            .init(x: 3, y: 2, width: 14, height: 14, color: PixelPalette.lightIron),
+            .init(x: 8, y: 16, width: 4, height: 3, color: PixelPalette.darkTeal),
+            .init(x: 10, y: 11, width: 4, height: 4, color: PixelPalette.warningAmber),
+            .init(x: 7, y: 7, width: 5, height: 5, color: PixelPalette.warningAmber),
+            .init(x: 6, y: 4, width: 4, height: 4, color: PixelPalette.sparkOrange)
+        ])
+    ]
+
+    private static let shipyard = [
+        RegionalFacilitySpec(name: "facility_salvage", label: "인양", x: 9, blocks: [
+            .init(x: 1, y: 16, width: 15, height: 3, color: PixelPalette.lightIron),
+            .init(x: 2, y: 2, width: 3, height: 14, color: PixelPalette.darkTeal),
+            .init(x: 14, y: 7, width: 2, height: 9, color: PixelPalette.lightTeal),
+            .init(x: 12, y: 3, width: 5, height: 4, color: PixelPalette.warningAmber),
+            .init(x: 10, y: 5, width: 2, height: 2, color: PixelPalette.warningAmber)
+        ]),
+        RegionalFacilitySpec(name: "facility_cutter", label: "절단", x: 41, blocks: [
+            .init(x: 2, y: 2, width: 8, height: 4, color: PixelPalette.darkTeal),
+            .init(x: 7, y: 5, width: 4, height: 11, color: PixelPalette.lightIron),
+            .init(x: 11, y: 12, width: 5, height: 4, color: PixelPalette.warningAmber),
+            .init(x: 14, y: 8, width: 4, height: 4, color: PixelPalette.warningAmber),
+            .init(x: 11, y: 5, width: 5, height: 3, color: PixelPalette.sparkOrange)
+        ]),
+        RegionalFacilitySpec(name: "facility_hull", label: "선체", x: 75, blocks: [
+            .init(x: 2, y: 13, width: 16, height: 3, color: PixelPalette.lightIron),
+            .init(x: 1, y: 9, width: 18, height: 4, color: PixelPalette.darkTeal),
+            .init(x: 3, y: 5, width: 14, height: 4, color: PixelPalette.lightTeal),
+            .init(x: 6, y: 2, width: 8, height: 3, color: PixelPalette.ink),
+            .init(x: 7, y: 16, width: 3, height: 3, color: PixelPalette.warningAmber)
+        ]),
+        RegionalFacilitySpec(name: "facility_lighthouse", label: "등대", x: 109, blocks: [
+            .init(x: 5, y: 2, width: 10, height: 3, color: PixelPalette.darkTeal),
+            .init(x: 7, y: 5, width: 6, height: 10, color: PixelPalette.lightIron),
+            .init(x: 4, y: 15, width: 12, height: 4, color: PixelPalette.warningAmber),
+            .init(x: 0, y: 16, width: 4, height: 2, color: PixelPalette.lightTeal),
+            .init(x: 16, y: 16, width: 4, height: 2, color: PixelPalette.lightTeal)
+        ])
+    ]
+
+    private static let orbit = [
+        RegionalFacilitySpec(name: "facility_docking", label: "도킹", x: 9, blocks: [
+            .init(x: 1, y: 2, width: 4, height: 16, color: PixelPalette.lightIron),
+            .init(x: 15, y: 2, width: 4, height: 16, color: PixelPalette.lightIron),
+            .init(x: 5, y: 5, width: 5, height: 3, color: PixelPalette.warningAmber),
+            .init(x: 10, y: 12, width: 5, height: 3, color: PixelPalette.warningAmber),
+            .init(x: 8, y: 8, width: 4, height: 4, color: PixelPalette.lightTeal)
+        ]),
+        RegionalFacilitySpec(name: "facility_panel", label: "패널", x: 41, blocks: [
+            .init(x: 1, y: 7, width: 18, height: 10, color: PixelPalette.lightTeal),
+            .init(x: 6, y: 7, width: 2, height: 10, color: PixelPalette.deepNavy),
+            .init(x: 12, y: 7, width: 2, height: 10, color: PixelPalette.deepNavy),
+            .init(x: 1, y: 11, width: 18, height: 2, color: PixelPalette.deepNavy),
+            .init(x: 9, y: 2, width: 3, height: 5, color: PixelPalette.lightIron),
+            .init(x: 5, y: 1, width: 11, height: 2, color: PixelPalette.darkTeal)
+        ]),
+        RegionalFacilitySpec(name: "facility_oxygen", label: "산소", x: 75, blocks: [
+            .init(x: 6, y: 4, width: 8, height: 12, color: PixelPalette.lightIron),
+            .init(x: 8, y: 16, width: 4, height: 3, color: PixelPalette.warningAmber),
+            .init(x: 8, y: 1, width: 4, height: 3, color: PixelPalette.darkTeal),
+            .init(x: 8, y: 7, width: 2, height: 7, color: PixelPalette.lightTeal),
+            .init(x: 14, y: 9, width: 4, height: 2, color: PixelPalette.recoveryGreen)
+        ]),
+        RegionalFacilitySpec(name: "facility_orbit", label: "궤도", x: 109, blocks: [
+            .init(x: 8, y: 8, width: 5, height: 5, color: PixelPalette.warningAmber),
+            .init(x: 5, y: 16, width: 10, height: 2, color: PixelPalette.lightTeal),
+            .init(x: 5, y: 3, width: 10, height: 2, color: PixelPalette.lightTeal),
+            .init(x: 2, y: 6, width: 2, height: 9, color: PixelPalette.lightIron),
+            .init(x: 17, y: 6, width: 2, height: 9, color: PixelPalette.lightIron),
+            .init(x: 4, y: 14, width: 3, height: 3, color: PixelPalette.darkTeal),
+            .init(x: 14, y: 4, width: 3, height: 3, color: PixelPalette.darkTeal)
+        ])
+    ]
+
+    private static let civilization = [
+        RegionalFacilitySpec(name: "facility_memory", label: "기억", x: 9, blocks: [
+            .init(x: 6, y: 6, width: 9, height: 9, color: PixelPalette.lightTeal),
+            .init(x: 8, y: 8, width: 5, height: 5, color: PixelPalette.warningAmber),
+            .init(x: 1, y: 9, width: 5, height: 2, color: PixelPalette.lightIron),
+            .init(x: 15, y: 9, width: 4, height: 2, color: PixelPalette.lightIron),
+            .init(x: 9, y: 1, width: 2, height: 5, color: PixelPalette.lightIron),
+            .init(x: 9, y: 15, width: 2, height: 4, color: PixelPalette.lightIron)
+        ]),
+        RegionalFacilitySpec(name: "facility_time", label: "시간", x: 41, blocks: [
+            .init(x: 3, y: 3, width: 14, height: 14, color: PixelPalette.lightIron),
+            .init(x: 5, y: 5, width: 10, height: 10, color: PixelPalette.deepNavy),
+            .init(x: 9, y: 9, width: 2, height: 6, color: PixelPalette.warningAmber),
+            .init(x: 10, y: 9, width: 5, height: 2, color: PixelPalette.warningAmber),
+            .init(x: 1, y: 8, width: 2, height: 4, color: PixelPalette.darkTeal),
+            .init(x: 17, y: 8, width: 2, height: 4, color: PixelPalette.darkTeal)
+        ]),
+        RegionalFacilitySpec(name: "facility_star", label: "항성", x: 75, blocks: [
+            .init(x: 8, y: 8, width: 5, height: 5, color: PixelPalette.warningAmber),
+            .init(x: 9, y: 1, width: 3, height: 7, color: PixelPalette.sparkOrange),
+            .init(x: 9, y: 13, width: 3, height: 6, color: PixelPalette.sparkOrange),
+            .init(x: 2, y: 9, width: 6, height: 3, color: PixelPalette.sparkOrange),
+            .init(x: 13, y: 9, width: 6, height: 3, color: PixelPalette.sparkOrange),
+            .init(x: 5, y: 5, width: 3, height: 3, color: PixelPalette.lightTeal),
+            .init(x: 13, y: 13, width: 3, height: 3, color: PixelPalette.lightTeal)
+        ]),
+        RegionalFacilitySpec(name: "facility_protocol", label: "규약", x: 109, blocks: [
+            .init(x: 2, y: 2, width: 4, height: 16, color: PixelPalette.lightIron),
+            .init(x: 14, y: 2, width: 4, height: 16, color: PixelPalette.lightIron),
+            .init(x: 2, y: 15, width: 16, height: 3, color: PixelPalette.darkTeal),
+            .init(x: 7, y: 5, width: 6, height: 10, color: PixelPalette.deepNavy),
+            .init(x: 8, y: 11, width: 2, height: 2, color: PixelPalette.recoveryGreen),
+            .init(x: 11, y: 8, width: 2, height: 2, color: PixelPalette.warningAmber),
+            .init(x: 6, y: 1, width: 8, height: 2, color: PixelPalette.lightTeal)
+        ])
+    ]
+}
+
+@MainActor
 final class CombatScene: SKScene, AdaptivePixelScene {
     static let logicalSize = PixelViewport.laneSize
 
@@ -707,7 +895,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
         for (index, spec) in specs.enumerated() {
             discoveredEnemyIDs.insert(spec.id)
-            let maxHP = max(1, stage.baseHp * spec.hpMultiplierPpm / 1_000_000)
+            let maxHP = max(1, EconomyMath.applyingPPM(spec.hpMultiplierPpm, to: stage.baseHp))
             let restored = restoredEnemyHPs.flatMap { index < $0.count ? $0[index] : nil }
             let hp = min(maxHP, max(0, restored ?? maxHP))
             let scale: CGFloat = spec.id == "can_bug" ? 2 : 1
@@ -997,7 +1185,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         let stage = content.stages[stageIndex]
         onFeedback?(.enemyDismantled)
         onAnalyticsEvent?(.enemyDismantled(id: enemy.spec.id, enemyClass: enemy.spec.enemyClass, stage: stage.number))
-        credits += stage.baseReward * stage.rewardMultiplierPpm / 1_000_000
+        credits += EconomyMath.applyingPPM(stage.rewardMultiplierPpm, to: stage.baseReward)
         let baseParts = enemy.spec.enemyClass == "boss" ? 15 : (enemy.spec.enemyClass == "elite" ? 6 : 3)
         let earnedParts = baseParts + magnetLevel - 1
         parts += earnedParts
@@ -1018,6 +1206,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
     private func finishDismantle(_ enemy: ActiveEnemy, afterTransition: (() -> Void)? = nil) {
         let stage = content.stages[stageIndex]
+        let previousStageNumber = stage.number
         enemy.root.removeAllActions()
         enemy.root.run(.sequence([.fadeOut(withDuration: 0.14), .hide()]))
 
@@ -1030,11 +1219,17 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
         groupTransitioning = true
         waveIndex += activeEnemies.count
+        var regionTransition: RegionProgression.Transition?
         if waveIndex >= stage.wave.count {
             recordSeasonEvent(.clearStage, playXP: 25)
-            stageIndex = (stageIndex + 1) % content.stages.count
+            stageIndex = min(stageIndex + 1, content.stages.count - 1)
             waveIndex = 0
             rng = PCG32(seed: UInt64(content.stages[stageIndex].number), stream: 54)
+            regionTransition = RegionProgression.transition(
+                from: previousStageNumber,
+                to: content.stages[stageIndex].number,
+                regions: content.regions ?? []
+            )
             reconcileFormationProgression()
         }
         if tutorialStep == 2 && credits >= cutterCost {
@@ -1044,7 +1239,14 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         persist()
         run(.sequence([
             .wait(forDuration: 0.42),
-            .run { [weak self] in self?.spawnCurrentGroup() },
+            .run { [weak self] in
+                guard let self else { return }
+                if let regionTransition {
+                    self.refreshRegionBackdrop()
+                    self.presentRegionTransition(regionTransition)
+                }
+                self.spawnCurrentGroup()
+            },
             .run { afterTransition?() }
         ]))
     }
@@ -1136,10 +1338,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
     private func buildBackground() {
         addBlock(size: Self.logicalSize, color: PixelPalette.deepNavy, position: .zero, z: -120, to: combatLayer)
-        let yard = PixelArt.asset("background_r01_back_alley")
-        yard.position = CGPoint(x: 180, y: 446)
-        yard.zPosition = -110
-        combatLayer.addChild(yard)
+        refreshRegionBackdrop()
 
         combatLayer.addChild(rainLayer)
         rainLayer.name = "rain"
@@ -1158,6 +1357,91 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         buildShelterReactor()
     }
 
+    private var currentRegion: VerticalSliceContent.Region? {
+        guard !content.stages.isEmpty else { return nil }
+        return RegionProgression.region(
+            containing: content.stages[stageIndex].number,
+            regions: content.regions ?? []
+        )
+    }
+
+    private func compactBaseName(for region: VerticalSliceContent.Region) -> String {
+        switch region.id {
+        case "r01": "컨테이너 작업장"
+        case "r02": "골목 재활용 공장"
+        case "r03": "이동 레일 공장"
+        case "r04": "대형 분해선"
+        case "r05": "궤도 재활용 정거장"
+        case "r06": "항성 기지"
+        default: region.baseFormKo
+        }
+    }
+
+    private func regionDropName(for region: VerticalSliceContent.Region) -> String {
+        switch region.id {
+        case "r01": "부품"
+        case "r02": "회로"
+        case "r03": "합금 제조법"
+        case "r04": "인양 유물"
+        case "r05": "외계 유물"
+        case "r06": "기억 파편"
+        default: "회수품"
+        }
+    }
+
+    private func refreshRegionBackdrop() {
+        combatLayer.childNode(withName: "region_background")?.removeFromParent()
+        guard let spriteID = currentRegion?.backgroundSpriteId else { return }
+        let background = PixelArt.asset(spriteID)
+        background.name = "region_background"
+        background.userData = ["spriteId": spriteID]
+        background.position = CGPoint(x: 180, y: 446)
+        background.zPosition = -110
+        combatLayer.addChild(background)
+        rainLayer.isHidden = currentRegion?.id != "r01"
+        if let title = shelterReactor.childNode(withName: "base_region_title") as? SKLabelNode {
+            title.text = currentRegion.map { "R\($0.number) • \(compactBaseName(for: $0))" } ?? "피난처 7호 • 반응로"
+        }
+        refreshShelterRecoveryVisuals()
+    }
+
+    private func presentRegionTransition(_ transition: RegionProgression.Transition) {
+        effectsLayer.childNode(withName: "region_transition")?.removeFromParent()
+        let panel = PixelArt.panel(size: CGSize(width: 332, height: 108), name: "region_transition")
+        panel.position = CGPoint(x: 14, y: 484)
+        panel.zPosition = 120
+        effectsLayer.addChild(panel)
+
+        let title = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
+        configureLabel(title, size: 13, color: PixelPalette.warningAmber, alignment: .center)
+        title.text = transition.title
+        title.position = CGPoint(x: 166, y: 82)
+        title.zPosition = 2
+        panel.addChild(title)
+
+        let departure = SKLabelNode(fontNamed: "AppleSDGothicNeo-Medium")
+        configureLabel(departure, size: 6, color: PixelPalette.lightIron, alignment: .center)
+        departure.text = transition.departureStory
+        departure.position = CGPoint(x: 166, y: 57)
+        departure.zPosition = 2
+        panel.addChild(departure)
+
+        let arrival = SKLabelNode(fontNamed: "AppleSDGothicNeo-Medium")
+        configureLabel(arrival, size: 6, color: PixelPalette.workWhite, alignment: .center)
+        arrival.text = transition.arrivalStory
+        arrival.position = CGPoint(x: 166, y: 39)
+        arrival.zPosition = 2
+        panel.addChild(arrival)
+
+        let base = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
+        configureLabel(base, size: 8, color: PixelPalette.lightTeal, alignment: .center)
+        base.text = "기지 확장 • " + transition.baseForm
+        base.position = CGPoint(x: 166, y: 16)
+        base.zPosition = 2
+        panel.addChild(base)
+        panel.run(.sequence([.wait(forDuration: 3.2), .fadeOut(withDuration: 0.2), .removeFromParent()]))
+    }
+
     private func buildShelterReactor() {
         shelterReactor.name = "shelter_reactor"
         shelterReactor.position = CGPoint(x: 16, y: 500)
@@ -1168,7 +1452,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         shelterReactor.addChild(panel)
         let title = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
         configureLabel(title, size: 8, color: PixelPalette.lightTeal, alignment: .left)
-        title.text = "피난처 7호 • 반응로"
+        title.text = currentRegion.map { "R\($0.number) • \(compactBaseName(for: $0))" } ?? "피난처 7호 • 반응로"
+        title.name = "base_region_title"
         title.position = CGPoint(x: 12, y: 54)
         title.zPosition = 3
         shelterReactor.addChild(title)
@@ -1456,6 +1741,17 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func refreshStoryGoal() {
+        if let region = currentRegion, region.number > 1 {
+            let stage = content.stages[stageIndex]
+            let current = min(60, max(1, stage.localStage ?? ((stage.number - 1) % 60 + 1)))
+            let dropName = regionDropName(for: region)
+            storyGoalTitleLabel.text = "R\(region.number)  \(dropName) 회수"
+            storyGoalDetailLabel.text = "\(dropName)을 모아 \(compactBaseName(for: region))을 완성하세요"
+            storyGoalProgressLabel.text = "S\(current) / 60  〉"
+            storyGoalFill.size.width = floor(88 * CGFloat(current) / 60)
+            storyGoalFill.color = current >= 60 ? PixelPalette.recoveryGreen : PixelPalette.warningAmber
+            return
+        }
         let goal = ShelterRecovery.goal(
             deliveredParts: shelterRepairParts,
             highestStage: max(save.highestStage, content.stages[stageIndex].number)
@@ -1487,6 +1783,24 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
     private func openStoryBrief() {
         storyOverlayIsPrologue = false
+        if let region = currentRegion, region.number > 1 {
+            let stage = content.stages[stageIndex]
+            let dropName = regionDropName(for: region)
+            buildStoryOverlay(
+                title: "R\(region.number) • \(region.nameKo)",
+                lines: [
+                    region.arrivalStoryKo,
+                    "",
+                    "현재 목표 • \(dropName)을 회수해",
+                    compactBaseName(for: region) + "을 완성한다.",
+                    "진행 S\(stage.localStage ?? ((stage.number - 1) % 60 + 1)) / 60",
+                    "",
+                    "괴수의 약점을 끊으면 핵심 자원이 드러납니다."
+                ],
+                action: "\(region.nameKo) 해체를 계속한다"
+            )
+            return
+        }
         let goal = ShelterRecovery.goal(
             deliveredParts: shelterRepairParts,
             highestStage: max(save.highestStage, content.stages[stageIndex].number)
@@ -1619,6 +1933,16 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func refreshShelterRecoveryVisuals() {
+        shelterReactor.childNode(withName: "r2_facility_strip")?.removeFromParent()
+        shelterReactor.childNode(withName: "regional_facility_strip")?.removeFromParent()
+        let regionalFacility = currentRegion.flatMap { $0.number > 1 ? $0 : nil }
+        shelterCore.isHidden = regionalFacility != nil
+        shelterLamps.forEach { $0.isHidden = regionalFacility != nil }
+        if let region = regionalFacility {
+            shelterReactor.alpha = 1
+            shelterReactor.addChild(buildRegionalFacilityStrip(for: region))
+            return
+        }
         let milestone = ShelterRecovery.milestone(for: shelterRepairParts)
         shelterReactor.alpha = milestone == 0 ? 0.82 : 1
         shelterCore.removeAllActions()
@@ -1667,6 +1991,34 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         crewRoleAssignments["bora"] = role.rawValue
         crewLevel = max(crewLevel, crewMasteryLevels["bora"] ?? 1)
         crewMasteryLevels["bora"] = crewLevel
+    }
+
+    private func buildRegionalFacilityStrip(for region: VerticalSliceContent.Region) -> SKNode {
+        let strip = SKNode()
+        strip.name = "regional_facility_strip"
+        strip.zPosition = 4
+
+        let facilities = RegionalFacilityCatalog.facilities(for: region.id)
+        for facility in facilities {
+            let icon = PixelArt.sprite(blocks: facility.blocks, name: facility.name)
+            icon.position = CGPoint(x: facility.x, y: 16)
+            strip.addChild(icon)
+
+            let label = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
+            configureLabel(label, size: 5, color: PixelPalette.workWhite, alignment: .center)
+            label.text = facility.label
+            label.position = CGPoint(x: facility.x + 10, y: 5)
+            label.name = facility.name + "_label"
+            strip.addChild(label)
+        }
+
+        if !gameSettings.reduceMotion, let signal = strip.childNode(withName: facilities[3].name) {
+            signal.run(.repeatForever(.sequence([
+                .fadeAlpha(to: 0.45, duration: 0), .wait(forDuration: 0.20),
+                .fadeAlpha(to: 1, duration: 0), .wait(forDuration: 0.20)
+            ])), withKey: "facility_signal_blink")
+        }
+        return strip
     }
 
     private enum ShopItem { case cutter, drone, magnet, crew }
@@ -2570,12 +2922,13 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private func updateHUD() {
         guard !content.stages.isEmpty else { return }
         let stage = content.stages[stageIndex]
-        stageLabel.text = "R1 • \(String(format: "%02d", stage.number))"
+        let region = currentRegion
+        stageLabel.text = "R\(region?.number ?? 1) • S\(String(format: "%03d", stage.number))"
         currencyLabel.text = "고철 \(credits)  •  +\(passiveIncomeRate)/초"
-        locationLabel.text = "피난처 7호 • 복구 부품 \(shelterRepairParts) • 회수 \(yardIncomeBank)"
+        locationLabel.text = (region?.nameKo ?? "끝골목 폐기장") + " • " + (region.map(compactBaseName) ?? "피난처 7호")
         let living = activeEnemies.filter { $0.hp > 0 }
         groupLabel.text = living.count > 1
-            ? "폐품 괴수 \(living.count)체 • 선두 약점 \(weaknessName(living.first?.spec.weakness))"
+            ? "괴수 \(living.count)체 • \(living.first?.spec.nameKo ?? "선두") / \(weaknessName(living.first?.spec.weakness))"
             : living.first.map { $0.spec.nameKo + " • 약점 " + weaknessName($0.spec.weakness) } ?? "다음 무리 탐색"
         let charge = combatTick >= overclockUntilTick ? 1 : CGFloat(max(0, overclockUntilTick - combatTick)) / 160
         overclockFill.size.width = floor(62 * charge)

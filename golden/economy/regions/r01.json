@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "economy_r01_one_clear",
+  "contentVersion": "0.3.0",
+  "regionId": "r01",
+  "expectedState": {
+    "regionId": "r01",
+    "stageRange": [
+      1,
+      60
+    ],
+    "oneClearBattleWallet": {
+      "credits": 543323,
+      "parts": 1386,
+      "circuits": 0,
+      "alloy": 0,
+      "starCores": 0
+    },
+    "firstClearWallet": {
+      "credits": 0,
+      "parts": 0,
+      "circuits": 94,
+      "alloy": 38,
+      "starCores": 1
+    },
+    "expectedClearSeconds": 1827,
+    "bossTimeLimitsMs": {
+      "10": 45000,
+      "20": 45000,
+      "30": 45000,
+      "40": 45000,
+      "50": 45000,
+      "60": 60000
+    },
+    "uniqueEnemyCount": 8,
+    "productionAssetCount": 8,
+    "primaryDropId": "parts"
+  },
+  "expectedDigest": "930e32e7a20213a66227149338a3ae6b3dac6563f1240cc64186cf508f997818"
+}

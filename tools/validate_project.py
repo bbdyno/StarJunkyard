@@ -18,6 +18,56 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 COMMON_DIRS = ("content", "schemas", "golden", "art-source", "art-export", "tools")
 RUNTIME_SUFFIXES = {".swift", ".kt", ".kts", ".java", ".m", ".mm", ".cpp", ".c"}
+EXPECTED_REGIONS = {
+    "r01": {
+        "name": "끝골목 폐기장",
+        "palette": ["#2B303B", "#70453A", "#C06C45", "#7D8F58"],
+        "names": ["캔벌레", "우산게", "선풍기박쥐", "냉장고멧돼지", "자판기기사", "폐타이어 투우사", "압착왕 캔크랩", "골목 포식차"],
+        "behaviors": ["구름", "우산 방패", "팬 밀침", "문 돌진", "상품 버튼 순서로 장갑 해제", "타이어 세 개를 차례로 굴림", "집게 방패 뒤 캔 투척", "돌진 뒤 폐품 흡입"],
+    },
+    "r02": {
+        "name": "폐쇄된 메가몰",
+        "palette": ["#301E3A", "#D14D87", "#57C7B6", "#E8D7A3"],
+        "names": ["쇼핑카트사슴", "마네킹문어", "키오스크거북", "청소기달팽이", "에스컬레이터지네", "보안셔터공작", "광고탑 하이드라", "몰의 빈 왕좌"],
+        "behaviors": ["바퀴가 네 단계로 가속", "소매가 다른 공격 팔 교체", "오류 화면 방패", "해체 파편 흡입", "몸 마디가 역순 파괴", "좌우 셔터 모터를 교대로 노출", "세 간판 눈부심과 문구 교체", "마네킹 소환과 회전문"],
+    },
+    "r03": {
+        "name": "막차 없는 지하철",
+        "palette": ["#111D33", "#E4572E", "#F3A712", "#7B8794"],
+        "names": ["표딱지쥐", "형광등뱀", "좌석갑옷", "환풍기해파리", "개찰구견", "노선도거미", "막차 기관수", "개찰구 케르베로스"],
+        "behaviors": ["세 마리 군집", "두 관이 교대 점멸", "좌석을 접어 장갑 전환", "환풍으로 부유", "세 머리 신호 속성 순환", "노선도 실로 공격 경로 전환", "선로 돌진과 신호 변경", "세 게이트 물기와 표 검사"],
+    },
+    "r04": {
+        "name": "침몰선 묘지",
+        "palette": ["#0D2B45", "#176B87", "#35A7A0", "#F07167"],
+        "names": ["앵커게", "구명환복어", "전구아귀", "컨테이너소라", "크레인문어", "부표등대기사", "침몰 컨테이너 고래", "무명 함선의 심장"],
+        "behaviors": ["체인 세 칸으로 지면 고정", "구명환 장갑 팽창", "전구 미끼로 암전", "상자 방패 전개", "네 암 중 공격 암 선택 절단", "회전등으로 표적 잠금", "물살과 상자 분출", "압력 맥박과 암전"],
+    },
+    "r05": {
+        "name": "궤도 잔해권",
+        "palette": ["#090B1A", "#4A4E9B", "#8C6ED9", "#D8F3FF"],
+        "names": ["패널나비", "안테나사마귀", "캡슐거북", "로켓두더지", "도킹골렘", "접시안테나불가사리", "태양돛 가오리", "궤도 쓰레기 용"],
+        "behaviors": ["태양 패널 반사", "안테나 집게 빔", "재진입 가열 돌진", "잔해 뒤 잠복", "좌우 도킹 암 동시 파괴", "다섯 접시로 빔 반사", "반사 날개와 태양광 빔", "패널 날개와 잔해 유성"],
+    },
+    "r06": {
+        "name": "버려진 달 도시와 기계 행성",
+        "palette": ["#17121F", "#6B5B3E", "#D9B44A", "#E45A9D"],
+        "names": ["월면버스풍뎅이", "산소통양", "톱니꽃", "기록관거인", "시간압축기", "기억소각사서", "역행 시계탑", "최종 처리 규약"],
+        "behaviors": ["저중력 점프", "압력 돌진", "톱니 꽃잎 재조립", "직전 공격 기록 복제", "공격 간격 1배와 2배 교대", "기록 한 줄씩 소각해 강화 제거", "5초 전 공격 복제와 시곗바늘 쓸기", "분류 삭제·시간 역전·백지화 3단계"],
+    },
+}
+STRICT_WORLD_ASSET_IDS = {
+    "boss_alley_devourer",
+    "elite_tire_matador",
+    "enemy_cart_deer",
+    "enemy_mannequin_octopus",
+    "enemy_kiosk_turtle",
+    "enemy_vacuum_snail",
+    "elite_escalator_centipede",
+    "elite_shutter_peacock",
+    "boss_billboard_hydra",
+    "boss_empty_throne",
+}
 
 
 class ContractError(ValueError):
@@ -44,7 +94,7 @@ def canonical_digest(value: Any) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
-def load_palette(relative_path: str | Path) -> set[tuple[int, int, int]]:
+def load_palette(relative_path: str | Path, expected_count: int = 16) -> set[tuple[int, int, int]]:
     colors: set[tuple[int, int, int]] = set()
     for line in (ROOT / relative_path).read_text(encoding="utf-8").splitlines():
         fields = line.strip().split()
@@ -52,7 +102,7 @@ def load_palette(relative_path: str | Path) -> set[tuple[int, int, int]]:
             color = tuple(int(field) for field in fields[:3])
             require(all(0 <= channel <= 255 for channel in color), f"invalid palette color: {line}")
             colors.add(color)
-    require(len(colors) == 16, f"common palette must have exactly 16 colors, found {len(colors)}")
+    require(len(colors) == expected_count, f"{relative_path} must have exactly {expected_count} colors, found {len(colors)}")
     return colors
 
 
@@ -153,35 +203,68 @@ def validate_schema_documents() -> None:
 
 
 def validate_content(content: dict[str, Any], manifest: dict[str, Any]) -> set[str]:
-    require(content.get("schemaVersion") == manifest.get("schemaVersion") == 1, "schema version mismatch")
+    require(content.get("schemaVersion") == manifest.get("schemaVersion") == 2, "schema version mismatch")
     require(content.get("contentVersion") == manifest.get("contentVersion"), "content version mismatch")
     slice_data = content["slice"]
     stages = content["stages"]
     expected_numbers = list(range(slice_data["stageStart"], slice_data["stageEnd"] + 1))
     actual_numbers = [stage["number"] for stage in stages]
     require(actual_numbers == expected_numbers, "stages must be unique, ordered, and contiguous")
-    require(expected_numbers == list(range(1, 61)), "R1 must contain exactly S1 through S60")
+    require(expected_numbers == list(range(1, 361)), "world content must contain exactly S1 through S360")
+    require(slice_data.get("productionStageEnd") == 360, "final production must expose S1 through S360")
 
     enemy_ids = [enemy["id"] for enemy in content["enemies"]]
     require(len(enemy_ids) == len(set(enemy_ids)), "enemy ids must be unique")
     enemy_by_id = {enemy["id"]: enemy for enemy in content["enemies"]}
+    class_counts = {
+        enemy_class: sum(enemy["class"] == enemy_class for enemy in content["enemies"])
+        for enemy_class in ("normal", "elite", "boss")
+    }
+    require(class_counts == {"normal": 24, "elite": 12, "boss": 12}, f"invalid enemy roster counts: {class_counts}")
     drone_ids = [drone["id"] for drone in content["drones"]]
     require(len(drone_ids) == len(set(drone_ids)), "drone ids must be unique")
 
+    regions = content.get("regions", [])
+    require([region["id"] for region in regions] == list(EXPECTED_REGIONS), "regions must be ordered R1 through R6")
+    referenced_enemy_ids: set[str] = set()
+    for index, region in enumerate(regions, start=1):
+        expected = EXPECTED_REGIONS[region["id"]]
+        require(region["number"] == index, f"{region['id']}: invalid region number")
+        require(region["stageStart"] == (index - 1) * 60 + 1 and region["stageEnd"] == index * 60, f"{region['id']}: invalid stage range")
+        require(region["nameKo"] == expected["name"], f"{region['id']}: GDD region name drift")
+        require(region["palette"] == expected["palette"], f"{region['id']}: GDD palette drift")
+        roster_ids = [*region["enemyIds"], *region["eliteIds"], region["midBossId"], region["regionBossId"]]
+        require(len(roster_ids) == len(set(roster_ids)) == 8, f"{region['id']}: needs four normal, two elites, and two bosses")
+        roster = [enemy_by_id[enemy_id] for enemy_id in roster_ids]
+        require([enemy["nameKo"] for enemy in roster] == expected["names"], f"{region['id']}: GDD enemy name drift")
+        require([enemy["behaviorKo"] for enemy in roster] == expected["behaviors"], f"{region['id']}: GDD behavior drift")
+        require([enemy["class"] for enemy in roster] == ["normal"] * 4 + ["elite", "elite", "boss", "boss"], f"{region['id']}: roster classes are invalid")
+        require(all(enemy["regionId"] == region["id"] for enemy in roster), f"{region['id']}: cross-region enemy")
+        require(roster[-2].get("bossRole") == "mid" and roster[-1].get("bossRole") == "region", f"{region['id']}: boss roles are invalid")
+        require(all(enemy.get("behaviorId") and enemy.get("breakSequenceKo") for enemy in roster), f"{region['id']}: behavior or break sequence missing")
+        require(all(enemy.get("weakness") in {"cut", "impact", "heat", "electric", "cooling"} for enemy in roster), f"{region['id']}: weakness missing")
+        require(region.get("backgroundSpriteId"), f"{region['id']}: production region background missing")
+        require(all(enemy["assetStatus"] == "production_ready" and enemy.get("spriteId") for enemy in roster), f"{region['id']}: production roster is incomplete")
+        referenced_enemy_ids.update(roster_ids)
+    require(referenced_enemy_ids == set(enemy_ids), "region rosters and enemy catalog differ")
+
     getcontext().prec = 50
+    wave_references: set[str] = set()
+    normal_signatures: list[tuple[str, ...] | None] = []
     for stage in stages:
         number = stage["number"]
+        region_number = (number - 1) // 60 + 1
+        region_id = f"r{region_number:02d}"
+        local_stage = (number - 1) % 60 + 1
+        require(stage["regionId"] == region_id and stage["localStage"] == local_stage, f"stage {number}: region mapping mismatch")
         expected_hp = int((Decimal(50) * Decimal("1.105") ** (number - 1)).quantize(Decimal(1), rounding=ROUND_HALF_UP))
         expected_reward = int((Decimal(10) * Decimal("1.095") ** (number - 1)).quantize(Decimal(1), rounding=ROUND_HALF_UP))
         require(stage["baseHp"] == expected_hp, f"stage {number}: baseHp must be precomputed as {expected_hp}")
         require(stage["baseReward"] == expected_reward, f"stage {number}: baseReward must be precomputed as {expected_reward}")
         require(all(enemy_id in enemy_by_id for enemy_id in stage["wave"]), f"stage {number}: unknown enemy id")
-        expected_encounter = (
-            "regionBoss" if number == slice_data["stageEnd"]
-            else "boss" if number % 10 == 0
-            else "elite" if number % 5 == 0
-            else "normal"
-        )
+        wave_references.update(stage["wave"])
+        elite_offsets = {5, 15, 25, 35, 50, 55} if region_number == 2 else {5, 15, 25, 35, 45, 55}
+        expected_encounter = "regionBoss" if local_stage == 60 else "boss" if local_stage % 10 == 0 and not (region_number == 2 and local_stage == 50) else "elite" if local_stage in elite_offsets else "normal"
         require(stage.get("encounterClass") == expected_encounter, f"stage {number}: expected {expected_encounter}")
         first_clear = stage.get("firstClearReward", {})
         require(
@@ -190,13 +273,14 @@ def validate_content(content: dict[str, Any], manifest: dict[str, Any]) -> set[s
             f"stage {number}: invalid first-clear wallet",
         )
         require(first_clear["credits"] == first_clear["parts"] == 0, f"stage {number}: repeat currencies cannot be first-clear rewards")
-        expected_cores = 1 if number == slice_data["stageEnd"] else 0
+        expected_cores = region_number if expected_encounter == "regionBoss" else 0
         require(first_clear["starCores"] == expected_cores, f"stage {number}: star core source must be the region boss")
         require(10 <= stage.get("expectedClearSeconds", 0) <= 300, f"stage {number}: invalid clear-time budget")
         if expected_encounter in {"boss", "regionBoss"}:
             require(len(stage["wave"]) == 1, f"stage {number}: boss stage must contain one enemy")
             require(enemy_by_id[stage["wave"][0]]["class"] == "boss", f"stage {number}: wave is not a boss")
-            expected_limit = 60000 if expected_encounter == "regionBoss" else 45000
+            boss_enemy = enemy_by_id[stage["wave"][0]]
+            expected_limit = boss_enemy["timeLimitMs"]
             require(stage.get("timeLimitMs") == expected_limit, f"stage {number}: boss limit must be {expected_limit}ms")
             require(
                 stage["expectedClearSeconds"] * 1000 <= expected_limit,
@@ -212,12 +296,23 @@ def validate_content(content: dict[str, Any], manifest: dict[str, Any]) -> set[s
                 require(enemy_classes.count("elite") == 1, f"stage {number}: elite stage needs exactly one elite")
             else:
                 require(all(enemy_class == "normal" for enemy_class in enemy_classes), f"stage {number}: normal stage has special enemy")
+        signature = tuple(stage["wave"]) if expected_encounter == "normal" else None
+        normal_signatures.append(signature)
+        if len(normal_signatures) >= 3 and signature is not None:
+            require(not (normal_signatures[-2] == signature == normal_signatures[-3]), f"stage {number}: same normal wave repeated three times")
 
-    validate_economy(content["economy"], stages, slice_data["stageEnd"])
+    require(wave_references == set(enemy_ids), "every catalog enemy must appear in at least one stage")
+    for region in regions:
+        for elite_id in region["eliteIds"]:
+            elite_appearances = sum(elite_id in stage["wave"] for stage in stages if stage["regionId"] == region["id"])
+            require(elite_appearances == 3, f"{region['id']}: each elite must appear exactly three times")
+
+    validate_economy(content["economy"], [stage for stage in stages if stage["number"] <= 60], 60)
 
     sprite_ids = {content["player"]["spriteId"]}
     sprite_ids.update(drone["spriteId"] for drone in content["drones"])
-    sprite_ids.update(enemy["spriteId"] for enemy in content["enemies"])
+    sprite_ids.update(enemy["spriteId"] for enemy in content["enemies"] if enemy.get("spriteId"))
+    sprite_ids.update(region["backgroundSpriteId"] for region in regions if region.get("backgroundSpriteId"))
     return sprite_ids
 
 
@@ -257,7 +352,12 @@ def validate_economy(economy: dict[str, Any], stages: list[dict[str, Any]], regi
         require(total_source >= total_sink, f"R1 first clears cannot fund all {currency} progression sinks")
 
 
-def validate_assets(asset_manifest: dict[str, Any], required_ids: set[str], palette: set[tuple[int, int, int]], release: bool) -> None:
+def validate_assets(
+    asset_manifest: dict[str, Any],
+    required_ids: set[str],
+    palettes: dict[str, set[tuple[int, int, int]]],
+    release: bool,
+) -> None:
     require(asset_manifest.get("logicalViewport") == [360, 800], "asset viewport must be 360x800 portrait")
     assets = asset_manifest.get("assets", [])
     asset_ids = [asset["id"] for asset in assets]
@@ -274,7 +374,7 @@ def validate_assets(asset_manifest: dict[str, Any], required_ids: set[str], pale
         "actor": {(48, 64)},
         "drone": {(32, 32), (48, 40)},
         "enemy_small": {(32, 32)},
-        "enemy_medium": {(48, 48)},
+        "enemy_medium": {(48, 40), (48, 48)},
         "enemy_large": {(64, 64)},
         "enemy_wide": {(64, 48)},
     }
@@ -304,7 +404,14 @@ def validate_assets(asset_manifest: dict[str, Any], required_ids: set[str], pale
             width, height, colors, has_partial_alpha = read_png_pixels(path)
             require((width, height) == canvas, f"{identifier}: PNG canvas does not match manifest")
             require(not has_partial_alpha, f"{identifier}: anti-aliased partial alpha is forbidden")
-            require(colors <= palette, f"{identifier}: colors outside common16: {sorted(colors - palette)}")
+            palette_id = asset.get("paletteId", asset_manifest["paletteId"])
+            require(palette_id in palettes, f"{identifier}: unknown palette {palette_id}")
+            palette = palettes[palette_id]
+            require(colors <= palette, f"{identifier}: colors outside {palette_id}: {sorted(colors - palette)}")
+            if identifier in STRICT_WORLD_ASSET_IDS:
+                color_budget = 18 if asset["kind"] == "boss" else 12
+                require(len(colors) <= color_budget, f"{identifier}: uses {len(colors)} colors, limit is {color_budget}")
+            require((0, 255, 0) not in colors, f"{identifier}: chroma fringe reached production output")
 
 
 def validate_golden(manifest: dict[str, Any], content: dict[str, Any]) -> None:
@@ -331,6 +438,26 @@ def validate_economy_golden(manifest: dict[str, Any]) -> None:
         fixture_ids.add(fixture_id)
         digest = canonical_digest(fixture["expectedState"])
         require(fixture.get("expectedDigest") == digest, f"{relative_path}: expected digest is {digest}")
+
+
+def validate_region_economy_golden(manifest: dict[str, Any], content: dict[str, Any]) -> None:
+    paths = manifest.get("regionEconomyGoldenFiles", [])
+    require(len(paths) == 6, "one regional economy Golden fixture is required for each of R1-R6")
+    expected_region_ids = [f"r{number:02d}" for number in range(1, 7)]
+    actual_region_ids: list[str] = []
+    for relative_path in paths:
+        fixture = load_json(relative_path)
+        require(fixture.get("schemaVersion") == 1, f"{relative_path}: schema version mismatch")
+        require(fixture.get("contentVersion") == manifest["contentVersion"], f"{relative_path}: content version mismatch")
+        region_id = fixture.get("regionId")
+        actual_region_ids.append(region_id)
+        state = fixture.get("expectedState", {})
+        require(state.get("regionId") == region_id, f"{relative_path}: region state mismatch")
+        require(state.get("uniqueEnemyCount") == 8, f"{relative_path}: regional roster must include eight enemies")
+        require(state.get("productionAssetCount") == 8, f"{relative_path}: production asset count mismatch")
+        digest = canonical_digest(state)
+        require(fixture.get("expectedDigest") == digest, f"{relative_path}: expected digest is {digest}")
+    require(actual_region_ids == expected_region_ids, "regional economy Goldens must be ordered R1-R6")
 
 
 def validate_ios_iap_catalog() -> int:
@@ -483,22 +610,30 @@ def validate_project(release: bool = False) -> list[str]:
     require(len(manifest.get("contentFiles", [])) == 1, "vertical slice must have one content entrypoint")
     content = load_json(manifest["contentFiles"][0])
     asset_manifest = load_json(manifest["assetManifest"])
-    palette = load_palette(manifest["palette"])
+    palette_files = asset_manifest.get("paletteFiles", {})
+    require(palette_files.get("common16") == manifest["palette"], "common palette path mismatch")
+    require(palette_files.get("r02_mall12") == "art-source/palettes/r02_mall12.gpl", "R2 palette path mismatch")
+    palettes = {
+        palette_id: load_palette(relative_path, expected_count=12 if palette_id == "r02_mall12" else 16)
+        for palette_id, relative_path in palette_files.items()
+    }
 
     validate_schema_documents()
     required_ids = validate_content(content, manifest)
-    validate_assets(asset_manifest, required_ids, palette, release)
+    validate_assets(asset_manifest, required_ids, palettes, release)
     validate_golden(manifest, content)
     validate_economy_golden(manifest)
+    validate_region_economy_golden(manifest, content)
     iap_count = validate_ios_iap_catalog()
     season_count = validate_season_catalog(manifest)
     validate_no_shared_runtime()
     return [
         f"content {manifest['contentVersion']}",
-        f"{len(content['stages'])} stages",
+        f"{len(content['regions'])} regions / {len(content['stages'])} stages",
         f"{len(asset_manifest['assets'])} pixel assets ({'release' if release else 'development'} mode)",
         f"{len(manifest['goldenFiles'])} golden fixtures",
         f"{len(manifest['economyGoldenFiles'])} economy golden fixtures",
+        f"{len(manifest['regionEconomyGoldenFiles'])} region economy golden fixtures",
         f"{iap_count} ethical iOS IAP products",
         f"{season_count} validated eight-week seasons",
     ]

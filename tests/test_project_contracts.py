@@ -22,7 +22,7 @@ assert ECONOMY_SPEC and ECONOMY_SPEC.loader
 ECONOMY = importlib.util.module_from_spec(ECONOMY_SPEC)
 sys.modules[ECONOMY_SPEC.name] = ECONOMY
 ECONOMY_SPEC.loader.exec_module(ECONOMY)
-GENERATOR_SPEC = importlib.util.spec_from_file_location("generate_r1_content", ROOT / "tools" / "generate_r1_content.py")
+GENERATOR_SPEC = importlib.util.spec_from_file_location("generate_world_content", ROOT / "tools" / "generate_world_content.py")
 assert GENERATOR_SPEC and GENERATOR_SPEC.loader
 GENERATOR = importlib.util.module_from_spec(GENERATOR_SPEC)
 sys.modules[GENERATOR_SPEC.name] = GENERATOR
@@ -32,15 +32,16 @@ GENERATOR_SPEC.loader.exec_module(GENERATOR)
 class ProjectContractTests(unittest.TestCase):
     def test_development_contracts_pass(self) -> None:
         summary = VALIDATOR.validate_project(release=False)
-        self.assertIn("60 stages", summary)
+        self.assertIn("6 regions / 360 stages", summary)
         self.assertIn("3 golden fixtures", summary)
         self.assertIn("2 economy golden fixtures", summary)
+        self.assertIn("6 region economy golden fixtures", summary)
         self.assertIn("6 ethical iOS IAP products", summary)
         self.assertIn("2 validated eight-week seasons", summary)
 
     def test_release_accepts_only_verified_production_assets(self) -> None:
         summary = VALIDATOR.validate_project(release=True)
-        self.assertIn("11 pixel assets (release mode)", summary)
+        self.assertIn("58 pixel assets (release mode)", summary)
 
         asset_manifest = VALIDATOR.load_json("art-export/asset-manifest.json")
         self.assertTrue(
@@ -50,10 +51,13 @@ class ProjectContractTests(unittest.TestCase):
     def test_release_rejects_any_asset_returned_to_planned(self) -> None:
         asset_manifest = VALIDATOR.load_json("art-export/asset-manifest.json")
         asset_manifest["assets"][0]["status"] = "planned"
-        palette = VALIDATOR.load_palette("art-source/palettes/common16.gpl")
+        palettes = {
+            "common16": VALIDATOR.load_palette("art-source/palettes/common16.gpl"),
+            "r02_mall12": VALIDATOR.load_palette("art-source/palettes/r02_mall12.gpl", expected_count=12),
+        }
 
         with self.assertRaisesRegex(VALIDATOR.ContractError, "cannot enter a release build"):
-            VALIDATOR.validate_assets(asset_manifest, set(), palette, release=True)
+            VALIDATOR.validate_assets(asset_manifest, set(), palettes, release=True)
 
     def test_canonical_digest_ignores_key_order(self) -> None:
         left = {"stage": 1, "state": {"hp": 0, "clear": True}}
@@ -73,31 +77,25 @@ class ProjectContractTests(unittest.TestCase):
             fixture = VALIDATOR.load_json(relative_path)
             self.assertEqual(fixture["expectedState"], SIMULATION.simulate(fixture["input"]))
 
-    def test_r1_stage_rules_are_complete_through_region_boss(self) -> None:
-        content = VALIDATOR.load_json("content/r1_vertical_slice.json")
-        self.assertEqual(content["stages"], GENERATOR.build()["stages"])
-        self.assertEqual(list(range(1, 61)), [stage["number"] for stage in content["stages"]])
-        for stage in content["stages"]:
-            number = stage["number"]
-            expected = (
-                "regionBoss" if number == 60
-                else "boss" if number % 10 == 0
-                else "elite" if number % 5 == 0
-                else "normal"
-            )
-            self.assertEqual(expected, stage["encounterClass"])
-        self.assertEqual(6, content["stages"][59]["bossTier"])
-        self.assertEqual(1, content["stages"][59]["firstClearReward"]["starCores"])
+    def test_world_generator_is_reproducible_and_complete(self) -> None:
+        content = VALIDATOR.load_json("content/world_r1_r6.json")
+        self.assertEqual(content, GENERATOR.build())
+        self.assertEqual(list(range(1, 361)), [stage["number"] for stage in content["stages"]])
+        self.assertEqual(24, sum(enemy["class"] == "normal" for enemy in content["enemies"]))
+        self.assertEqual(12, sum(enemy["class"] == "elite" for enemy in content["enemies"]))
+        self.assertEqual(12, sum(enemy["class"] == "boss" for enemy in content["enemies"]))
+        self.assertEqual("alley_devourer", content["stages"][59]["wave"][0])
+        self.assertEqual("escalator_centipede", content["stages"][109]["wave"][-1])
+        self.assertEqual(75_000, content["stages"][359]["timeLimitMs"])
 
     def test_offline_contract_uses_last_clear_at_seventy_percent(self) -> None:
-        content = VALIDATOR.load_json("content/r1_vertical_slice.json")
-        stage_43 = content["stages"][42]
-        full_cycle = ECONOMY.battle_reward(stage_43, content)
+        content = VALIDATOR.load_json("content/world_r1_r6.json")
         state = ECONOMY.simulate(
             {"activeSeconds": 1800, "offlineSeconds": 75, "purchases": []},
             content,
         )
-        self.assertEqual(43, state["highestClearedStage"])
+        last_stage = content["stages"][state["highestClearedStage"] - 1]
+        full_cycle = ECONOMY.battle_reward(last_stage, content)
         self.assertEqual(1, state["offlineCycles"])
         self.assertEqual(full_cycle["credits"] * 700_000 // 1_000_000, state["offlineReward"]["credits"])
         self.assertEqual(0, state["offlineReward"]["starCores"])
@@ -132,6 +130,17 @@ class ProjectContractTests(unittest.TestCase):
 
         with self.assertRaisesRegex(VALIDATOR.ContractError, "cosmetic or convenience-only"):
             VALIDATOR.validate_season_definition(season, "test season")
+
+    def test_region_economy_goldens_are_deterministic(self) -> None:
+        manifest = VALIDATOR.load_json("content/manifest.json")
+        content = VALIDATOR.load_json("content/world_r1_r6.json")
+        world_spec = importlib.util.spec_from_file_location("world_economy", ROOT / "tools" / "world_economy.py")
+        assert world_spec and world_spec.loader
+        world = importlib.util.module_from_spec(world_spec)
+        world_spec.loader.exec_module(world)
+        for relative_path in manifest["regionEconomyGoldenFiles"]:
+            fixture = VALIDATOR.load_json(relative_path)
+            self.assertEqual(fixture["expectedState"], world.summarize(fixture["regionId"], content))
 
 
 if __name__ == "__main__":

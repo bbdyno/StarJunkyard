@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "fixtureId": "combat_stage_020_boss_tier_2",
-  "contentVersion": "0.2.0",
+  "contentVersion": "0.3.0",
   "input": {
     "stage": 20,
     "seed": "20020",
@@ -16,7 +16,12 @@
       "criticalDamagePpm": 1700000
     },
     "actions": [
-      {"tick": 120, "type": "overclock", "durationTicks": 160, "attackSpeedPpm": 1600000}
+      {
+        "tick": 120,
+        "type": "overclock",
+        "durationTicks": 160,
+        "attackSpeedPpm": 1600000
+      }
     ]
   },
   "expectedState": {
@@ -24,11 +29,11 @@
     "ticksElapsed": 287,
     "enemyIndex": 1,
     "enemyHp": 0,
-    "credits": 2520,
+    "credits": 2800,
     "parts": 15,
     "cleared": true,
     "rngState": "2469805391027716150",
     "rngStream": "11"
   },
-  "expectedDigest": "ff3d56017bc69215e962d1a08ae1f82f2a55821a8309cbe44d82e6e08eb44af4"
+  "expectedDigest": "6233870180c6a49a090abb794df6726a834680b35f061cf6a0ee03b9b9094b0b"
 }

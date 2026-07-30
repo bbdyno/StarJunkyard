@@ -1,24 +1,56 @@
 {
   "schemaVersion": 1,
   "fixtureId": "economy_first_30_minutes",
-  "contentVersion": "0.2.0",
+  "contentVersion": "0.3.0",
   "input": {
     "activeSeconds": 1800,
     "offlineSeconds": 0,
-    "purchases": ["cutter_2", "rivet_2", "sorter_repair"]
+    "purchases": [
+      "cutter_2",
+      "rivet_2",
+      "sorter_repair"
+    ]
   },
   "expectedState": {
-    "activeSecondsApplied": 1800,
-    "highestClearedStage": 43,
-    "totalActiveClears": 43,
-    "purchasedSinkIds": ["cutter_2", "rivet_2", "sorter_repair"],
+    "activeSecondsApplied": 1767,
+    "highestClearedStage": 59,
+    "totalActiveClears": 59,
+    "purchasedSinkIds": [
+      "cutter_2",
+      "rivet_2",
+      "sorter_repair"
+    ],
     "offlineSecondsApplied": 0,
     "offlineCycles": 0,
-    "offlineReward": {"credits": 0, "parts": 0, "circuits": 0, "alloy": 0, "starCores": 0},
-    "wallet": {"credits": 80522, "parts": 606, "circuits": 48, "alloy": 19, "starCores": 0},
+    "offlineReward": {
+      "credits": 0,
+      "parts": 0,
+      "circuits": 0,
+      "alloy": 0,
+      "starCores": 0
+    },
+    "wallet": {
+      "credits": 359963,
+      "parts": 981,
+      "circuits": 66,
+      "alloy": 25,
+      "starCores": 0
+    },
     "launchEligible": false,
-    "launchMissing": {"credits": 39919478, "parts": 1794, "circuits": 0, "alloy": 1, "starCores": 1},
-    "walletAfterLaunch": {"credits": 80522, "parts": 606, "circuits": 48, "alloy": 19, "starCores": 0}
+    "launchMissing": {
+      "credits": 39640037,
+      "parts": 1419,
+      "circuits": 0,
+      "alloy": 0,
+      "starCores": 1
+    },
+    "walletAfterLaunch": {
+      "credits": 359963,
+      "parts": 981,
+      "circuits": 66,
+      "alloy": 25,
+      "starCores": 0
+    }
   },
-  "expectedDigest": "ecd404ad9f330eb929fc2cccde46ac4fe36b705a6207778c1563ba0e2a507909"
+  "expectedDigest": "7eb75460a2a2588822a55093e7171107ea1aebeafd390691622f46b9c9751e6f"
 }

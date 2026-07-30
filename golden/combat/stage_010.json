@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "fixtureId": "combat_stage_010_boss",
-  "contentVersion": "0.2.0",
+  "contentVersion": "0.3.0",
   "input": {
     "stage": 10,
     "seed": "10010",
@@ -16,7 +16,12 @@
       "criticalDamagePpm": 1700000
     },
     "actions": [
-      {"tick": 100, "type": "overclock", "durationTicks": 160, "attackSpeedPpm": 1600000}
+      {
+        "tick": 100,
+        "type": "overclock",
+        "durationTicks": 160,
+        "attackSpeedPpm": 1600000
+      }
     ]
   },
   "expectedState": {
@@ -24,11 +29,11 @@
     "ticksElapsed": 295,
     "enemyIndex": 1,
     "enemyHp": 0,
-    "credits": 920,
+    "credits": 1150,
     "parts": 15,
     "cleared": true,
     "rngState": "2865657001343894796",
     "rngStream": "7"
   },
-  "expectedDigest": "ea0dcab736cbcf9aee0754fb41d580ebebaf5d42720e348b196a173c1c6c6c0b"
+  "expectedDigest": "3d1207698cc711fca24f80de5fb440aa4f0e751940fdc8095222775552f46627"
 }

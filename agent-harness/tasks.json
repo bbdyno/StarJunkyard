@@ -39,6 +39,24 @@
         "name": "Complete unsigned App Store release regression",
         "command": ["python3", "tools/release_regression.py"]
       }
+    ],
+    "pixel-pack": [
+      {
+        "name": "Build and exact-match the current pixel pack",
+        "command": ["python3", "tools/integrate_world_pixel_packs.py", "--build-current-pack"]
+      },
+      {
+        "name": "Check immutable R3-R6 world contracts",
+        "command": ["python3", "tools/integrate_world_pixel_packs.py", "--check-contracts"]
+      },
+      {
+        "name": "Validate pixel pack integration fixtures",
+        "command": ["python3", "-m", "unittest", "discover", "-s", "tests", "-p", "test_world_pixel_pack_integration.py"]
+      },
+      {
+        "name": "Release contracts and production pixel assets",
+        "command": ["python3", "tools/validate_project.py", "--release"]
+      }
     ]
   },
   "tasks": [
@@ -183,6 +201,87 @@
         "tools/validate_app_store_release.py"
       ],
       "validationProfile": "app-store-release"
+    },
+    {
+      "id": "issue-38",
+      "issue": 38,
+      "title": "R2 production and R1-R6 world integration",
+      "branch": "issue/38-r2-r6-content",
+      "baseRef": "73e2fef4f1b502cdfb3dffc3aa4e2eae0516b9f9",
+      "worktreeHint": "../StarJunkyard-worktrees/issue-38",
+      "ownedPaths": [
+        "README.md",
+        "agent-harness/tasks.json",
+        "art-export/asset-manifest.json",
+        "art-export/production/sprites/**",
+        "art-source/generated/r01/**",
+        "art-source/generated/r02/**",
+        "art-source/palettes/**",
+        "content/manifest.json",
+        "content/world-pixel-pack-promotions.json",
+        "content/world_r1_r6.json",
+        "docs/R2_PRODUCTION_PACK.md",
+        "docs/screenshots/r2-*.png",
+        "docs/screenshots/r3-*.png",
+        "docs/screenshots/r4-*.png",
+        "docs/screenshots/r5-*.png",
+        "docs/screenshots/r6-*.png",
+        "golden/**",
+        "schemas/asset-manifest.schema.json",
+        "schemas/content.schema.json",
+        "schemas/region-economy-golden.schema.json",
+        "StarJunkyard/Sources/CombatScene.swift",
+        "StarJunkyard/Sources/BossEncounterRules.swift",
+        "StarJunkyard/Sources/ContentModels.swift",
+        "StarJunkyard/Sources/GameViewController.swift",
+        "StarJunkyard/Sources/R1Economy.swift",
+        "StarJunkyard/Sources/RegionProgression.swift",
+        "StarJunkyardTests/**",
+        "tests/test_agent_harness.py",
+        "tests/test_project_contracts.py",
+        "tests/test_world_pixel_pack_integration.py",
+        "tools/build_r2_pixel_assets.py",
+        "tools/economy_simulation.py",
+        "tools/generate_world_content.py",
+        "tools/generate_world_goldens.py",
+        "tools/integrate_world_pixel_packs.py",
+        "tools/reference_simulation.py",
+        "tools/validate_project.py",
+        "tools/world_economy.py"
+      ],
+      "validationProfile": "full-ios"
+    },
+    {
+      "id": "issue-44",
+      "issue": 44,
+      "title": "R3-R4 production pixel pack",
+      "branch": "issue/44-r3-r4-pixel-pack",
+      "baseRef": "335fffc5d113438b759f0104f9154062c5545140",
+      "worktreeHint": "../StarJunkyard-worktrees/issue-44",
+      "ownedPaths": [
+        "art-export/issue-44-r3-r4/**",
+        "art-source/issue-44-r3-r4/**",
+        "docs/ISSUE_44_R3_R4_PIXEL_PACK.md",
+        "docs/screenshots/issue-44-*.png",
+        "tools/issue44_build_r3_r4_pixel_pack.py"
+      ],
+      "validationProfile": "pixel-pack"
+    },
+    {
+      "id": "issue-45",
+      "issue": 45,
+      "title": "R5-R6 production pixel pack",
+      "branch": "issue/45-r5-r6-pixel-pack",
+      "baseRef": "335fffc5d113438b759f0104f9154062c5545140",
+      "worktreeHint": "../StarJunkyard-worktrees/issue-45",
+      "ownedPaths": [
+        "art-export/issue-45-r5-r6/**",
+        "art-source/issue-45-r5-r6/**",
+        "docs/ISSUE_45_R5_R6_PIXEL_PACK.md",
+        "docs/screenshots/issue-45-*.png",
+        "tools/issue45_build_r5_r6_pixel_pack.py"
+      ],
+      "validationProfile": "pixel-pack"
     }
   ]
 }

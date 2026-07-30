@@ -46,7 +46,7 @@ class PCG32:
 
 
 def _load_content() -> dict[str, Any]:
-    return json.loads((ROOT / "content" / "r1_vertical_slice.json").read_text(encoding="utf-8"))
+    return json.loads((ROOT / "content" / "world_r1_r6.json").read_text(encoding="utf-8"))
 
 
 def simulate(fixture_input: dict[str, Any], content: dict[str, Any] | None = None) -> dict[str, Any]:

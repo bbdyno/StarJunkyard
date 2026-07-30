@@ -26,10 +26,14 @@ struct BossEncounterRules: Sendable {
 
     static func phase(hp: Int, maxHP: Int) -> Phase {
         guard hp > 0 else { return .dismantle }
-        let ratioPPM = hp * 1_000_000 / max(1, maxHP)
-        if ratioPPM <= 300_000 { return .coreExposed }
-        if ratioPPM <= 700_000 { return .clawBroken }
+        let safeMaxHP = max(1, maxHP)
+        if hp <= fraction(of: safeMaxHP, numerator: 3, denominator: 10) { return .coreExposed }
+        if hp <= fraction(of: safeMaxHP, numerator: 7, denominator: 10) { return .clawBroken }
         return .armored
+    }
+
+    private static func fraction(of value: Int, numerator: Int, denominator: Int) -> Int {
+        value / denominator * numerator + value % denominator * numerator / denominator
     }
 
     static func activeCutIndex(stageNumber: Int) -> Int {
