@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "tracking": false,
+  "trackingDomains": [],
+  "dataCollectedByDeveloper": [],
+  "requiredReasonAPIs": [
+    {
+      "category": "NSPrivacyAccessedAPICategoryUserDefaults",
+      "reasons": ["CA92.1"],
+      "usage": "App-owned gameplay settings and analytics consent preference."
+    }
+  ],
+  "appleServices": [
+    {
+      "service": "Game Center",
+      "usage": "Player authentication and saved-game synchronization are provided directly by Apple.",
+      "developerCollection": false
+    }
+  ],
+  "localOnlyAnalytics": {
+    "networkUpload": false,
+    "consentRequired": true,
+    "description": "Current analytics events remain in memory and are never transmitted to the developer."
+  },
+  "externalConfirmationBlocker": "ASC-SUBMISSION"
+}

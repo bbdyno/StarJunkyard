@@ -58,12 +58,13 @@ class AgentHarnessDefinitionTests(unittest.TestCase):
     def test_repository_definitions_are_valid_and_have_no_codex_branches(self) -> None:
         payload, tasks = HARNESS.load_definitions(ROOT / "agent-harness" / "tasks.json")
 
-        self.assertEqual(6, len(tasks))
-        self.assertEqual({21, 22, 25, 26, 27, 28}, {task.issue for task in tasks.values()})
+        self.assertEqual(7, len(tasks))
+        self.assertEqual({21, 22, 25, 26, 27, 28, 29}, {task.issue for task in tasks.values()})
         for task in tasks.values():
             self.assertTrue(task.branch.startswith("issue/"))
             self.assertNotIn("codex", task.branch.casefold())
         self.assertIn("full-ios", payload["validationProfiles"])
+        self.assertIn("app-store-release", payload["validationProfiles"])
         commands = [
             step["command"] for step in payload["validationProfiles"]["full-ios"]
         ]

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "generator": "OpenAI image generation",
+  "creationMode": "brand-new raster generation with repository production art as identity and palette references",
+  "generatedArtifactId": "exec-cad1ec83-20d8-4107-9846-48a65070f699",
+  "sourceReferences": [
+    "art-export/production/sprites/actor_mo_base.png",
+    "art-export/production/sprites/drone_riv0_base.png",
+    "art-export/production/sprites/boss_cancrab_king.png",
+    "art-export/production/sprites/background_r01_back_alley.png"
+  ],
+  "promptSummary": "Recognizable heroic pixel-art portrait of Mo lifting a bright star core with Rivet assisting, framed by scrap and a can-crab claw; opaque navy, teal, orange, cream, and star-yellow palette; no text, UI, rounded corners, transparency, or abstract-only shapes.",
+  "prompt": "Create a production iOS App Store icon for the pixel-art idle action game Star Junkyard. Use the references by role: Mo establishes the recognizable protagonist with orange welding cap and goggles, teal-orange work suit and welding tool; Rivet establishes the small round companion drone; Cancrab King establishes the scrap-can monster language; the back alley establishes the dark navy scrapyard palette and orange/teal lighting. Compose an instantly readable heroic bust of Mo lifting a brilliant five-point star energy core from recognizable scrap with Rivet assisting and a can-crab claw framing the background. Use strict chunky authored pixel art, high contrast and a limited navy, teal, orange, cream and star-yellow palette. Keep it readable at 64px. Produce a square fully opaque background with no text, letters, UI cards, rounded corners, transparency, photorealism or abstract-only geometry.",
+  "postProcessing": "The generated 1254px opaque RGB source was resized with macOS sips to a 1024px sRGB App Store icon and 180/360/540px sRGB launch derivatives. No compositing or semantic repainting was applied.",
+  "assets": [
+    {
+      "path": "StarJunkyard/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png",
+      "width": 1024,
+      "height": 1024,
+      "opaque": true,
+      "colorSpace": "sRGB",
+      "sha256": "8acb3430c5e4d70384c5be998aa4a81cf9dd155e681c03a1c3b4712d26bb59cf"
+    },
+    {
+      "path": "StarJunkyard/Resources/Assets.xcassets/LaunchEmblem.imageset/LaunchEmblem.png",
+      "width": 180,
+      "height": 180,
+      "opaque": true,
+      "colorSpace": "sRGB",
+      "sha256": "a41b1bafb6a29340a688e51da3a3d40a47d78035890fcefd0ed3ced53aa692ae"
+    },
+    {
+      "path": "StarJunkyard/Resources/Assets.xcassets/LaunchEmblem.imageset/LaunchEmblem@2x.png",
+      "width": 360,
+      "height": 360,
+      "opaque": true,
+      "colorSpace": "sRGB",
+      "sha256": "9e372c1bcdf62761d53a3838b74249f0b4c4599dd2356e4868ec720a1606bd1a"
+    },
+    {
+      "path": "StarJunkyard/Resources/Assets.xcassets/LaunchEmblem.imageset/LaunchEmblem@3x.png",
+      "width": 540,
+      "height": 540,
+      "opaque": true,
+      "colorSpace": "sRGB",
+      "sha256": "4c33f6b53d7206c9da4504600760a0e8ddb9ded92f304d70cd5fd1e7fa01f173"
+    }
+  ]
+}

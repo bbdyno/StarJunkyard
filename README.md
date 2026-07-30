@@ -14,6 +14,7 @@ iOS/iPadOS 전용 StarJunkyard 저장소다. 루트의 `Project.swift`가 Xcode 
 - [픽셀 설정 콘솔과 접근성](docs/PIXEL_SETTINGS_ACCESSIBILITY.md)
 - [StoreKit 2 거래·권한 구현](docs/STOREKIT_IMPLEMENTATION.md)
 - [8주 시즌 라이브옵스](docs/SEASON_LIVEOPS.md)
+- [App Store 출시 계약과 전체 회귀](docs/APP_STORE_RELEASE.md)
 
 ## 병렬 작업 상태와 공통 검증
 
@@ -29,3 +30,11 @@ python3 tools/agent_harness.py guard issue-21
 ```bash
 python3 tools/agent_harness.py verify issue-21 --require-clean
 ```
+
+App Store 제출 전 저장소 계약, 서명 없는 Release 빌드, iPhone/iPad XCTest를 한 번에 실행한다. 이 명령은 서명·업로드·심사 제출을 수행하지 않는다.
+
+```bash
+python3 tools/release_regression.py
+```
+
+Apple 계정·법무·지원/개인정보 URL·최종 스크린샷·IAP 승인·TestFlight·심사 제출처럼 외부 권한이 필요한 항목은 [출시 체크리스트](release/app-store/RELEASE_CHECKLIST.md)에 별도로 기록한다.

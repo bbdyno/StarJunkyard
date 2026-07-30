@@ -8,6 +8,9 @@ let project = Project(
             "SWIFT_STRICT_CONCURRENCY": "complete",
             "IPHONEOS_DEPLOYMENT_TARGET": "17.0",
             "TARGETED_DEVICE_FAMILY": "1,2",
+            "MARKETING_VERSION": "1.0.0",
+            "CURRENT_PROJECT_VERSION": "1",
+            "VERSIONING_SYSTEM": "apple-generic",
             "CODE_SIGN_STYLE": "Automatic",
             "DEVELOPMENT_TEAM": ""
         ]
@@ -23,6 +26,8 @@ let project = Project(
                 "CFBundleDevelopmentRegion": "ko",
                 "CFBundleDisplayName": "별을 줍는 고물상",
                 "CFBundleLocalizations": ["ko", "en"],
+                "ITSAppUsesNonExemptEncryption": false,
+                "LSApplicationCategoryType": "public.app-category.games",
                 "UIApplicationSceneManifest": [
                     "UIApplicationSupportsMultipleScenes": false,
                     "UISceneConfigurations": [
@@ -32,7 +37,10 @@ let project = Project(
                         ]]
                     ]
                 ],
-                "UILaunchScreen": [:],
+                "UILaunchScreen": [
+                    "UIColorName": "LaunchBackground",
+                    "UIImageName": "LaunchEmblem"
+                ],
                 "UIRequiresFullScreen": true,
                 "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
                 "UISupportedInterfaceOrientations~ipad": ["UIInterfaceOrientationPortrait"]
@@ -50,6 +58,7 @@ let project = Project(
                     if [ "${CONFIGURATION}" = "Release" ]; then
                       cd "${SRCROOT}"
                       /usr/bin/python3 tools/validate_project.py --release
+                      /usr/bin/python3 tools/validate_app_store_release.py
                     fi
                     """,
                     name: "Validate Production Pixel Assets",
@@ -58,7 +67,7 @@ let project = Project(
             ],
             settings: .settings(
                 base: [
-                    "ASSETCATALOG_COMPILER_APPICON_NAME": "",
+                    "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
                     "CODE_SIGN_ENTITLEMENTS": "StarJunkyard/StarJunkyard.entitlements",
                     "ENABLE_USER_SCRIPT_SANDBOXING": "NO"
                 ]
@@ -80,7 +89,7 @@ let project = Project(
         .scheme(
             name: "StarJunkyard",
             shared: true,
-            buildAction: .buildAction(targets: ["StarJunkyard", "StarJunkyardTests"]),
+            buildAction: .buildAction(targets: ["StarJunkyard"]),
             testAction: .targets(["StarJunkyardTests"]),
             runAction: .runAction(
                 executable: .executable("StarJunkyard"),

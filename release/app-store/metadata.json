@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "status": "repository_ready_external_blockers",
+  "bundleIdentifier": "com.bbdyno.starjunkyard",
+  "sku": "starjunkyard-ios",
+  "version": "1.0.0",
+  "primaryLocale": "ko-KR",
+  "categories": {
+    "primary": "GAMES",
+    "primarySubcategory": "ROLE_PLAYING",
+    "secondarySubcategory": "SIMULATION"
+  },
+  "localizations": {
+    "ko-KR": {
+      "name": "별을 줍는 고물상",
+      "subtitle": "고철에서 우주선을 만드는 픽셀 RPG",
+      "promotionalText": "고물상 주인 모와 정비 드론 리벳이 버려진 별의 조각을 모읍니다. 동료와 함께 폐품 괴물을 물리치고, 멈춘 우주선을 다시 띄워 보세요.",
+      "description": "버려진 별을 되살리는 픽셀 방치형 RPG.\n\n고물상 주인 모와 정비 드론 리벳은 폐허가 된 뒷골목에서 마지막 우주선을 수리합니다. 폐품 괴물을 상대해 부품을 모으고, 작업대를 개선하고, 동료 직원과 협동 공격을 완성하세요.\n\n전투는 자동으로 이어지지만 성장의 선택은 직접 내립니다. 접속하지 않은 동안에도 수리 자원은 쌓이며, 돌아오면 다음 설계와 원정을 결정할 수 있습니다.\n\n지역의 강적을 넘어 별 코어를 되찾고, 왜 이 도시의 별빛이 사라졌는지 확인하세요. 모아 올린 고철 하나하나가 우주선을 움직이는 이유가 됩니다.",
+      "keywords": "방치형,픽셀,RPG,고물상,우주선,성장,자동전투,도트,수집,협동",
+      "releaseNotes": "별을 줍는 고물상의 첫 번째 iOS 출시입니다. 픽셀 전투, 자동 성장, 작업대 운영과 이야기 진행을 만나 보세요."
+    },
+    "en-US": {
+      "name": "Star Junkyard",
+      "subtitle": "Build a starship from scrap",
+      "promotionalText": "Join Mo and repair drone Rivet, fight living scrap, recruit a crew, and turn every salvaged part into one more reason for the last starship to fly.",
+      "description": "A pixel idle RPG about bringing a discarded star back to life.\n\nMo, keeper of a back-alley junkyard, and the repair drone Rivet are rebuilding the city's last starship. Battle creatures made from cans and broken machines, salvage parts, improve the workbench, and unlock crew-powered attacks.\n\nCombat keeps moving while every growth choice remains yours. Repair resources accumulate while you are away, then become the next upgrade or expedition when you return.\n\nDefeat each district's strongest machine, recover the missing star cores, and uncover why the city's starlight disappeared. Every piece of scrap you collect gives the ship a reason to fly.",
+      "keywords": "idle,pixel,RPG,junkyard,starship,upgrade,auto battle,scrap,crew,story",
+      "releaseNotes": "The first iOS release of Star Junkyard, featuring pixel combat, idle progression, workbench operations, crew attacks, and story-driven exploration."
+    }
+  },
+  "urls": {
+    "privacyPolicy": {
+      "value": null,
+      "blocker": "ASC-URLS"
+    },
+    "support": {
+      "value": null,
+      "blocker": "ASC-URLS"
+    },
+    "marketing": {
+      "value": null,
+      "required": false
+    }
+  },
+  "review": {
+    "contact": null,
+    "demoAccount": null,
+    "notes": "The app supports Game Center saved games. Review credentials and a deterministic review path must be supplied after the App Store Connect record exists.",
+    "blocker": "ASC-ACCOUNT"
+  },
+  "copyright": {
+    "value": null,
+    "blocker": "ASC-LEGAL"
+  },
+  "contentRights": "original_or_licensed_by_developer",
+  "externalBlockerIds": [
+    "ASC-ACCOUNT",
+    "ASC-LEGAL",
+    "ASC-URLS",
+    "ASC-AGE",
+    "ASC-SCREENSHOTS",
+    "ASC-IAP",
+    "ASC-TESTFLIGHT",
+    "ASC-SUBMISSION"
+  ]
+}

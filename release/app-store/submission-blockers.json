@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "releaseState": "repository_ready_external_blockers",
+  "blockers": [
+    {
+      "id": "ASC-ACCOUNT",
+      "owner": "App Store Connect account holder",
+      "state": "external_required",
+      "resolution": "Create the App Store Connect app record for com.bbdyno.starjunkyard, choose the SKU, provide the App Review contact, and assign a valid Apple Developer team and signing profile."
+    },
+    {
+      "id": "ASC-LEGAL",
+      "owner": "Legal owner",
+      "state": "external_required",
+      "resolution": "Confirm the legal copyright holder, content rights, paid-app agreement, banking, tax, and regional trader/compliance information."
+    },
+    {
+      "id": "ASC-URLS",
+      "owner": "Product and legal",
+      "state": "external_required",
+      "resolution": "Publish HTTPS privacy-policy and support pages with real contact information, then place their final URLs in metadata.json and App Store Connect."
+    },
+    {
+      "id": "ASC-AGE",
+      "owner": "Product owner",
+      "state": "external_required",
+      "resolution": "Complete and attest the current App Store age-rating questionnaire against the final merged combat, commerce, and user-generated-content behavior."
+    },
+    {
+      "id": "ASC-SCREENSHOTS",
+      "owner": "Release art owner",
+      "state": "external_required",
+      "resolution": "Capture final-build gameplay on supported iPhone and iPad sizes, review every localized frame, and upload one to ten opaque screenshots per required display class."
+    },
+    {
+      "id": "ASC-IAP",
+      "owner": "Commerce owner",
+      "state": "external_required",
+      "resolution": "Create every product currently present in content/ios-iap-catalog.json, configure the subscription group and localized prices, approve agreements, and verify purchase, restore, refund, expiry, and offline states in Sandbox and TestFlight."
+    },
+    {
+      "id": "ASC-TESTFLIGHT",
+      "owner": "QA owner",
+      "state": "external_required",
+      "resolution": "Upload a signed archive, finish export-compliance answers, run device and TestFlight regression, and record acceptance evidence for save restoration, purchases, safe areas, iPhone, and iPad."
+    },
+    {
+      "id": "ASC-SUBMISSION",
+      "owner": "Account holder",
+      "state": "external_required",
+      "resolution": "Confirm privacy labels against the final binary and third-party SDK report, select the approved build, choose release timing and availability, and explicitly submit it for App Review."
+    }
+  ]
+}

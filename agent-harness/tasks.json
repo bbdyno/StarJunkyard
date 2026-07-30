@@ -33,6 +33,12 @@
           "test"
         ]
       }
+    ],
+    "app-store-release": [
+      {
+        "name": "Complete unsigned App Store release regression",
+        "command": ["python3", "tools/release_regression.py"]
+      }
     ]
   },
   "tasks": [
@@ -154,6 +160,29 @@
         "tools/validate_project.py"
       ],
       "validationProfile": "full-ios"
+    },
+    {
+      "id": "issue-29",
+      "issue": 29,
+      "title": "iOS App Store 출시 준비",
+      "branch": "issue/29-app-store-release",
+      "baseRef": "335fffc5d113438b759f0104f9154062c5545140",
+      "worktreeHint": "../StarJunkyard-worktrees/issue-29",
+      "ownedPaths": [
+        ".github/workflows/release-readiness.yml",
+        "Project.swift",
+        "README.md",
+        "StarJunkyard/Resources/**",
+        "agent-harness/tasks.json",
+        "docs/APP_STORE_RELEASE.md",
+        "release/**",
+        "tests/test_agent_harness.py",
+        "tests/test_app_store_release.py",
+        "tests/test_release_regression.py",
+        "tools/release_regression.py",
+        "tools/validate_app_store_release.py"
+      ],
+      "validationProfile": "app-store-release"
     }
   ]
 }

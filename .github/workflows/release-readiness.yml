@@ -1,0 +1,64 @@
+name: Validate App Store release readiness
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/release-readiness.yml"
+      - ".mise.toml"
+      - "Project.swift"
+      - "StarJunkyard/**"
+      - "StarJunkyardTests/**"
+      - "agent-harness/**"
+      - "art-export/**"
+      - "content/**"
+      - "golden/**"
+      - "release/**"
+      - "tests/**"
+      - "tools/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/release-readiness.yml"
+      - ".mise.toml"
+      - "Project.swift"
+      - "StarJunkyard/**"
+      - "StarJunkyardTests/**"
+      - "agent-harness/**"
+      - "art-export/**"
+      - "content/**"
+      - "golden/**"
+      - "release/**"
+      - "tests/**"
+      - "tools/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: app-store-readiness-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unsigned-release-regression:
+    name: Unsigned Release, iPhone and iPad regression
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@v3
+        with:
+          cache: true
+          install: true
+      - name: Run repository and iOS release gates
+        run: python3 tools/release_regression.py --derived-data-path Derived/ReleaseReadiness
+      - name: Upload regression logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-store-release-diagnostics
+          path: |
+            Derived/ReleaseReadiness/Logs
+            Derived/ReleaseReadiness/Logs/Test/*.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
