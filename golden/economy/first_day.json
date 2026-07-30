@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "economy_first_day",
+  "contentVersion": "0.2.0",
+  "input": {
+    "activeSeconds": 3600,
+    "offlineSeconds": 86400,
+    "purchases": ["cutter_2", "rivet_2", "sorter_repair", "cutter_3", "spark_drone", "warehouse"]
+  },
+  "expectedState": {
+    "activeSecondsApplied": 3555,
+    "highestClearedStage": 60,
+    "totalActiveClears": 77,
+    "purchasedSinkIds": ["cutter_2", "rivet_2", "sorter_repair", "cutter_3", "spark_drone", "warehouse"],
+    "offlineSecondsApplied": 28800,
+    "offlineCycles": 384,
+    "offlineReward": {"credits": 42658560, "parts": 4032, "circuits": 0, "alloy": 0, "starCores": 0},
+    "wallet": {"credits": 45796625, "parts": 2483, "circuits": 56, "alloy": 28, "starCores": 1},
+    "launchEligible": true,
+    "launchMissing": {"credits": 0, "parts": 0, "circuits": 0, "alloy": 0, "starCores": 0},
+    "walletAfterLaunch": {"credits": 5796625, "parts": 83, "circuits": 16, "alloy": 8, "starCores": 0}
+  },
+  "expectedDigest": "2afd4e32fb50638ed7722f1336a1f6c91602ad842da511460a0f1bbb0676c3ab"
+}

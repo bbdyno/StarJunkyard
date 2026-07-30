@@ -7,6 +7,7 @@ struct VerticalSliceContent: Decodable, Sendable {
     let drones: [Drone]
     let enemies: [Enemy]
     let stages: [Stage]
+    let economy: Economy?
 
     struct Slice: Decodable, Sendable {
         let id: String
@@ -56,6 +57,65 @@ struct VerticalSliceContent: Decodable, Sendable {
         let bossTier: Int?
         let timeLimitMs: Int?
         let rewardMultiplierPpm: Int
+        let encounterClass: R1EncounterRule?
+        let expectedClearSeconds: Int?
+        let firstClearReward: Economy.Wallet?
+    }
+
+    struct Economy: Decodable, Sendable {
+        let currencies: [Currency]
+        let enemyPartRewards: EnemyPartRewards
+        let offline: Offline
+        let launch: Launch
+        let upgradeSinks: [UpgradeSink]
+
+        struct Currency: Decodable, Sendable {
+            let id: String
+            let nameKo: String
+            let primarySource: String
+            let primarySink: String
+        }
+
+        struct EnemyPartRewards: Decodable, Sendable {
+            let normal: Int
+            let elite: Int
+            let boss: Int
+        }
+
+        struct Offline: Decodable, Sendable {
+            let efficiencyPpm: Int
+            let cycleSeconds: Int
+            let freeCapSeconds: Int
+        }
+
+        struct Launch: Decodable, Sendable {
+            let requiredStage: Int
+            let cost: Wallet
+        }
+
+        struct UpgradeSink: Decodable, Sendable {
+            let id: String
+            let nameKo: String
+            let cost: Wallet
+        }
+
+        struct Wallet: Codable, Equatable, Sendable {
+            let credits: Int
+            let parts: Int
+            let circuits: Int
+            let alloy: Int
+            let starCores: Int
+
+            var economyWallet: EconomyWallet {
+                EconomyWallet(
+                    credits: credits,
+                    parts: parts,
+                    circuits: circuits,
+                    alloy: alloy,
+                    starCores: starCores
+                )
+            }
+        }
     }
 }
 

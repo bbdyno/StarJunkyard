@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "0.1.0",
+  "contentVersion": "0.2.0",
   "slice": {
     "id": "r1_vertical_slice",
     "regionId": "r01_back_alley",
     "stageStart": 1,
-    "stageEnd": 20
+    "stageEnd": 60
   },
   "player": {
     "id": "mo",
@@ -86,25 +86,1591 @@
     }
   ],
   "stages": [
-    {"number": 1, "baseHp": 50, "baseReward": 10, "wave": ["can_bug", "can_bug", "can_bug", "can_bug", "can_bug", "can_bug", "can_bug", "can_bug"], "rewardMultiplierPpm": 1000000},
-    {"number": 2, "baseHp": 55, "baseReward": 11, "wave": ["can_bug", "can_bug", "umbrella_crab", "can_bug", "can_bug", "umbrella_crab", "can_bug", "can_bug"], "rewardMultiplierPpm": 1000000},
-    {"number": 3, "baseHp": 61, "baseReward": 12, "wave": ["can_bug", "umbrella_crab", "can_bug", "can_bug", "umbrella_crab", "can_bug", "can_bug", "can_bug"], "rewardMultiplierPpm": 1000000},
-    {"number": 4, "baseHp": 67, "baseReward": 13, "wave": ["umbrella_crab", "can_bug", "fridge_boar", "umbrella_crab", "can_bug", "can_bug", "umbrella_crab", "fridge_boar"], "rewardMultiplierPpm": 1020000},
-    {"number": 5, "baseHp": 75, "baseReward": 14, "wave": ["can_bug", "fridge_boar", "umbrella_crab", "can_bug", "can_bug", "umbrella_crab", "vending_knight"], "rewardMultiplierPpm": 1100000},
-    {"number": 6, "baseHp": 82, "baseReward": 16, "wave": ["can_bug", "umbrella_crab", "fan_bat", "can_bug", "umbrella_crab", "can_bug", "fan_bat", "can_bug"], "rewardMultiplierPpm": 1040000},
-    {"number": 7, "baseHp": 91, "baseReward": 17, "wave": ["fan_bat", "can_bug", "umbrella_crab", "can_bug", "fan_bat", "can_bug", "umbrella_crab", "can_bug"], "rewardMultiplierPpm": 1040000},
-    {"number": 8, "baseHp": 101, "baseReward": 19, "wave": ["umbrella_crab", "fan_bat", "fridge_boar", "umbrella_crab", "fan_bat", "can_bug", "can_bug", "umbrella_crab"], "rewardMultiplierPpm": 1060000},
-    {"number": 9, "baseHp": 111, "baseReward": 21, "wave": ["fan_bat", "umbrella_crab", "fridge_boar", "can_bug", "umbrella_crab", "fan_bat", "fridge_boar", "umbrella_crab"], "rewardMultiplierPpm": 1080000},
-    {"number": 10, "baseHp": 123, "baseReward": 23, "wave": ["cancrab_king"], "bossTier": 1, "timeLimitMs": 45000, "rewardMultiplierPpm": 40000000},
-    {"number": 11, "baseHp": 136, "baseReward": 25, "wave": ["can_bug", "umbrella_crab", "fan_bat", "can_bug", "umbrella_crab", "fan_bat", "can_bug", "fan_bat"], "rewardMultiplierPpm": 1100000},
-    {"number": 12, "baseHp": 150, "baseReward": 27, "wave": ["umbrella_crab", "fan_bat", "fridge_boar", "umbrella_crab", "fan_bat", "can_bug", "umbrella_crab", "fan_bat"], "rewardMultiplierPpm": 1120000},
-    {"number": 13, "baseHp": 166, "baseReward": 30, "wave": ["fan_bat", "fan_bat", "umbrella_crab", "can_bug", "fan_bat", "umbrella_crab", "can_bug", "fan_bat"], "rewardMultiplierPpm": 1140000},
-    {"number": 14, "baseHp": 183, "baseReward": 33, "wave": ["umbrella_crab", "fan_bat", "umbrella_crab", "can_bug", "fan_bat", "umbrella_crab", "fan_bat", "can_bug"], "rewardMultiplierPpm": 1160000},
-    {"number": 15, "baseHp": 202, "baseReward": 36, "wave": ["fan_bat", "umbrella_crab", "fridge_boar", "fan_bat", "umbrella_crab", "can_bug", "vending_knight"], "rewardMultiplierPpm": 1250000},
-    {"number": 16, "baseHp": 224, "baseReward": 39, "wave": ["fan_bat", "umbrella_crab", "fan_bat", "can_bug", "umbrella_crab", "fan_bat", "umbrella_crab", "can_bug"], "rewardMultiplierPpm": 1180000},
-    {"number": 17, "baseHp": 247, "baseReward": 43, "wave": ["umbrella_crab", "fan_bat", "umbrella_crab", "fan_bat", "can_bug", "fan_bat", "umbrella_crab", "fan_bat"], "rewardMultiplierPpm": 1200000},
-    {"number": 18, "baseHp": 273, "baseReward": 47, "wave": ["fan_bat", "fridge_boar", "umbrella_crab", "fan_bat", "can_bug", "umbrella_crab", "fan_bat", "fridge_boar"], "rewardMultiplierPpm": 1220000},
-    {"number": 19, "baseHp": 302, "baseReward": 51, "wave": ["umbrella_crab", "fan_bat", "fridge_boar", "umbrella_crab", "fan_bat", "can_bug", "fridge_boar", "umbrella_crab"], "rewardMultiplierPpm": 1240000},
-    {"number": 20, "baseHp": 333, "baseReward": 56, "wave": ["cancrab_king"], "bossTier": 2, "timeLimitMs": 45000, "rewardMultiplierPpm": 45000000}
-  ]
+    {
+      "number": 1,
+      "baseHp": 50,
+      "baseReward": 10,
+      "wave": [
+        "can_bug",
+        "can_bug",
+        "can_bug",
+        "can_bug",
+        "can_bug",
+        "can_bug",
+        "can_bug",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1000000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 2,
+      "baseHp": 55,
+      "baseReward": 11,
+      "wave": [
+        "can_bug",
+        "can_bug",
+        "umbrella_crab",
+        "can_bug",
+        "can_bug",
+        "umbrella_crab",
+        "can_bug",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1000000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 3,
+      "baseHp": 61,
+      "baseReward": 12,
+      "wave": [
+        "can_bug",
+        "umbrella_crab",
+        "can_bug",
+        "can_bug",
+        "umbrella_crab",
+        "can_bug",
+        "can_bug",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1000000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 4,
+      "baseHp": 67,
+      "baseReward": 13,
+      "wave": [
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "umbrella_crab",
+        "can_bug",
+        "can_bug",
+        "umbrella_crab",
+        "fridge_boar"
+      ],
+      "rewardMultiplierPpm": 1020000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 5,
+      "baseHp": 75,
+      "baseReward": 14,
+      "wave": [
+        "can_bug",
+        "fridge_boar",
+        "umbrella_crab",
+        "can_bug",
+        "can_bug",
+        "umbrella_crab",
+        "vending_knight"
+      ],
+      "rewardMultiplierPpm": 1100000,
+      "encounterClass": "elite",
+      "expectedClearSeconds": 55,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 3,
+        "alloy": 1,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 6,
+      "baseHp": 82,
+      "baseReward": 16,
+      "wave": [
+        "can_bug",
+        "umbrella_crab",
+        "fan_bat",
+        "can_bug",
+        "umbrella_crab",
+        "can_bug",
+        "fan_bat",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1040000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 7,
+      "baseHp": 91,
+      "baseReward": 17,
+      "wave": [
+        "fan_bat",
+        "can_bug",
+        "umbrella_crab",
+        "can_bug",
+        "fan_bat",
+        "can_bug",
+        "umbrella_crab",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1040000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 8,
+      "baseHp": 101,
+      "baseReward": 19,
+      "wave": [
+        "umbrella_crab",
+        "fan_bat",
+        "fridge_boar",
+        "umbrella_crab",
+        "fan_bat",
+        "can_bug",
+        "can_bug",
+        "umbrella_crab"
+      ],
+      "rewardMultiplierPpm": 1060000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 9,
+      "baseHp": 111,
+      "baseReward": 21,
+      "wave": [
+        "fan_bat",
+        "umbrella_crab",
+        "fridge_boar",
+        "can_bug",
+        "umbrella_crab",
+        "fan_bat",
+        "fridge_boar",
+        "umbrella_crab"
+      ],
+      "rewardMultiplierPpm": 1080000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 10,
+      "baseHp": 123,
+      "baseReward": 23,
+      "wave": [
+        "cancrab_king"
+      ],
+      "bossTier": 1,
+      "timeLimitMs": 45000,
+      "rewardMultiplierPpm": 40000000,
+      "encounterClass": "boss",
+      "expectedClearSeconds": 45,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 8,
+        "alloy": 4,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 11,
+      "baseHp": 136,
+      "baseReward": 25,
+      "wave": [
+        "can_bug",
+        "umbrella_crab",
+        "fan_bat",
+        "can_bug",
+        "umbrella_crab",
+        "fan_bat",
+        "can_bug",
+        "fan_bat"
+      ],
+      "rewardMultiplierPpm": 1100000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 12,
+      "baseHp": 150,
+      "baseReward": 27,
+      "wave": [
+        "umbrella_crab",
+        "fan_bat",
+        "fridge_boar",
+        "umbrella_crab",
+        "fan_bat",
+        "can_bug",
+        "umbrella_crab",
+        "fan_bat"
+      ],
+      "rewardMultiplierPpm": 1120000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 13,
+      "baseHp": 166,
+      "baseReward": 30,
+      "wave": [
+        "fan_bat",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fan_bat"
+      ],
+      "rewardMultiplierPpm": 1140000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 14,
+      "baseHp": 183,
+      "baseReward": 33,
+      "wave": [
+        "umbrella_crab",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fan_bat",
+        "umbrella_crab",
+        "fan_bat",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1160000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 15,
+      "baseHp": 202,
+      "baseReward": 36,
+      "wave": [
+        "fan_bat",
+        "umbrella_crab",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "vending_knight"
+      ],
+      "rewardMultiplierPpm": 1250000,
+      "encounterClass": "elite",
+      "expectedClearSeconds": 55,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 3,
+        "alloy": 1,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 16,
+      "baseHp": 224,
+      "baseReward": 39,
+      "wave": [
+        "fan_bat",
+        "umbrella_crab",
+        "fan_bat",
+        "can_bug",
+        "umbrella_crab",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1180000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 17,
+      "baseHp": 247,
+      "baseReward": 43,
+      "wave": [
+        "umbrella_crab",
+        "fan_bat",
+        "umbrella_crab",
+        "fan_bat",
+        "can_bug",
+        "fan_bat",
+        "umbrella_crab",
+        "fan_bat"
+      ],
+      "rewardMultiplierPpm": 1200000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 18,
+      "baseHp": 273,
+      "baseReward": 47,
+      "wave": [
+        "fan_bat",
+        "fridge_boar",
+        "umbrella_crab",
+        "fan_bat",
+        "can_bug",
+        "umbrella_crab",
+        "fan_bat",
+        "fridge_boar"
+      ],
+      "rewardMultiplierPpm": 1220000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 19,
+      "baseHp": 302,
+      "baseReward": 51,
+      "wave": [
+        "umbrella_crab",
+        "fan_bat",
+        "fridge_boar",
+        "umbrella_crab",
+        "fan_bat",
+        "can_bug",
+        "fridge_boar",
+        "umbrella_crab"
+      ],
+      "rewardMultiplierPpm": 1240000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 20,
+      "baseHp": 333,
+      "baseReward": 56,
+      "wave": [
+        "cancrab_king"
+      ],
+      "bossTier": 2,
+      "timeLimitMs": 45000,
+      "rewardMultiplierPpm": 45000000,
+      "encounterClass": "boss",
+      "expectedClearSeconds": 45,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 8,
+        "alloy": 4,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 21,
+      "baseHp": 368,
+      "baseReward": 61,
+      "wave": [
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat"
+      ],
+      "rewardMultiplierPpm": 1315000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 22,
+      "baseHp": 407,
+      "baseReward": 67,
+      "wave": [
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar"
+      ],
+      "rewardMultiplierPpm": 1330000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 23,
+      "baseHp": 450,
+      "baseReward": 74,
+      "wave": [
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1345000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 24,
+      "baseHp": 497,
+      "baseReward": 81,
+      "wave": [
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab"
+      ],
+      "rewardMultiplierPpm": 1360000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 25,
+      "baseHp": 549,
+      "baseReward": 88,
+      "wave": [
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "vending_knight"
+      ],
+      "rewardMultiplierPpm": 1800000,
+      "encounterClass": "elite",
+      "expectedClearSeconds": 55,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 3,
+        "alloy": 1,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 26,
+      "baseHp": 607,
+      "baseReward": 97,
+      "wave": [
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar"
+      ],
+      "rewardMultiplierPpm": 1390000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 27,
+      "baseHp": 670,
+      "baseReward": 106,
+      "wave": [
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1405000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 28,
+      "baseHp": 741,
+      "baseReward": 116,
+      "wave": [
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab"
+      ],
+      "rewardMultiplierPpm": 1420000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 29,
+      "baseHp": 819,
+      "baseReward": 127,
+      "wave": [
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat"
+      ],
+      "rewardMultiplierPpm": 1435000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 30,
+      "baseHp": 905,
+      "baseReward": 139,
+      "wave": [
+        "cancrab_king"
+      ],
+      "rewardMultiplierPpm": 50000000,
+      "bossTier": 3,
+      "timeLimitMs": 45000,
+      "encounterClass": "boss",
+      "expectedClearSeconds": 45,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 8,
+        "alloy": 4,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 31,
+      "baseHp": 1000,
+      "baseReward": 152,
+      "wave": [
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1465000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 32,
+      "baseHp": 1105,
+      "baseReward": 167,
+      "wave": [
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab"
+      ],
+      "rewardMultiplierPpm": 1480000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 33,
+      "baseHp": 1221,
+      "baseReward": 182,
+      "wave": [
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat"
+      ],
+      "rewardMultiplierPpm": 1495000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 34,
+      "baseHp": 1349,
+      "baseReward": 200,
+      "wave": [
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar"
+      ],
+      "rewardMultiplierPpm": 1510000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 35,
+      "baseHp": 1490,
+      "baseReward": 219,
+      "wave": [
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "vending_knight"
+      ],
+      "rewardMultiplierPpm": 2000000,
+      "encounterClass": "elite",
+      "expectedClearSeconds": 55,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 3,
+        "alloy": 1,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 36,
+      "baseHp": 1647,
+      "baseReward": 240,
+      "wave": [
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab"
+      ],
+      "rewardMultiplierPpm": 1540000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 37,
+      "baseHp": 1820,
+      "baseReward": 262,
+      "wave": [
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat"
+      ],
+      "rewardMultiplierPpm": 1555000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 38,
+      "baseHp": 2011,
+      "baseReward": 287,
+      "wave": [
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar"
+      ],
+      "rewardMultiplierPpm": 1570000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 39,
+      "baseHp": 2222,
+      "baseReward": 315,
+      "wave": [
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1585000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 40,
+      "baseHp": 2455,
+      "baseReward": 344,
+      "wave": [
+        "cancrab_king"
+      ],
+      "rewardMultiplierPpm": 55000000,
+      "bossTier": 4,
+      "timeLimitMs": 45000,
+      "encounterClass": "boss",
+      "expectedClearSeconds": 45,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 8,
+        "alloy": 4,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 41,
+      "baseHp": 2713,
+      "baseReward": 377,
+      "wave": [
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat"
+      ],
+      "rewardMultiplierPpm": 1615000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 42,
+      "baseHp": 2998,
+      "baseReward": 413,
+      "wave": [
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar"
+      ],
+      "rewardMultiplierPpm": 1630000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 43,
+      "baseHp": 3313,
+      "baseReward": 452,
+      "wave": [
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1645000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 44,
+      "baseHp": 3661,
+      "baseReward": 495,
+      "wave": [
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab"
+      ],
+      "rewardMultiplierPpm": 1660000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 45,
+      "baseHp": 4045,
+      "baseReward": 542,
+      "wave": [
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "vending_knight"
+      ],
+      "rewardMultiplierPpm": 2200000,
+      "encounterClass": "elite",
+      "expectedClearSeconds": 55,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 3,
+        "alloy": 1,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 46,
+      "baseHp": 4470,
+      "baseReward": 594,
+      "wave": [
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar"
+      ],
+      "rewardMultiplierPpm": 1690000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 47,
+      "baseHp": 4939,
+      "baseReward": 650,
+      "wave": [
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1705000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 48,
+      "baseHp": 5458,
+      "baseReward": 712,
+      "wave": [
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab"
+      ],
+      "rewardMultiplierPpm": 1720000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 49,
+      "baseHp": 6031,
+      "baseReward": 780,
+      "wave": [
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat"
+      ],
+      "rewardMultiplierPpm": 1735000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 50,
+      "baseHp": 6664,
+      "baseReward": 854,
+      "wave": [
+        "cancrab_king"
+      ],
+      "rewardMultiplierPpm": 60000000,
+      "bossTier": 5,
+      "timeLimitMs": 45000,
+      "encounterClass": "boss",
+      "expectedClearSeconds": 45,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 8,
+        "alloy": 4,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 51,
+      "baseHp": 7363,
+      "baseReward": 935,
+      "wave": [
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1765000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 52,
+      "baseHp": 8137,
+      "baseReward": 1024,
+      "wave": [
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab"
+      ],
+      "rewardMultiplierPpm": 1780000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 53,
+      "baseHp": 8991,
+      "baseReward": 1121,
+      "wave": [
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat"
+      ],
+      "rewardMultiplierPpm": 1795000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 54,
+      "baseHp": 9935,
+      "baseReward": 1227,
+      "wave": [
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar"
+      ],
+      "rewardMultiplierPpm": 1810000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 55,
+      "baseHp": 10978,
+      "baseReward": 1344,
+      "wave": [
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "vending_knight"
+      ],
+      "rewardMultiplierPpm": 2400000,
+      "encounterClass": "elite",
+      "expectedClearSeconds": 55,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 3,
+        "alloy": 1,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 56,
+      "baseHp": 12131,
+      "baseReward": 1472,
+      "wave": [
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab"
+      ],
+      "rewardMultiplierPpm": 1840000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 57,
+      "baseHp": 13405,
+      "baseReward": 1611,
+      "wave": [
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat"
+      ],
+      "rewardMultiplierPpm": 1855000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 1,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 58,
+      "baseHp": 14812,
+      "baseReward": 1764,
+      "wave": [
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar"
+      ],
+      "rewardMultiplierPpm": 1870000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 59,
+      "baseHp": 16367,
+      "baseReward": 1932,
+      "wave": [
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug",
+        "fridge_boar",
+        "fan_bat",
+        "umbrella_crab",
+        "can_bug"
+      ],
+      "rewardMultiplierPpm": 1885000,
+      "encounterClass": "normal",
+      "expectedClearSeconds": 40,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 0,
+        "alloy": 0,
+        "starCores": 0
+      }
+    },
+    {
+      "number": 60,
+      "baseHp": 18086,
+      "baseReward": 2116,
+      "wave": [
+        "cancrab_king"
+      ],
+      "rewardMultiplierPpm": 75000000,
+      "bossTier": 6,
+      "timeLimitMs": 60000,
+      "encounterClass": "regionBoss",
+      "expectedClearSeconds": 60,
+      "firstClearReward": {
+        "credits": 0,
+        "parts": 0,
+        "circuits": 20,
+        "alloy": 12,
+        "starCores": 1
+      }
+    }
+  ],
+  "economy": {
+    "currencies": [
+      {
+        "id": "credits",
+        "nameKo": "크레딧",
+        "primarySource": "전투·오프라인 파밍",
+        "primarySink": "공구·시설 강화"
+      },
+      {
+        "id": "parts",
+        "nameKo": "부품",
+        "primarySource": "괴수 해체",
+        "primarySink": "드론·시설 강화"
+      },
+      {
+        "id": "circuits",
+        "nameKo": "회로",
+        "primarySource": "첫 클리어·엘리트",
+        "primarySink": "자동화·드론 해금"
+      },
+      {
+        "id": "alloy",
+        "nameKo": "합금",
+        "primarySource": "엘리트·보스 첫 클리어",
+        "primarySink": "상위 설비·출항선"
+      },
+      {
+        "id": "starCores",
+        "nameKo": "항성 코어",
+        "primarySource": "S60 지역 보스",
+        "primarySink": "다음 지역 출항"
+      }
+    ],
+    "enemyPartRewards": {
+      "normal": 3,
+      "elite": 6,
+      "boss": 15
+    },
+    "offline": {
+      "efficiencyPpm": 700000,
+      "cycleSeconds": 75,
+      "freeCapSeconds": 28800
+    },
+    "launch": {
+      "requiredStage": 60,
+      "cost": {
+        "credits": 40000000,
+        "parts": 2400,
+        "circuits": 40,
+        "alloy": 20,
+        "starCores": 1
+      }
+    },
+    "upgradeSinks": [
+      {
+        "id": "cutter_2",
+        "nameKo": "절단기 Mk.2",
+        "cost": {
+          "credits": 200,
+          "parts": 40,
+          "circuits": 0,
+          "alloy": 0,
+          "starCores": 0
+        }
+      },
+      {
+        "id": "rivet_2",
+        "nameKo": "리벳 출력 강화",
+        "cost": {
+          "credits": 800,
+          "parts": 100,
+          "circuits": 3,
+          "alloy": 0,
+          "starCores": 0
+        }
+      },
+      {
+        "id": "sorter_repair",
+        "nameKo": "자동 선별기 복구",
+        "cost": {
+          "credits": 2500,
+          "parts": 250,
+          "circuits": 5,
+          "alloy": 1,
+          "starCores": 0
+        }
+      },
+      {
+        "id": "cutter_3",
+        "nameKo": "절단기 Mk.3",
+        "cost": {
+          "credits": 8000,
+          "parts": 600,
+          "circuits": 8,
+          "alloy": 2,
+          "starCores": 0
+        }
+      },
+      {
+        "id": "spark_drone",
+        "nameKo": "스파크 드론 조립",
+        "cost": {
+          "credits": 20000,
+          "parts": 1000,
+          "circuits": 12,
+          "alloy": 3,
+          "starCores": 0
+        }
+      },
+      {
+        "id": "warehouse",
+        "nameKo": "궤도 창고 증축",
+        "cost": {
+          "credits": 60000,
+          "parts": 1200,
+          "circuits": 10,
+          "alloy": 4,
+          "starCores": 0
+        }
+      }
+    ]
+  }
 }

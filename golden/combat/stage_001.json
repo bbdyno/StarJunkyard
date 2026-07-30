@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "fixtureId": "combat_stage_001_base",
-  "contentVersion": "0.1.0",
+  "contentVersion": "0.2.0",
   "input": {
     "stage": 1,
     "seed": "42",
