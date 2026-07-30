@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "platform": "ios",
+  "speedMultiplierTarget": 1.55,
+  "speedMultiplierHardCap": 1.8,
+  "products": [
+    {
+      "id": "com.bbdyno.starjunkyard.starter.crewkit",
+      "type": "non_consumable",
+      "referencePriceUSD": 2.99,
+      "grants": ["bora_founder_uniform", "bora_founder_attack_fx", "founder_profile_badge"]
+    },
+    {
+      "id": "com.bbdyno.starjunkyard.workbench.slot3",
+      "type": "non_consumable",
+      "referencePriceUSD": 7.99,
+      "grants": ["workbench_slot_3"]
+    },
+    {
+      "id": "com.bbdyno.starjunkyard.offline.16h",
+      "type": "non_consumable",
+      "referencePriceUSD": 5.99,
+      "grants": ["offline_cap_16h"]
+    },
+    {
+      "id": "com.bbdyno.starjunkyard.cosmetic.bora.rust",
+      "type": "non_consumable",
+      "referencePriceUSD": 4.99,
+      "grants": ["bora_rust_uniform", "bora_rust_attack_fx"]
+    },
+    {
+      "id": "com.bbdyno.starjunkyard.maintenance.monthly",
+      "type": "auto_renewable_subscription",
+      "referencePriceUSD": 7.99,
+      "group": "maintenance_membership",
+      "grants": ["craft_speed_1_10", "daily_time_ticket_plus_1", "monthly_crew_cosmetic"]
+    }
+  ]
+}
