@@ -56,6 +56,14 @@ struct ShelterRecovery: Sendable {
                 required: reactorRequirement
             )
         default:
+            if highestStage > 10 {
+                return Goal(
+                    title: "출항 선체 조립",
+                    detail: "R1 끝골목을 정리해 피난처를 출항시키세요",
+                    current: min(max(10, highestStage), 20),
+                    required: 20
+                )
+            }
             return Goal(
                 title: "S10 압착왕 코어 회수",
                 detail: "추진기를 고쳐 피난처 7호를 출항시키세요",

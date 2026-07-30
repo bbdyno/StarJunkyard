@@ -37,7 +37,27 @@ final class GameViewController: UIViewController {
         gameView.accessibilityTraits = [.allowsDirectInteraction, .updatesFrequently]
         gameView.accessibilityLabel = "저장 선택 화면. 계속하기, 새 게임, Game Center 불러오기를 선택할 수 있습니다."
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("-capture-story") {
+        if ProcessInfo.processInfo.arguments.contains("-capture-boss-dismantle") {
+            var captureSave = GameSave.newGame()
+            captureSave.stageIndex = 9
+            captureSave.enemyHPs = [0]
+            captureSave.credits = 2_500
+            captureSave.shelterRepairParts = 12
+            captureSave.prologueSeen = true
+            captureSave.tutorialStep = 4
+            captureSave.pendingBossDismantleStage = 10
+            captureSave.pendingBossBaseParts = 15
+            startGame(with: captureSave)
+        } else if ProcessInfo.processInfo.arguments.contains("-capture-boss") {
+            var captureSave = GameSave.newGame()
+            captureSave.stageIndex = 9
+            captureSave.credits = 2_500
+            captureSave.cutterLevel = 12
+            captureSave.shelterRepairParts = 12
+            captureSave.prologueSeen = true
+            captureSave.tutorialStep = 4
+            startGame(with: captureSave)
+        } else if ProcessInfo.processInfo.arguments.contains("-capture-story") {
             startGame(with: .newGame())
         } else if ProcessInfo.processInfo.arguments.contains("-capture-facility") {
             var captureSave = GameSave.newGame(now: Date().addingTimeInterval(-15 * 60))

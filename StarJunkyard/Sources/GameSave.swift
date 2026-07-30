@@ -1,7 +1,7 @@
 import Foundation
 
 struct GameSave: Codable, Equatable, Sendable {
-    static let currentSchemaVersion = 4
+    static let currentSchemaVersion = 5
     static let cloudSlotName = "sj_main_v1"
 
     var schemaVersion: Int = currentSchemaVersion
@@ -26,6 +26,13 @@ struct GameSave: Codable, Equatable, Sendable {
     var storyChapter: Int
     var shelterRepairParts: Int
     var prologueSeen: Bool
+    var defeatedBossStages: [Int]
+    var unlockedBlueprintIDs: [String]
+    var unlockedModuleIDs: [String]
+    var storyLogIDs: [String]
+    var bossFailureCounts: [String: Int]
+    var pendingBossDismantleStage: Int?
+    var pendingBossBaseParts: Int
     var tutorialStep: Int
     var combatTick: Int
     var highestStage: Int
@@ -54,6 +61,13 @@ struct GameSave: Codable, Equatable, Sendable {
             storyChapter: 0,
             shelterRepairParts: 0,
             prologueSeen: false,
+            defeatedBossStages: [],
+            unlockedBlueprintIDs: [],
+            unlockedModuleIDs: [],
+            storyLogIDs: [],
+            bossFailureCounts: [:],
+            pendingBossDismantleStage: nil,
+            pendingBossBaseParts: 0,
             tutorialStep: 0,
             combatTick: 0,
             highestStage: 1,
@@ -71,6 +85,8 @@ struct GameSave: Codable, Equatable, Sendable {
         case credits, parts, cutterLevel, droneLevel, magnetLevel, crewLevel
         case pressLevel, sorterLevel, warehouseLevel, yardIncomeBank, manualTapCount, discoveredEnemyIDs
         case storyChapter, shelterRepairParts, prologueSeen
+        case defeatedBossStages, unlockedBlueprintIDs, unlockedModuleIDs, storyLogIDs, bossFailureCounts
+        case pendingBossDismantleStage, pendingBossBaseParts
         case tutorialStep, combatTick, highestStage, cloudBackupEnabled
     }
 
@@ -97,6 +113,13 @@ struct GameSave: Codable, Equatable, Sendable {
         storyChapter: Int,
         shelterRepairParts: Int,
         prologueSeen: Bool,
+        defeatedBossStages: [Int],
+        unlockedBlueprintIDs: [String],
+        unlockedModuleIDs: [String],
+        storyLogIDs: [String],
+        bossFailureCounts: [String: Int],
+        pendingBossDismantleStage: Int?,
+        pendingBossBaseParts: Int,
         tutorialStep: Int,
         combatTick: Int,
         highestStage: Int,
@@ -124,6 +147,13 @@ struct GameSave: Codable, Equatable, Sendable {
         self.storyChapter = storyChapter
         self.shelterRepairParts = shelterRepairParts
         self.prologueSeen = prologueSeen
+        self.defeatedBossStages = defeatedBossStages
+        self.unlockedBlueprintIDs = unlockedBlueprintIDs
+        self.unlockedModuleIDs = unlockedModuleIDs
+        self.storyLogIDs = storyLogIDs
+        self.bossFailureCounts = bossFailureCounts
+        self.pendingBossDismantleStage = pendingBossDismantleStage
+        self.pendingBossBaseParts = pendingBossBaseParts
         self.tutorialStep = tutorialStep
         self.combatTick = combatTick
         self.highestStage = highestStage
@@ -154,6 +184,13 @@ struct GameSave: Codable, Equatable, Sendable {
         storyChapter = try values.decodeIfPresent(Int.self, forKey: .storyChapter) ?? 0
         shelterRepairParts = try values.decodeIfPresent(Int.self, forKey: .shelterRepairParts) ?? 0
         prologueSeen = try values.decodeIfPresent(Bool.self, forKey: .prologueSeen) ?? false
+        defeatedBossStages = try values.decodeIfPresent([Int].self, forKey: .defeatedBossStages) ?? []
+        unlockedBlueprintIDs = try values.decodeIfPresent([String].self, forKey: .unlockedBlueprintIDs) ?? []
+        unlockedModuleIDs = try values.decodeIfPresent([String].self, forKey: .unlockedModuleIDs) ?? []
+        storyLogIDs = try values.decodeIfPresent([String].self, forKey: .storyLogIDs) ?? []
+        bossFailureCounts = try values.decodeIfPresent([String: Int].self, forKey: .bossFailureCounts) ?? [:]
+        pendingBossDismantleStage = try values.decodeIfPresent(Int.self, forKey: .pendingBossDismantleStage)
+        pendingBossBaseParts = try values.decodeIfPresent(Int.self, forKey: .pendingBossBaseParts) ?? 0
         tutorialStep = try values.decode(Int.self, forKey: .tutorialStep)
         combatTick = try values.decode(Int.self, forKey: .combatTick)
         highestStage = try values.decode(Int.self, forKey: .highestStage)

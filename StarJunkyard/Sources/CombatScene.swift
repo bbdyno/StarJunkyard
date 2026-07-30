@@ -56,6 +56,17 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private var storyChapter: Int
     private var shelterRepairParts: Int
     private var prologueSeen: Bool
+    private var defeatedBossStages: Set<Int>
+    private var unlockedBlueprintIDs: Set<String>
+    private var unlockedModuleIDs: Set<String>
+    private var storyLogIDs: Set<String>
+    private var bossFailureCounts: [String: Int]
+    private var pendingBossDismantleStage: Int?
+    private var pendingBossBaseParts: Int
+    private var bossDeadlineTick: Int?
+    private var bossEncounterPhase: BossEncounterRules.Phase?
+    private var pendingBossToken: Int?
+    private var bossAwaitingRetry = false
     private let offlineSeconds: Int
     private let offlineAmount: Int
     private let showFacilityPanelOnLaunch: Bool
@@ -99,6 +110,9 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private let shelterCore = SKSpriteNode(color: PixelPalette.midIron, size: CGSize(width: 18, height: 18))
     private var shelterLamps: [SKSpriteNode] = []
     private var storyOverlayIsPrologue = false
+    private let bossLayer = SKNode()
+    private let bossTimerLabel = SKLabelNode(fontNamed: "Menlo-Bold")
+    private let bossPhaseLabel = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
     private let shopLayer = SKNode()
     private let shopStatusLabel = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
 
@@ -139,6 +153,13 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         storyChapter = max(0, save.storyChapter)
         shelterRepairParts = max(0, save.shelterRepairParts)
         prologueSeen = save.prologueSeen
+        defeatedBossStages = Set(save.defeatedBossStages)
+        unlockedBlueprintIDs = Set(save.unlockedBlueprintIDs)
+        unlockedModuleIDs = Set(save.unlockedModuleIDs)
+        storyLogIDs = Set(save.storyLogIDs)
+        bossFailureCounts = save.bossFailureCounts
+        pendingBossDismantleStage = save.pendingBossDismantleStage
+        pendingBossBaseParts = max(0, save.pendingBossBaseParts)
         self.showFacilityPanelOnLaunch = showFacilityPanelOnLaunch
         let offline = YardEconomy.offlineIncome(
             rate: YardEconomy.passiveIncome(
@@ -168,7 +189,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         removeAllChildren()
         [laneRoot, combatLayer, hudLayer, controlsLayer, adaptiveRailLayer, mechanicAnchor,
          mechanicMotion, droneAnchor, droneMotion, crewAnchor, crewMotion, enemyLayer,
-         effectsLayer, rainLayer, tutorialLayer, storyLayer, storyOverlayLayer, shelterReactor,
+         effectsLayer, rainLayer, tutorialLayer, storyLayer, storyOverlayLayer, bossLayer, shelterReactor,
          shopLayer].forEach { $0.removeAllChildren() }
         shelterLamps.removeAll()
         backdrop.zPosition = -1_000
@@ -179,9 +200,11 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         laneRoot.addChild(controlsLayer)
         laneRoot.addChild(tutorialLayer)
         laneRoot.addChild(storyLayer)
+        laneRoot.addChild(bossLayer)
         laneRoot.addChild(shopLayer)
         laneRoot.addChild(storyOverlayLayer)
         storyOverlayLayer.isHidden = true
+        bossLayer.isHidden = true
         addChild(adaptiveRailLayer)
         buildBackground()
         buildCombatants()
@@ -252,6 +275,15 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             }
             return
         }
+        if bossAwaitingRetry {
+            if names.contains("boss_retry") { retryBossEncounter() }
+            return
+        }
+        if pendingBossToken != nil {
+            if names.contains("boss_cut_0") { resolveBossDismantle(selectedCut: 0) }
+            else if names.contains("boss_cut_1") { resolveBossDismantle(selectedCut: 1) }
+            return
+        }
         if !shopLayer.isHidden {
             if names.contains("buy_cutter") { buy(.cutter) }
             else if names.contains("buy_drone") { buy(.drone) }
@@ -299,6 +331,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             yardIncomeBank += passiveIncomeRate
             updateHUD()
         }
+        updateBossEncounter()
+        guard !bossAwaitingRetry, pendingBossToken == nil else { return }
         guard !groupTransitioning, currentTarget != nil else {
             if combatTick.isMultiple(of: 200) { persist() }
             return
@@ -384,7 +418,13 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         enemy.hp = max(0, enemy.hp - damage)
         playEnemyHit(enemy)
         updateEnemyHUD(enemy)
-        if enemy.hp == 0 { dismantle(enemy) }
+        if enemy.spec.enemyClass == "boss" {
+            updateBossPhase(enemy)
+        }
+        if enemy.hp == 0 {
+            if enemy.spec.enemyClass == "boss" { beginBossDismantle(enemy) }
+            else { dismantle(enemy) }
+        }
     }
 
     private var manualDamage: Int {
@@ -497,12 +537,242 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             updateEnemyHUD(enemy)
         }
         restoredEnemyHPs = nil
+        if let boss = activeEnemies.first(where: { $0.spec.enemyClass == "boss" }) {
+            if pendingBossDismantleStage == stage.number {
+                boss.hp = 0
+                boss.root.isHidden = false
+                showBossDismantle(boss)
+            } else {
+                startBossEncounter(boss, stage: stage)
+            }
+        } else {
+            resetBossPresentation()
+        }
         updateHUD()
         refreshLoadout()
         rebuildAdaptiveRails()
     }
 
-    private func dismantle(_ enemy: ActiveEnemy) {
+    private func startBossEncounter(_ enemy: ActiveEnemy, stage: VerticalSliceContent.Stage) {
+        groupTransitioning = false
+        bossAwaitingRetry = false
+        pendingBossToken = nil
+        bossEncounterPhase = BossEncounterRules.phase(hp: enemy.hp, maxHP: enemy.maxHP)
+        bossDeadlineTick = combatTick + BossEncounterRules.timeLimitTicks(milliseconds: stage.timeLimitMs)
+        bossLayer.removeAllChildren()
+        bossLayer.isHidden = false
+        bossLayer.zPosition = 180
+
+        let panel = PixelArt.panel(size: CGSize(width: 154, height: 68), name: "boss_timer_panel")
+        panel.position = CGPoint(x: 190, y: 500)
+        bossLayer.addChild(panel)
+        configureLabel(bossTimerLabel, size: 11, color: PixelPalette.warningAmber, alignment: .center)
+        bossTimerLabel.position = CGPoint(x: 267, y: 546)
+        bossTimerLabel.zPosition = 4
+        bossTimerLabel.name = "boss_timer"
+        bossLayer.addChild(bossTimerLabel)
+        configureLabel(bossPhaseLabel, size: 8, color: PixelPalette.workWhite, alignment: .center)
+        bossPhaseLabel.position = CGPoint(x: 267, y: 520)
+        bossPhaseLabel.zPosition = 4
+        bossPhaseLabel.name = "boss_phase"
+        bossLayer.addChild(bossPhaseLabel)
+        refreshBossLabels()
+        updateBossPhase(enemy, force: true)
+    }
+
+    private func updateBossEncounter() {
+        guard let deadline = bossDeadlineTick,
+              !bossAwaitingRetry,
+              pendingBossToken == nil,
+              let boss = activeEnemies.first(where: { $0.spec.enemyClass == "boss" && $0.hp > 0 })
+        else { return }
+        refreshBossLabels()
+        if combatTick >= deadline {
+            failBossEncounter(boss)
+        }
+    }
+
+    private func refreshBossLabels() {
+        guard let deadline = bossDeadlineTick else { return }
+        let seconds = BossEncounterRules.remainingSeconds(deadlineTick: deadline, currentTick: combatTick)
+        bossTimerLabel.text = "재조립 " + String(seconds) + "초"
+        switch bossEncounterPhase ?? .armored {
+        case .armored: bossPhaseLabel.text = "집게 외장 • 충격 약점"
+        case .clawBroken: bossPhaseLabel.text = "외장 분리 • 절단 집중"
+        case .coreExposed: bossPhaseLabel.text = "코어 노출 • 전력 집중"
+        case .dismantle: bossPhaseLabel.text = "최종 해체"
+        }
+    }
+
+    private func updateBossPhase(_ enemy: ActiveEnemy, force: Bool = false) {
+        let phase = BossEncounterRules.phase(hp: enemy.hp, maxHP: enemy.maxHP)
+        guard force || phase != bossEncounterPhase else { return }
+        bossEncounterPhase = phase
+        refreshBossLabels()
+        guard !force else { return }
+        switch phase {
+        case .clawBroken:
+            spawnBossPhaseBreak(title: "집게 외장 분리", at: enemy.root.position, color: PixelPalette.rust)
+            enemy.art.color = PixelPalette.rust
+            enemy.art.colorBlendFactor = 0.22
+        case .coreExposed:
+            spawnBossPhaseBreak(title: "육각 코어 노출", at: enemy.root.position, color: PixelPalette.warningAmber)
+            let core = PixelArt.sprite(blocks: [
+                .init(x: 5, y: 0, width: 10, height: 4, color: PixelPalette.warningAmber),
+                .init(x: 0, y: 4, width: 20, height: 12, color: PixelPalette.sparkOrange),
+                .init(x: 5, y: 16, width: 10, height: 4, color: PixelPalette.warningAmber),
+                .init(x: 6, y: 6, width: 8, height: 8, color: PixelPalette.workWhite)
+            ], name: "boss_exposed_core")
+            core.position = CGPoint(x: -10, y: -8)
+            core.zPosition = 7
+            enemy.root.addChild(core)
+            core.run(stepLoop(points: [0, 2, 0, -2], duration: 0.10), withKey: "core_warning")
+        case .dismantle, .armored:
+            break
+        }
+    }
+
+    private func spawnBossPhaseBreak(title: String, at position: CGPoint, color: SKColor) {
+        let label = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
+        configureLabel(label, size: 13, color: color, alignment: .center)
+        label.text = title
+        label.position = CGPoint(x: position.x, y: position.y + 92)
+        label.zPosition = 92
+        effectsLayer.addChild(label)
+        label.run(.sequence([.moveBy(x: 0, y: 8, duration: 0), .wait(forDuration: 0.55), .fadeOut(withDuration: 0.12), .removeFromParent()]))
+        for index in 0..<8 {
+            let shard = SKSpriteNode(color: index.isMultiple(of: 2) ? color : PixelPalette.lightIron, size: CGSize(width: 4 + index % 3, height: 3 + index % 2))
+            shard.position = CGPoint(x: position.x + CGFloat(index * 3 - 12), y: position.y + 22)
+            shard.zPosition = 82
+            effectsLayer.addChild(shard)
+            shard.run(.sequence([
+                .moveBy(x: CGFloat((index - 4) * 5), y: CGFloat(18 + index * 2), duration: 0),
+                .wait(forDuration: 0.18), .fadeOut(withDuration: 0.10), .removeFromParent()
+            ]))
+        }
+    }
+
+    private func failBossEncounter(_ enemy: ActiveEnemy) {
+        bossDeadlineTick = nil
+        bossAwaitingRetry = true
+        groupTransitioning = true
+        enemy.root.removeAction(forKey: "locomotion")
+        let stageNumber = content.stages[stageIndex].number
+        let key = String(stageNumber)
+        bossFailureCounts[key, default: 0] += 1
+        bossLayer.removeAllChildren()
+        bossLayer.isHidden = false
+        bossLayer.zPosition = 190
+
+        let panel = PixelArt.panel(size: CGSize(width: 292, height: 190), name: "boss_failure_panel")
+        panel.position = CGPoint(x: 34, y: 300)
+        bossLayer.addChild(panel)
+        addBossLabel("압착왕이 재조립되었습니다", x: 180, y: 454, size: 14, color: PixelPalette.sparkOrange)
+        addBossLabel("획득한 고철과 부품은 유지됩니다", x: 180, y: 416, size: 9, color: PixelPalette.workWhite)
+        addBossLabel("장비·드론을 강화하고 바로 재도전하세요", x: 180, y: 388, size: 8, color: PixelPalette.lightTeal)
+        let retry = PixelArt.panel(size: CGSize(width: 220, height: 56), name: "boss_retry")
+        retry.position = CGPoint(x: 70, y: 320)
+        retry.zPosition = 3
+        retry.name = "boss_retry"
+        bossLayer.addChild(retry)
+        addBossHitArea(name: "boss_retry", position: CGPoint(x: 70, y: 320), size: CGSize(width: 220, height: 56))
+        addBossLabel("무료 재도전  〉", x: 180, y: 348, size: 11, color: PixelPalette.warningAmber, name: "boss_retry")
+        persist()
+    }
+
+    private func retryBossEncounter() {
+        guard let boss = activeEnemies.first(where: { $0.spec.enemyClass == "boss" }) else { return }
+        boss.hp = boss.maxHP
+        boss.root.isHidden = false
+        boss.root.alpha = 1
+        boss.art.colorBlendFactor = 0
+        boss.root.childNode(withName: "boss_exposed_core")?.removeFromParent()
+        updateEnemyHUD(boss)
+        boss.root.run(enemyMotion(boss.spec.id), withKey: "locomotion")
+        startBossEncounter(boss, stage: content.stages[stageIndex])
+        persist()
+    }
+
+    private func beginBossDismantle(_ enemy: ActiveEnemy) {
+        guard pendingBossToken == nil else { return }
+        let baseParts = awardDismantleRewards(enemy)
+        pendingBossDismantleStage = content.stages[stageIndex].number
+        pendingBossBaseParts = baseParts
+        showBossDismantle(enemy)
+        persist()
+    }
+
+    private func showBossDismantle(_ enemy: ActiveEnemy) {
+        groupTransitioning = true
+        bossDeadlineTick = nil
+        bossAwaitingRetry = false
+        pendingBossToken = enemy.token
+        bossEncounterPhase = .dismantle
+        enemy.root.isHidden = false
+        enemy.root.removeAllActions()
+        enemy.art.alpha = 0.55
+        bossLayer.removeAllChildren()
+        bossLayer.isHidden = false
+        bossLayer.zPosition = 195
+
+        let panel = PixelArt.panel(size: CGSize(width: 316, height: 244), name: "boss_dismantle_panel")
+        panel.position = CGPoint(x: 22, y: 262)
+        bossLayer.addChild(panel)
+        addBossLabel("최종 해체 • 빛나는 절단선", x: 180, y: 474, size: 14, color: PixelPalette.warningAmber)
+        addBossLabel("기본 보상은 이미 저장되었습니다", x: 180, y: 442, size: 8, color: PixelPalette.lightTeal)
+
+        let activeCut = BossEncounterRules.activeCutIndex(stageNumber: content.stages[stageIndex].number)
+        for index in 0..<2 {
+            let y = 358 + index * 54
+            let cut = PixelArt.panel(size: CGSize(width: 252, height: 42), name: "boss_cut_" + String(index))
+            cut.position = CGPoint(x: 54, y: y)
+            cut.zPosition = 3
+            cut.name = "boss_cut_" + String(index)
+            bossLayer.addChild(cut)
+            addBossHitArea(name: "boss_cut_" + String(index), position: CGPoint(x: 54, y: y), size: CGSize(width: 252, height: 42))
+            for dot in 0..<9 {
+                let marker = SKSpriteNode(color: index == activeCut ? PixelPalette.warningAmber : PixelPalette.midIron, size: CGSize(width: 10, height: 4))
+                marker.position = CGPoint(x: 78 + dot * 25, y: y + 21)
+                marker.zPosition = 6
+                marker.name = "boss_cut_" + String(index)
+                bossLayer.addChild(marker)
+                if index == activeCut {
+                    marker.run(.repeatForever(.sequence([.fadeAlpha(to: 0.35, duration: 0), .wait(forDuration: 0.12), .fadeAlpha(to: 1, duration: 0), .wait(forDuration: 0.12)])))
+                }
+            }
+        }
+        addBossLabel("성공 시 부품 +15% • 실패해도 기본 보상 유지", x: 180, y: 298, size: 8, color: PixelPalette.workWhite)
+    }
+
+    private func resolveBossDismantle(selectedCut: Int) {
+        guard let token = pendingBossToken,
+              let enemy = activeEnemies.first(where: { $0.token == token }),
+              let stageNumber = pendingBossDismantleStage
+        else { return }
+        let succeeded = selectedCut == BossEncounterRules.activeCutIndex(stageNumber: stageNumber)
+        parts += BossEncounterRules.bonusParts(baseParts: pendingBossBaseParts, cutSucceeded: succeeded)
+        let firstClear = defeatedBossStages.insert(stageNumber).inserted
+        if firstClear {
+            let reward = BossEncounterRules.firstClearReward(stageNumber: stageNumber)
+            unlockedBlueprintIDs.insert(reward.blueprintID)
+            unlockedModuleIDs.insert(reward.moduleID)
+            storyLogIDs.insert(reward.storyLogID)
+            if stageNumber == 10 { storyChapter = max(storyChapter, 2) }
+        }
+        pendingBossDismantleStage = nil
+        pendingBossBaseParts = 0
+        pendingBossToken = nil
+        enemy.art.alpha = 1
+        resetBossPresentation()
+        refreshStoryGoal()
+        persist()
+        finishDismantle(enemy) { [weak self] in
+            guard let self, firstClear, stageNumber == 10 else { return }
+            self.openChapterOneEnding(cutSucceeded: succeeded)
+        }
+    }
+
+    private func awardDismantleRewards(_ enemy: ActiveEnemy) -> Int {
         let stage = content.stages[stageIndex]
         credits += stage.baseReward * stage.rewardMultiplierPpm / 1_000_000
         let baseParts = enemy.spec.enemyClass == "boss" ? 15 : (enemy.spec.enemyClass == "elite" ? 6 : 3)
@@ -512,6 +782,16 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             from: enemy.root.position,
             amount: ShelterRecovery.deliveredComponents(enemyClass: enemy.spec.enemyClass)
         )
+        return baseParts
+    }
+
+    private func dismantle(_ enemy: ActiveEnemy) {
+        _ = awardDismantleRewards(enemy)
+        finishDismantle(enemy)
+    }
+
+    private func finishDismantle(_ enemy: ActiveEnemy, afterTransition: (() -> Void)? = nil) {
+        let stage = content.stages[stageIndex]
         enemy.root.removeAllActions()
         enemy.root.run(.sequence([.fadeOut(withDuration: 0.14), .hide()]))
 
@@ -536,8 +816,36 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         persist()
         run(.sequence([
             .wait(forDuration: 0.42),
-            .run { [weak self] in self?.spawnCurrentGroup() }
+            .run { [weak self] in self?.spawnCurrentGroup() },
+            .run { afterTransition?() }
         ]))
+    }
+
+    private func resetBossPresentation() {
+        bossDeadlineTick = nil
+        bossEncounterPhase = nil
+        bossAwaitingRetry = false
+        bossLayer.isHidden = true
+        bossLayer.removeAllChildren()
+    }
+
+    private func addBossLabel(_ text: String, x: Int, y: Int, size: CGFloat, color: SKColor, name: String? = nil) {
+        let label = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
+        configureLabel(label, size: size, color: color, alignment: .center)
+        label.text = text
+        label.position = CGPoint(x: x, y: y)
+        label.zPosition = 7
+        label.name = name
+        bossLayer.addChild(label)
+    }
+
+    private func addBossHitArea(name: String, position: CGPoint, size: CGSize) {
+        let hitArea = SKSpriteNode(color: .clear, size: size)
+        hitArea.anchorPoint = .zero
+        hitArea.position = position
+        hitArea.zPosition = 6
+        hitArea.name = name
+        bossLayer.addChild(hitArea)
     }
 
     private func performCooperativeSweep() {
@@ -924,6 +1232,24 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         )
     }
 
+    private func openChapterOneEnding(cutSucceeded: Bool) {
+        storyOverlayIsPrologue = false
+        buildStoryOverlay(
+            title: "1장 완료 • 첫 집게",
+            lines: [
+                cutSucceeded ? "완벽 해체 • 추가 부품 15% 회수" : "기본 해체 완료 • 보상은 모두 보존됨",
+                "",
+                "압착왕의 코어에서 절단 코일을 찾았다.",
+                "죽어 가던 피난처는 이제 움직일 수 있다.",
+                "",
+                "설계도 획득 • 절단 코일",
+                "모듈 보관함 등록 • 장착 준비 완료",
+                "다음 목표 • R1 끝골목 출항 선체 조립"
+            ],
+            action: "다음 구역으로 전진한다"
+        )
+    }
+
     private func buildStoryOverlay(title: String, lines: [String], action: String) {
         storyOverlayLayer.removeAllChildren()
         storyOverlayLayer.isHidden = false
@@ -965,7 +1291,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             addStoryOverlayLabel(
                 line,
                 x: 180,
-                y: 424 - index * 27,
+                y: 424 - index * 25,
                 size: index == 0 ? 10 : 9,
                 color: index == 0 ? PixelPalette.sparkOrange : PixelPalette.workWhite,
                 alignment: .center
@@ -973,17 +1299,17 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         }
 
         let button = PixelArt.panel(size: CGSize(width: 248, height: 58), name: "story_continue")
-        button.position = CGPoint(x: 56, y: 184)
+        button.position = CGPoint(x: 56, y: 174)
         button.zPosition = 4
         button.name = "story_continue"
         storyOverlayLayer.addChild(button)
         let hitArea = SKSpriteNode(color: .clear, size: CGSize(width: 248, height: 58))
         hitArea.anchorPoint = .zero
-        hitArea.position = CGPoint(x: 56, y: 184)
+        hitArea.position = CGPoint(x: 56, y: 174)
         hitArea.zPosition = 5
         hitArea.name = "story_continue"
         storyOverlayLayer.addChild(hitArea)
-        addStoryOverlayLabel(action + "  〉", x: 180, y: 213, size: 11, color: PixelPalette.warningAmber, alignment: .center, name: "story_continue")
+        addStoryOverlayLabel(action + "  〉", x: 180, y: 203, size: 11, color: PixelPalette.warningAmber, alignment: .center, name: "story_continue")
     }
 
     private func addStoryOverlayLabel(
@@ -1573,6 +1899,13 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         save.storyChapter = storyChapter
         save.shelterRepairParts = shelterRepairParts
         save.prologueSeen = prologueSeen
+        save.defeatedBossStages = defeatedBossStages.sorted()
+        save.unlockedBlueprintIDs = unlockedBlueprintIDs.sorted()
+        save.unlockedModuleIDs = unlockedModuleIDs.sorted()
+        save.storyLogIDs = storyLogIDs.sorted()
+        save.bossFailureCounts = bossFailureCounts
+        save.pendingBossDismantleStage = pendingBossDismantleStage
+        save.pendingBossBaseParts = pendingBossBaseParts
         save.tutorialStep = tutorialStep
         save.combatTick = combatTick
         save.highestStage = max(save.highestStage, content.stages[stageIndex].number)
