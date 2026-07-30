@@ -145,6 +145,21 @@ def expected_elite_allocation(world: dict[str, Any], region_id: str) -> list[dic
     ]
 
 
+def validate_elite_allocation(world: dict[str, Any], region_id: str, allocation: Any) -> None:
+    require(isinstance(allocation, list), f"{region_id}: elite stage allocation is required")
+    expected = expected_elite_allocation(world, region_id)
+    normalized: list[dict[str, Any]] = []
+    region = next(item for item in world["regions"] if item["id"] == region_id)
+    for item in allocation:
+        require(isinstance(item, dict), f"{region_id}: elite allocation entries must be objects")
+        require(set(item) <= {"localStage", "globalStage", "entityId"}, f"{region_id}: unknown elite allocation field")
+        local_stage = item.get("localStage")
+        if "globalStage" in item:
+            require(item["globalStage"] == region["stageStart"] + local_stage - 1, f"{region_id}: global elite stage drift")
+        normalized.append({"localStage": local_stage, "entityId": item.get("entityId")})
+    require(normalized == expected, f"{region_id}: elite stage allocation drift")
+
+
 def validate_png_asset(root: Path, asset: dict[str, Any], palette: set[tuple[int, int, int]]) -> None:
     identifier = asset["id"]
     output = safe_path(root, asset["file"], identifier)
@@ -180,7 +195,7 @@ def validate_fragment(
     for region in region_contracts:
         region_id = region["id"]
         require(region.get("nameKo") == canonical_regions[region_id]["nameKo"], f"{region_id}: nameKo drift")
-        require(region.get("eliteStageAllocation") == expected_elite_allocation(world, region_id), f"{region_id}: elite stage allocation drift")
+        validate_elite_allocation(world, region_id, region.get("eliteStageAllocation"))
         palette_file = region.get("paletteFile")
         require(isinstance(palette_file, str), f"{region_id}: paletteFile is required")
         palette_path = safe_path(root, palette_file, region_id)

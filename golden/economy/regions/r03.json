@@ -33,8 +33,8 @@
       "180": 60000
     },
     "uniqueEnemyCount": 8,
-    "productionAssetCount": 0,
+    "productionAssetCount": 8,
     "primaryDropId": "alloy_recipe"
   },
-  "expectedDigest": "edf7f618f26258f3dc9b26d4eea067e6bf59168153f6e0507ccc5abaa049a327"
+  "expectedDigest": "deb65a99613da853b2a47ff1917057e8af105348b5e0d3caa6b3eb0290e9d12f"
 }

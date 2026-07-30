@@ -33,8 +33,8 @@
       "360": 75000
     },
     "uniqueEnemyCount": 8,
-    "productionAssetCount": 0,
+    "productionAssetCount": 8,
     "primaryDropId": "memory_fragment"
   },
-  "expectedDigest": "9275252a1be6889a5e42e916ca33f480f11dea8476077790edb842f635a3fd32"
+  "expectedDigest": "e9f44ae80ddfd56484d30d537248618934127c1b6daf3df10a8cc8e9d62b68cb"
 }

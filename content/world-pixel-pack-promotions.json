@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "productionStageEnd": 360,
+  "regions": {
+    "r03": {
+      "backgroundSpriteId": "background_r03_last_train_subway"
+    },
+    "r04": {
+      "backgroundSpriteId": "background_r04_sunken_ship_graveyard"
+    },
+    "r05": {
+      "backgroundSpriteId": "background_r05_orbital_debris_belt"
+    },
+    "r06": {
+      "backgroundSpriteId": "background_r06_lunar_whiteout_plant"
+    }
+  },
+  "enemies": {
+    "ticket_mouse": {
+      "spriteId": "enemy_r03_ticket_mouse",
+      "assetStatus": "production_ready"
+    },
+    "fluorescent_snake": {
+      "spriteId": "enemy_r03_fluorescent_snake",
+      "assetStatus": "production_ready"
+    },
+    "seat_armor": {
+      "spriteId": "enemy_r03_seat_armor",
+      "assetStatus": "production_ready"
+    },
+    "vent_jellyfish": {
+      "spriteId": "enemy_r03_vent_jellyfish",
+      "assetStatus": "production_ready"
+    },
+    "turnstile_hound": {
+      "spriteId": "elite_r03_turnstile_hound",
+      "assetStatus": "production_ready"
+    },
+    "route_map_spider": {
+      "spriteId": "elite_r03_route_map_spider",
+      "assetStatus": "production_ready"
+    },
+    "last_train_engineer": {
+      "spriteId": "boss_r03_last_train_engineer",
+      "assetStatus": "production_ready"
+    },
+    "turnstile_cerberus": {
+      "spriteId": "boss_r03_turnstile_cerberus",
+      "assetStatus": "production_ready"
+    },
+    "anchor_crab": {
+      "spriteId": "enemy_r04_anchor_crab",
+      "assetStatus": "production_ready"
+    },
+    "lifebuoy_puffer": {
+      "spriteId": "enemy_r04_lifebuoy_puffer",
+      "assetStatus": "production_ready"
+    },
+    "bulb_angler": {
+      "spriteId": "enemy_r04_bulb_angler",
+      "assetStatus": "production_ready"
+    },
+    "container_hermit": {
+      "spriteId": "enemy_r04_container_hermit",
+      "assetStatus": "production_ready"
+    },
+    "crane_octopus": {
+      "spriteId": "elite_r04_crane_octopus",
+      "assetStatus": "production_ready"
+    },
+    "buoy_lighthouse_knight": {
+      "spriteId": "elite_r04_buoy_lighthouse_knight",
+      "assetStatus": "production_ready"
+    },
+    "sunken_container_whale": {
+      "spriteId": "boss_r04_sunken_container_whale",
+      "assetStatus": "production_ready"
+    },
+    "nameless_ship_heart": {
+      "spriteId": "boss_r04_nameless_ship_heart",
+      "assetStatus": "production_ready"
+    },
+    "panel_butterfly": {
+      "spriteId": "enemy_r05_panel_butterfly",
+      "assetStatus": "production_ready"
+    },
+    "antenna_mantis": {
+      "spriteId": "enemy_r05_antenna_mantis",
+      "assetStatus": "production_ready"
+    },
+    "capsule_turtle": {
+      "spriteId": "enemy_r05_capsule_turtle",
+      "assetStatus": "production_ready"
+    },
+    "rocket_mole": {
+      "spriteId": "enemy_r05_rocket_mole",
+      "assetStatus": "production_ready"
+    },
+    "docking_golem": {
+      "spriteId": "elite_r05_docking_golem",
+      "assetStatus": "production_ready"
+    },
+    "dish_starfish": {
+      "spriteId": "elite_r05_dish_starfish",
+      "assetStatus": "production_ready"
+    },
+    "solar_sail_ray": {
+      "spriteId": "boss_r05_solar_sail_ray",
+      "assetStatus": "production_ready"
+    },
+    "orbital_trash_dragon": {
+      "spriteId": "boss_r05_orbital_trash_dragon",
+      "assetStatus": "production_ready"
+    },
+    "lunar_bus_beetle": {
+      "spriteId": "enemy_r06_lunar_bus_beetle",
+      "assetStatus": "production_ready"
+    },
+    "oxygen_tank_sheep": {
+      "spriteId": "enemy_r06_oxygen_tank_sheep",
+      "assetStatus": "production_ready"
+    },
+    "gear_flower": {
+      "spriteId": "enemy_r06_gear_flower",
+      "assetStatus": "production_ready"
+    },
+    "archivist_giant": {
+      "spriteId": "enemy_r06_archivist_giant",
+      "assetStatus": "production_ready"
+    },
+    "time_compressor": {
+      "spriteId": "elite_r06_time_compressor",
+      "assetStatus": "production_ready"
+    },
+    "memory_incinerator_librarian": {
+      "spriteId": "elite_r06_memory_incinerator_librarian",
+      "assetStatus": "production_ready"
+    },
+    "reverse_clock_tower": {
+      "spriteId": "boss_r06_reverse_clock_tower",
+      "assetStatus": "production_ready"
+    },
+    "final_disposal_protocol": {
+      "spriteId": "boss_r06_final_disposal_protocol",
+      "assetStatus": "production_ready"
+    }
+  }
+}

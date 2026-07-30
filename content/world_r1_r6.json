@@ -6,7 +6,7 @@
     "regionId": "world",
     "stageStart": 1,
     "stageEnd": 360,
-    "productionStageEnd": 120
+    "productionStageEnd": 360
   },
   "player": {
     "id": "mo",
@@ -115,7 +115,7 @@
         "#F3A712",
         "#7B8794"
       ],
-      "backgroundSpriteId": null,
+      "backgroundSpriteId": "background_r03_last_train_subway",
       "primaryDropId": "alloy_recipe",
       "baseFormKo": "재활용 공장이 이동 레일을 얻는다",
       "arrivalStoryKo": "막차가 끊긴 터널에서 돌아오지 못한 물건의 주인을 기록한다.",
@@ -148,7 +148,7 @@
         "#35A7A0",
         "#F07167"
       ],
-      "backgroundSpriteId": null,
+      "backgroundSpriteId": "background_r04_sunken_ship_graveyard",
       "primaryDropId": "salvage_relic",
       "baseFormKo": "이동식 대형 분해선 완성",
       "arrivalStoryKo": "이름 없는 선원의 기록을 모으며 침몰한 컨테이너 길을 인양한다.",
@@ -181,7 +181,7 @@
         "#8C6ED9",
         "#D8F3FF"
       ],
-      "backgroundSpriteId": null,
+      "backgroundSpriteId": "background_r05_orbital_debris_belt",
       "primaryDropId": "alien_relic",
       "baseFormKo": "궤도 재활용 정거장 결합",
       "arrivalStoryKo": "지상에서 보낸 마지막 메시지를 따라 분해선이 궤도 잔해권에 결합한다.",
@@ -214,7 +214,7 @@
         "#D9B44A",
         "#E45A9D"
       ],
-      "backgroundSpriteId": null,
+      "backgroundSpriteId": "background_r06_lunar_whiteout_plant",
       "primaryDropId": "memory_fragment",
       "baseFormKo": "항성 기지 에필로그",
       "arrivalStoryKo": "달 도시의 폐기 기록을 따라 기계 행성 내부의 백지 처리장으로 내려간다.",
@@ -482,8 +482,8 @@
       "behaviorId": "ticket_swarm",
       "behaviorKo": "세 마리 군집",
       "breakSequenceKo": "표 귀 펀칭→몸통 분리",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r03_ticket_mouse",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r03",
@@ -496,8 +496,8 @@
       "behaviorId": "two_step_flicker",
       "behaviorKo": "두 관이 교대 점멸",
       "breakSequenceKo": "형광관 1개→안정기 머리",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r03_fluorescent_snake",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r03",
@@ -510,8 +510,8 @@
       "behaviorId": "seat_fold",
       "behaviorKo": "좌석을 접어 장갑 전환",
       "breakSequenceKo": "등받이→방석→프레임",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r03_seat_armor",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r03",
@@ -524,8 +524,8 @@
       "behaviorId": "vent_float",
       "behaviorKo": "환풍으로 부유",
       "breakSequenceKo": "덕트 촉수→팬 코어",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r03_vent_jellyfish",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r03",
@@ -538,8 +538,8 @@
       "behaviorId": "three_signal_heads",
       "behaviorKo": "세 머리 신호 속성 순환",
       "breakSequenceKo": "녹색→황색→적색 머리",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "elite_r03_turnstile_hound",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r03",
@@ -552,8 +552,8 @@
       "behaviorId": "reroute_web",
       "behaviorKo": "노선도 실로 공격 경로 전환",
       "breakSequenceKo": "환승점 3개→노선 실→중앙 역명판",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "elite_r03_route_map_spider",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r03",
@@ -568,8 +568,8 @@
       "behaviorId": "rail_signal_charge",
       "behaviorKo": "선로 돌진과 신호 변경",
       "breakSequenceKo": "녹→황→적 타이밍 뒤 차륜 인양",
-      "spriteId": null,
-      "assetStatus": "contract_only",
+      "spriteId": "boss_r03_last_train_engineer",
+      "assetStatus": "production_ready",
       "bossRole": "mid",
       "timeLimitMs": 45000
     },
@@ -584,8 +584,8 @@
       "behaviorId": "three_gate_bite",
       "behaviorKo": "세 게이트 물기와 표 검사",
       "breakSequenceKo": "올바른 표를 세 게이트에 순서 배치",
-      "spriteId": null,
-      "assetStatus": "contract_only",
+      "spriteId": "boss_r03_turnstile_cerberus",
+      "assetStatus": "production_ready",
       "bossRole": "region",
       "timeLimitMs": 60000
     },
@@ -600,8 +600,8 @@
       "behaviorId": "chain_anchor",
       "behaviorKo": "체인 세 칸으로 지면 고정",
       "breakSequenceKo": "닻 팔→체인→부표 코어",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r04_anchor_crab",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r04",
@@ -614,8 +614,8 @@
       "behaviorId": "lifebuoy_inflate",
       "behaviorKo": "구명환 장갑 팽창",
       "breakSequenceKo": "외부 환→밸브→몸통",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r04_lifebuoy_puffer",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r04",
@@ -628,8 +628,8 @@
       "behaviorId": "blackout_lure",
       "behaviorKo": "전구 미끼로 암전",
       "breakSequenceKo": "전구→케이블→배터리",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r04_bulb_angler",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r04",
@@ -642,8 +642,8 @@
       "behaviorId": "container_guard",
       "behaviorKo": "상자 방패 전개",
       "breakSequenceKo": "문짝→상자→소라 코어",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r04_container_hermit",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r04",
@@ -656,8 +656,8 @@
       "behaviorId": "choose_attack_arm",
       "behaviorKo": "네 암 중 공격 암 선택 절단",
       "breakSequenceKo": "표시 암→균형추→회전축",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "elite_r04_crane_octopus",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r04",
@@ -670,8 +670,8 @@
       "behaviorId": "rotating_beacon_lock",
       "behaviorKo": "회전등으로 표적 잠금",
       "breakSequenceKo": "부표 장갑→회전등→계류 체인",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "elite_r04_buoy_lighthouse_knight",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r04",
@@ -686,8 +686,8 @@
       "behaviorId": "current_container_burst",
       "behaviorKo": "물살과 상자 분출",
       "breakSequenceKo": "부력 밸브 2개→상자 자석 회수",
-      "spriteId": null,
-      "assetStatus": "contract_only",
+      "spriteId": "boss_r04_sunken_container_whale",
+      "assetStatus": "production_ready",
       "bossRole": "mid",
       "timeLimitMs": 45000
     },
@@ -704,8 +704,8 @@
       "behaviorId": "pressure_pulse_blackout",
       "behaviorKo": "압력 맥박과 암전",
       "breakSequenceKo": "박자 4회 입력 뒤 기억 전구 회수",
-      "spriteId": null,
-      "assetStatus": "contract_only",
+      "spriteId": "boss_r04_nameless_ship_heart",
+      "assetStatus": "production_ready",
       "bossRole": "region",
       "timeLimitMs": 60000
     },
@@ -720,8 +720,8 @@
       "behaviorId": "solar_reflect",
       "behaviorKo": "태양 패널 반사",
       "breakSequenceKo": "왼날개→오른날개→광전 코어",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r05_panel_butterfly",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r05",
@@ -734,8 +734,8 @@
       "behaviorId": "antenna_beam",
       "behaviorKo": "안테나 집게 빔",
       "breakSequenceKo": "안테나→집게→송신기",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r05_antenna_mantis",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r05",
@@ -748,8 +748,8 @@
       "behaviorId": "capsule_reentry",
       "behaviorKo": "재진입 가열 돌진",
       "breakSequenceKo": "열차폐판→캡슐 문→코어",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r05_capsule_turtle",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r05",
@@ -762,8 +762,8 @@
       "behaviorId": "zero_g_burrow",
       "behaviorKo": "잔해 뒤 잠복",
       "breakSequenceKo": "노즐→드릴 코→연료전지",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r05_rocket_mole",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r05",
@@ -776,8 +776,8 @@
       "behaviorId": "paired_docking_arms",
       "behaviorKo": "좌우 도킹 암 동시 파괴",
       "breakSequenceKo": "두 암을 3초 안에→중앙 포트",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "elite_r05_docking_golem",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r05",
@@ -790,8 +790,8 @@
       "behaviorId": "five_dish_reflection",
       "behaviorKo": "다섯 접시로 빔 반사",
       "breakSequenceKo": "접시 5개 각도 정렬→수신 코어",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "elite_r05_dish_starfish",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r05",
@@ -806,8 +806,8 @@
       "behaviorId": "reflective_solar_beam",
       "behaviorKo": "반사 날개와 태양광 빔",
       "breakSequenceKo": "반사각 날개 선택→패널 접기",
-      "spriteId": null,
-      "assetStatus": "contract_only",
+      "spriteId": "boss_r05_solar_sail_ray",
+      "assetStatus": "production_ready",
       "bossRole": "mid",
       "timeLimitMs": 45000
     },
@@ -822,8 +822,8 @@
       "behaviorId": "debris_meteor_wings",
       "behaviorKo": "패널 날개와 잔해 유성",
       "breakSequenceKo": "날개 패널 3개 순서 절단→중력 갈퀴",
-      "spriteId": null,
-      "assetStatus": "contract_only",
+      "spriteId": "boss_r05_orbital_trash_dragon",
+      "assetStatus": "production_ready",
       "bossRole": "region",
       "timeLimitMs": 60000
     },
@@ -838,8 +838,8 @@
       "behaviorId": "low_gravity_jump",
       "behaviorKo": "저중력 점프",
       "breakSequenceKo": "버스 지붕→차륜 날개→월면 코어",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r06_lunar_bus_beetle",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r06",
@@ -852,8 +852,8 @@
       "behaviorId": "pressure_charge",
       "behaviorKo": "압력 돌진",
       "breakSequenceKo": "압력계→산소통 뿔→밸브",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r06_oxygen_tank_sheep",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r06",
@@ -866,8 +866,8 @@
       "behaviorId": "gear_reassemble",
       "behaviorKo": "톱니 꽃잎 재조립",
       "breakSequenceKo": "꽃잎 4개 동시 열→중앙 축",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r06_gear_flower",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r06",
@@ -880,8 +880,8 @@
       "behaviorId": "recorded_attack_echo",
       "behaviorKo": "직전 공격 기록 복제",
       "breakSequenceKo": "기록판→도장 팔→메모리 코어",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "enemy_r06_archivist_giant",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r06",
@@ -894,8 +894,8 @@
       "behaviorId": "alternating_time_scale",
       "behaviorKo": "공격 간격 1배와 2배 교대",
       "breakSequenceKo": "느린 톱니→빠른 톱니→진자",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "elite_r06_time_compressor",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r06",
@@ -908,8 +908,8 @@
       "behaviorId": "erase_recorded_buff",
       "behaviorKo": "기록 한 줄씩 소각해 강화 제거",
       "breakSequenceKo": "소각 서랍 3개→기록 집게→냉각 코어",
-      "spriteId": null,
-      "assetStatus": "contract_only"
+      "spriteId": "elite_r06_memory_incinerator_librarian",
+      "assetStatus": "production_ready"
     },
     {
       "regionId": "r06",
@@ -922,8 +922,8 @@
       "behaviorId": "five_second_echo",
       "behaviorKo": "5초 전 공격 복제와 시곗바늘 쓸기",
       "breakSequenceKo": "정방향 톱니 3개 고정→과거 파편",
-      "spriteId": null,
-      "assetStatus": "contract_only",
+      "spriteId": "boss_r06_reverse_clock_tower",
+      "assetStatus": "production_ready",
       "bossRole": "mid",
       "timeLimitMs": 60000
     },
@@ -943,8 +943,8 @@
       "behaviorId": "protocol_three_phase",
       "behaviorKo": "분류 삭제·시간 역전·백지화 3단계",
       "breakSequenceKo": "기억 잔해 중 보존 선택→별 나사 장착",
-      "spriteId": null,
-      "assetStatus": "contract_only",
+      "spriteId": "boss_r06_final_disposal_protocol",
+      "assetStatus": "production_ready",
       "bossRole": "region",
       "timeLimitMs": 75000
     }

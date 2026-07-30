@@ -98,8 +98,17 @@ class PixelPackFixture:
         self.manifest_path = root / "art-export/asset-manifest.json"
         self.world_path.parent.mkdir(parents=True, exist_ok=True)
         self.manifest_path.parent.mkdir(parents=True, exist_ok=True)
-        self.world_path.write_bytes((ROOT / "content/world_r1_r6.json").read_bytes())
-        self.manifest_path.write_bytes((ROOT / "art-export/asset-manifest.json").read_bytes())
+        write_json(self.world_path, GENERATOR.build(promotions_path=None))
+        manifest = INTEGRATOR.load_json(ROOT / "art-export/asset-manifest.json")
+        manifest["assets"] = [
+            asset for asset in manifest["assets"]
+            if asset.get("paletteId", "common16") in {"common16", "r02_mall12"}
+        ]
+        manifest["paletteFiles"] = {
+            key: value for key, value in manifest["paletteFiles"].items()
+            if key in {"common16", "r02_mall12"}
+        }
+        write_json(self.manifest_path, manifest)
         self.world = INTEGRATOR.load_json(self.world_path)
         self.world_hash = sha256(self.world_path)
         self.marker = 1

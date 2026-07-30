@@ -211,7 +211,7 @@ def validate_content(content: dict[str, Any], manifest: dict[str, Any]) -> set[s
     actual_numbers = [stage["number"] for stage in stages]
     require(actual_numbers == expected_numbers, "stages must be unique, ordered, and contiguous")
     require(expected_numbers == list(range(1, 361)), "world content must contain exactly S1 through S360")
-    require(slice_data.get("productionStageEnd") == 120, "this delivery must close production only through R2 S120")
+    require(slice_data.get("productionStageEnd") == 360, "final production must expose S1 through S360")
 
     enemy_ids = [enemy["id"] for enemy in content["enemies"]]
     require(len(enemy_ids) == len(set(enemy_ids)), "enemy ids must be unique")
@@ -243,11 +243,8 @@ def validate_content(content: dict[str, Any], manifest: dict[str, Any]) -> set[s
         require(roster[-2].get("bossRole") == "mid" and roster[-1].get("bossRole") == "region", f"{region['id']}: boss roles are invalid")
         require(all(enemy.get("behaviorId") and enemy.get("breakSequenceKo") for enemy in roster), f"{region['id']}: behavior or break sequence missing")
         require(all(enemy.get("weakness") in {"cut", "impact", "heat", "electric", "cooling"} for enemy in roster), f"{region['id']}: weakness missing")
-        if region["stageEnd"] <= slice_data["productionStageEnd"]:
-            require(region.get("backgroundSpriteId"), f"{region['id']}: production region background missing")
-            require(all(enemy["assetStatus"] == "production_ready" and enemy.get("spriteId") for enemy in roster), f"{region['id']}: production roster is incomplete")
-        else:
-            require(all(enemy["assetStatus"] == "contract_only" and enemy.get("spriteId") is None for enemy in roster), f"{region['id']}: unfinished art must remain contract_only")
+        require(region.get("backgroundSpriteId"), f"{region['id']}: production region background missing")
+        require(all(enemy["assetStatus"] == "production_ready" and enemy.get("spriteId") for enemy in roster), f"{region['id']}: production roster is incomplete")
         referenced_enemy_ids.update(roster_ids)
     require(referenced_enemy_ids == set(enemy_ids), "region rosters and enemy catalog differ")
 
@@ -377,7 +374,7 @@ def validate_assets(
         "actor": {(48, 64)},
         "drone": {(32, 32), (48, 40)},
         "enemy_small": {(32, 32)},
-        "enemy_medium": {(48, 48)},
+        "enemy_medium": {(48, 40), (48, 48)},
         "enemy_large": {(64, 64)},
         "enemy_wide": {(64, 48)},
     }
@@ -457,8 +454,7 @@ def validate_region_economy_golden(manifest: dict[str, Any], content: dict[str, 
         state = fixture.get("expectedState", {})
         require(state.get("regionId") == region_id, f"{relative_path}: region state mismatch")
         require(state.get("uniqueEnemyCount") == 8, f"{relative_path}: regional roster must include eight enemies")
-        expected_production_assets = 8 if region_id in {"r01", "r02"} else 0
-        require(state.get("productionAssetCount") == expected_production_assets, f"{relative_path}: production asset count mismatch")
+        require(state.get("productionAssetCount") == 8, f"{relative_path}: production asset count mismatch")
         digest = canonical_digest(state)
         require(fixture.get("expectedDigest") == digest, f"{relative_path}: expected digest is {digest}")
     require(actual_region_ids == expected_region_ids, "regional economy Goldens must be ordered R1-R6")

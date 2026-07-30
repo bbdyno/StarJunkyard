@@ -1,5 +1,19 @@
 import Foundation
 
+enum EconomyMath {
+    static let ppm = 1_000_000
+
+    static func applyingPPM(_ multiplier: Int, to value: Int) -> Int {
+        precondition(value >= 0 && multiplier >= 0)
+        let (whole, wholeOverflow) = (value / ppm).multipliedReportingOverflow(by: multiplier)
+        let (fractionProduct, fractionOverflow) = (value % ppm).multipliedReportingOverflow(by: multiplier)
+        guard !wholeOverflow, !fractionOverflow else { return Int.max }
+        let fractional = fractionProduct / ppm
+        let (result, overflow) = whole.addingReportingOverflow(fractional)
+        return overflow ? Int.max : result
+    }
+}
+
 struct EconomyWallet: Codable, Equatable, Sendable {
     var credits: Int
     var parts: Int
@@ -98,7 +112,7 @@ struct R1Economy: Sendable {
         partRewards: VerticalSliceContent.Economy.EnemyPartRewards
     ) -> EconomyWallet {
         let enemyByID = Dictionary(uniqueKeysWithValues: enemies.map { ($0.id, $0) })
-        let creditsPerEnemy = stage.baseReward * stage.rewardMultiplierPpm / ppm
+        let creditsPerEnemy = EconomyMath.applyingPPM(stage.rewardMultiplierPpm, to: stage.baseReward)
         var reward = EconomyWallet.zero
         for enemyID in stage.wave {
             guard let enemy = enemyByID[enemyID] else { continue }

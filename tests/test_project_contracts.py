@@ -41,7 +41,7 @@ class ProjectContractTests(unittest.TestCase):
 
     def test_release_accepts_only_verified_production_assets(self) -> None:
         summary = VALIDATOR.validate_project(release=True)
-        self.assertIn("22 pixel assets (release mode)", summary)
+        self.assertIn("58 pixel assets (release mode)", summary)
 
         asset_manifest = VALIDATOR.load_json("art-export/asset-manifest.json")
         self.assertTrue(

@@ -17,8 +17,8 @@ final class PixelSceneTests: XCTestCase {
         let bundle = Bundle(for: Self.self)
         let content = ContentLoader.loadVerticalSlice(bundle: bundle)
         XCTAssertEqual(content.contentVersion, "0.3.0")
-        XCTAssertEqual(content.stages.map(\.number), Array(1...120))
-        XCTAssertEqual(content.enemies.count, 16)
+        XCTAssertEqual(content.stages.map(\.number), Array(1...360))
+        XCTAssertEqual(content.enemies.count, 48)
         XCTAssertEqual(content.enemies.last(where: { $0.id == "fridge_boar" })?.nameKo, "냉장고멧돼지")
         XCTAssertEqual(content.economy?.offline.efficiencyPpm, 700_000)
         XCTAssertEqual(content.stages[59].encounterClass, .regionBoss)
@@ -250,12 +250,37 @@ final class PixelSceneTests: XCTestCase {
         XCTAssertEqual(BossEncounterRules.phase(hp: 70, maxHP: 100), .clawBroken)
         XCTAssertEqual(BossEncounterRules.phase(hp: 30, maxHP: 100), .coreExposed)
         XCTAssertEqual(BossEncounterRules.phase(hp: 0, maxHP: 100), .dismantle)
+        XCTAssertEqual(
+            BossEncounterRules.phase(
+                hp: 7_000_000_000_000_000_000,
+                maxHP: 9_000_000_000_000_000_000
+            ),
+            .armored
+        )
+        XCTAssertEqual(
+            BossEncounterRules.phase(
+                hp: 6_300_000_000_000_000_000,
+                maxHP: 9_000_000_000_000_000_000
+            ),
+            .clawBroken
+        )
         XCTAssertEqual(BossEncounterRules.activeCutIndex(stageNumber: 10), 1)
         XCTAssertEqual(BossEncounterRules.bonusParts(baseParts: 15, cutSucceeded: true), 3)
         XCTAssertEqual(BossEncounterRules.bonusParts(baseParts: 15, cutSucceeded: false), 0)
         let reward = BossEncounterRules.firstClearReward(stageNumber: 10)
         XCTAssertEqual(reward.blueprintID, "blueprint_cutting_coil")
         XCTAssertEqual(reward.moduleID, "module_cutting_coil")
+    }
+
+    func testEconomyPPMMathSupportsLateWorldValuesWithoutIntermediateOverflow() {
+        XCTAssertEqual(
+            EconomyMath.applyingPPM(40_000_000, to: 184_513_358_498_517_068),
+            7_380_534_339_940_682_720
+        )
+        XCTAssertEqual(
+            EconomyMath.applyingPPM(135_000_000, to: 1_411_460_680_040_120),
+            190_547_191_805_416_200
+        )
     }
 
     func testBossStageShowsTimerAndPendingDismantleRestores() {

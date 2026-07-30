@@ -1,21 +1,21 @@
 # R2 production pack and R3–R6 handoff contract
 
-## Intermediate status
+## Final integration status
 
-This commit is the R2 production checkpoint for issue #38. It defines the complete R1–R6 world contract, but deliberately exposes only S001–S120 to the game runtime until the remaining art packs are integrated.
+Issue #38 now integrates the R2 production checkpoint with the completed #44 and #45 art packs. The game runtime exposes the entire S001–S360 world with a distinct background and eight production enemies per region.
 
 | Region | Stages | Enemy roster | Runtime art |
 | --- | ---: | ---: | --- |
 | R1 끝골목 폐기장 | 1–60 | 4 normal + 2 elite + 2 boss | production ready |
 | R2 폐쇄된 메가몰 | 61–120 | 4 normal + 2 elite + 2 boss | production ready |
-| R3 막차 없는 지하철 | 121–180 | 4 normal + 2 elite + 2 boss | contract only (#44) |
-| R4 침몰선 묘지 | 181–240 | 4 normal + 2 elite + 2 boss | contract only (#44) |
-| R5 궤도 잔해권 | 241–300 | 4 normal + 2 elite + 2 boss | contract only (#45) |
-| R6 버려진 달 도시와 기계 행성 | 301–360 | 4 normal + 2 elite + 2 boss | contract only (#45) |
+| R3 막차 없는 지하철 | 121–180 | 4 normal + 2 elite + 2 boss | production ready (#44) |
+| R4 침몰선 묘지 | 181–240 | 4 normal + 2 elite + 2 boss | production ready (#44) |
+| R5 궤도 잔해권 | 241–300 | 4 normal + 2 elite + 2 boss | production ready (#45) |
+| R6 버려진 달 도시와 기계 행성 | 301–360 | 4 normal + 2 elite + 2 boss | production ready (#45) |
 
-The generated contract contains exactly 6 regions, 360 stages, 24 normal enemies, 12 elites, and 12 bosses. `slice.productionStageEnd` remains `120` at this checkpoint. `ContentLoader` rejects unfinished art and filters the runtime to the production range instead of displaying placeholders.
+The generated contract contains exactly 6 regions, 360 stages, 24 normal enemies, 12 elites, and 12 bosses. `slice.productionStageEnd` is `360`, all 48 enemies have production sprite IDs, and the common manifest contains 58 production assets. `ContentLoader` rejects unfinished art rather than displaying placeholders.
 
-After #44 and #45 have been integrated, issue #38 must not close until all of these are true:
+The final integration satisfies these release conditions:
 
 - `slice.productionStageEnd` is `360` and `ContentLoader` loads all 360 stages.
 - No enemy has `assetStatus: contract_only` or a null `spriteId`.
@@ -129,9 +129,23 @@ Issues #38, #44, and #45 are registered in `agent-harness/tasks.json` with disjo
 3. Run the pixel-pack integration fixture tests.
 4. Run `python3 tools/validate_project.py --release` against the current common production set.
 
-After both packs merge, the final #38 integration also regenerates regional economy goldens, runs the full Python and iOS suites, and captures one phone plus one iPad frame for the new regions.
+After both packs merged, the final #38 integration regenerated regional economy goldens, ran the full Python and iOS suites, and captured one phone plus one iPad frame for every new region.
 
-Current visual references are `docs/screenshots/r2-iphone17.png` and `docs/screenshots/r2-ipad-a16.png`.
+Visual references are:
+
+- `docs/screenshots/r2-iphone17.png` and `docs/screenshots/r2-ipad-a16.png`
+- `docs/screenshots/r3-iphone17.png` through `docs/screenshots/r6-iphone17.png`
+- `docs/screenshots/r3-ipad-a16.png` through `docs/screenshots/r6-ipad-a16.png`
+
+Final verification evidence:
+
+- Python contracts: 39 passed.
+- Release validator: 6 regions, 360 stages, 58 production pixel assets.
+- Unsigned generic iOS Release build: passed.
+- iPhone and iPad XCTest: 83 passed on each device family.
+- `python3 tools/agent_harness.py verify issue-38`: all four gates passed.
+
+The complete unsigned Release and both-device XCTest run is reproducible with `python3 tools/release_regression.py`. Capture launches use `-capture-r3` through `-capture-r6`.
 
 `python3 tools/integrate_world_pixel_packs.py --check-contracts` is always read-only and works before the pack fragments exist. When both fragments are complete, validate them without writing first:
 
@@ -141,4 +155,4 @@ python3 tools/integrate_world_pixel_packs.py \
   --fragment art-export/issue-45-r5-r6/manifest-fragment.json
 ```
 
-Only after that succeeds should the integrator be run again with `--apply`. The apply path revalidates both packs together, copies their production PNGs into the common runtime directory, adds their palettes and assets to the common manifest, records a deterministic `content/world-pixel-pack-promotions.json` overlay, promotes every R3–R6 entity/background, and changes `productionStageEnd` to 360. A single pack cannot promote the world.
+The completed apply path revalidated both packs together, copied their production PNGs into the common runtime directory, added their palettes and assets to the common manifest, recorded the deterministic `content/world-pixel-pack-promotions.json` overlay, promoted every R3–R6 entity/background, and changed `productionStageEnd` to 360. A single pack still cannot promote the world.

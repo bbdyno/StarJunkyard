@@ -33,8 +33,8 @@
       "240": 60000
     },
     "uniqueEnemyCount": 8,
-    "productionAssetCount": 0,
+    "productionAssetCount": 8,
     "primaryDropId": "salvage_relic"
   },
-  "expectedDigest": "638e57c66ad476702e0a7c90cc8e0d8f5bf5c1f0c985bc846170e65ba0f94f1b"
+  "expectedDigest": "9287cf7d60c6f0d726620b924753fe586e3753e88c6dfe26b9f748bdbe593300"
 }
