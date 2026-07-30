@@ -1793,6 +1793,14 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             color: PixelPalette.lightIron,
             name: "premium_access_status"
         )
+        addShopLabel(
+            "무료 편성 경로 • " + nextFreeUnlockText,
+            x: 180,
+            y: 190,
+            size: 6,
+            color: PixelPalette.lightTeal,
+            name: "formation_next_unlock"
+        )
         finishManagement(status: status)
     }
 
