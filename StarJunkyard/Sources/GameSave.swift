@@ -1,7 +1,7 @@
 import Foundation
 
 struct GameSave: Codable, Equatable, Sendable {
-    static let currentSchemaVersion = 8
+    static let currentSchemaVersion = 9
     static let cloudSlotName = "sj_main_v1"
 
     var schemaVersion: Int = currentSchemaVersion
@@ -13,6 +13,7 @@ struct GameSave: Codable, Equatable, Sendable {
     var enemyHPs: [Int]?
     var credits: Int
     var parts: Int
+    var starCores: Int
     var cutterLevel: Int
     var droneLevel: Int
     var magnetLevel: Int
@@ -41,6 +42,10 @@ struct GameSave: Codable, Equatable, Sendable {
     var idleOperations: IdleOperationsState
     var dailyInstantFinish: DailyInstantFinishState
     var equippedBoraUniform: BoraUniform
+    var seasonProgress: SeasonProgress?
+    var seasonEventSequence: Int
+    var claimedSeasonCosmeticIDs: [String]
+    var claimedSeasonConvenienceIDs: [String]
     var tutorialStep: Int
     var combatTick: Int
     var highestStage: Int
@@ -56,6 +61,7 @@ struct GameSave: Codable, Equatable, Sendable {
             enemyHPs: nil,
             credits: 0,
             parts: 0,
+            starCores: 0,
             cutterLevel: 1,
             droneLevel: 1,
             magnetLevel: 1,
@@ -84,6 +90,10 @@ struct GameSave: Codable, Equatable, Sendable {
             idleOperations: .newGame(now: now),
             dailyInstantFinish: .empty,
             equippedBoraUniform: .base,
+            seasonProgress: nil,
+            seasonEventSequence: 0,
+            claimedSeasonCosmeticIDs: [],
+            claimedSeasonConvenienceIDs: [],
             tutorialStep: 0,
             combatTick: 0,
             highestStage: 1,
@@ -98,7 +108,7 @@ struct GameSave: Codable, Equatable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case schemaVersion, revision, updatedAt, stageIndex, waveIndex, enemyHP, enemyHPs
-        case credits, parts, cutterLevel, droneLevel, magnetLevel, crewLevel
+        case credits, parts, starCores, cutterLevel, droneLevel, magnetLevel, crewLevel
         case pressLevel, sorterLevel, warehouseLevel, yardIncomeBank, manualTapCount, discoveredEnemyIDs
         case storyChapter, shelterRepairParts, prologueSeen
         case defeatedBossStages, unlockedBlueprintIDs, unlockedDroneIDs, equippedDroneIDs
@@ -106,6 +116,7 @@ struct GameSave: Codable, Equatable, Sendable {
         case storyLogIDs, bossFailureCounts
         case pendingBossDismantleStage, pendingBossBaseParts
         case idleOperations, dailyInstantFinish, equippedBoraUniform
+        case seasonProgress, seasonEventSequence, claimedSeasonCosmeticIDs, claimedSeasonConvenienceIDs
         case tutorialStep, combatTick, highestStage, cloudBackupEnabled
     }
 
@@ -119,6 +130,7 @@ struct GameSave: Codable, Equatable, Sendable {
         enemyHPs: [Int]?,
         credits: Int,
         parts: Int,
+        starCores: Int,
         cutterLevel: Int,
         droneLevel: Int,
         magnetLevel: Int,
@@ -147,6 +159,10 @@ struct GameSave: Codable, Equatable, Sendable {
         idleOperations: IdleOperationsState,
         dailyInstantFinish: DailyInstantFinishState,
         equippedBoraUniform: BoraUniform,
+        seasonProgress: SeasonProgress?,
+        seasonEventSequence: Int,
+        claimedSeasonCosmeticIDs: [String],
+        claimedSeasonConvenienceIDs: [String],
         tutorialStep: Int,
         combatTick: Int,
         highestStage: Int,
@@ -161,6 +177,7 @@ struct GameSave: Codable, Equatable, Sendable {
         self.enemyHPs = enemyHPs
         self.credits = credits
         self.parts = parts
+        self.starCores = starCores
         self.cutterLevel = cutterLevel
         self.droneLevel = droneLevel
         self.magnetLevel = magnetLevel
@@ -189,6 +206,10 @@ struct GameSave: Codable, Equatable, Sendable {
         self.idleOperations = idleOperations
         self.dailyInstantFinish = dailyInstantFinish
         self.equippedBoraUniform = equippedBoraUniform
+        self.seasonProgress = seasonProgress
+        self.seasonEventSequence = seasonEventSequence
+        self.claimedSeasonCosmeticIDs = claimedSeasonCosmeticIDs
+        self.claimedSeasonConvenienceIDs = claimedSeasonConvenienceIDs
         self.tutorialStep = tutorialStep
         self.combatTick = combatTick
         self.highestStage = highestStage
@@ -206,6 +227,7 @@ struct GameSave: Codable, Equatable, Sendable {
         enemyHPs = try values.decodeIfPresent([Int].self, forKey: .enemyHPs)
         credits = try values.decode(Int.self, forKey: .credits)
         parts = try values.decode(Int.self, forKey: .parts)
+        starCores = try values.decodeIfPresent(Int.self, forKey: .starCores) ?? 0
         cutterLevel = try values.decode(Int.self, forKey: .cutterLevel)
         droneLevel = try values.decode(Int.self, forKey: .droneLevel)
         magnetLevel = try values.decode(Int.self, forKey: .magnetLevel)
@@ -236,6 +258,10 @@ struct GameSave: Codable, Equatable, Sendable {
         idleOperations = try values.decodeIfPresent(IdleOperationsState.self, forKey: .idleOperations) ?? .newGame(now: updatedAt)
         dailyInstantFinish = try values.decodeIfPresent(DailyInstantFinishState.self, forKey: .dailyInstantFinish) ?? .empty
         equippedBoraUniform = try values.decodeIfPresent(BoraUniform.self, forKey: .equippedBoraUniform) ?? .base
+        seasonProgress = try values.decodeIfPresent(SeasonProgress.self, forKey: .seasonProgress)
+        seasonEventSequence = max(0, try values.decodeIfPresent(Int.self, forKey: .seasonEventSequence) ?? 0)
+        claimedSeasonCosmeticIDs = try values.decodeIfPresent([String].self, forKey: .claimedSeasonCosmeticIDs) ?? []
+        claimedSeasonConvenienceIDs = try values.decodeIfPresent([String].self, forKey: .claimedSeasonConvenienceIDs) ?? []
         tutorialStep = try values.decode(Int.self, forKey: .tutorialStep)
         combatTick = try values.decode(Int.self, forKey: .combatTick)
         highestStage = try values.decode(Int.self, forKey: .highestStage)

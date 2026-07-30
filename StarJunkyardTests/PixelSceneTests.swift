@@ -207,6 +207,8 @@ final class PixelSceneTests: XCTestCase {
         XCTAssertEqual(migrated.idleOperations.workbenchSlots, 2)
         XCTAssertEqual(migrated.dailyInstantFinish, .empty)
         XCTAssertEqual(migrated.equippedBoraUniform, .base)
+        XCTAssertNil(migrated.seasonProgress)
+        XCTAssertTrue(migrated.claimedSeasonCosmeticIDs.isEmpty)
     }
 
     func testSchemaTwoSaveMigratesYardDefaults() throws {

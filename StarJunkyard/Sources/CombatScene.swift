@@ -14,6 +14,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     var onStorePurchase: ((StoreProductID) -> Void)?
     var onStoreRestore: (() -> Void)?
     var onStoreRetry: (() -> Void)?
+    var onOpenSeason: (() -> Void)?
 
     @MainActor
     private final class ActiveEnemy {
@@ -80,6 +81,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private var dailyInstantFinish: DailyInstantFinishState
     private var equippedBoraUniform: BoraUniform
     private var storefront: StorefrontSnapshot
+    private var season: SeasonGameplayCoordinator
     private var bossDeadlineTick: Int?
     private var bossEncounterPhase: BossEncounterRules.Phase?
     private var pendingBossToken: Int?
@@ -90,6 +92,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private let showOperationsPanelOnLaunch: Bool
     private let showPremiumStoreOnLaunch: Bool
     private let showCrewPanelOnLaunch: Bool
+    private let nowProvider: () -> Date
     private var tutorialStep: Int
     private var accumulator: TimeInterval = 0
     private var lastUpdateTime: TimeInterval = 0
@@ -163,7 +166,10 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         showOperationsPanelOnLaunch: Bool = false,
         showPremiumStoreOnLaunch: Bool = false,
         showCrewPanelOnLaunch: Bool = false,
-        settings: GameSettings = .default
+        settings: GameSettings = .default,
+        seasonCatalog: SeasonCatalog = SeasonContentLoader.loadCatalog(),
+        seasonPremiumUnlocked: Bool = false,
+        nowProvider: @escaping () -> Date = Date.init
     ) {
         self.content = content
         enemyByID = Dictionary(uniqueKeysWithValues: content.enemies.map { ($0.id, $0) })
@@ -214,6 +220,15 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         self.showOperationsPanelOnLaunch = showOperationsPanelOnLaunch
         self.showPremiumStoreOnLaunch = showPremiumStoreOnLaunch
         self.showCrewPanelOnLaunch = showCrewPanelOnLaunch
+        self.nowProvider = nowProvider
+        IdleOperationsEngine.observe(now: nowProvider(), state: &idleOperations)
+        season = SeasonGameplayCoordinator(
+            save: save,
+            catalog: seasonCatalog,
+            date: nowProvider(),
+            clockSuspect: idleOperations.clockSuspect,
+            premiumUnlocked: seasonPremiumUnlocked
+        )
         let offline = YardEconomy.offlineIncome(
             rate: YardEconomy.passiveIncome(
                 pressLevel: pressLevel,
@@ -221,7 +236,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
                 warehouseLevel: warehouseLevel,
                 crewLevel: crewLevel
             ),
-            elapsed: Date().timeIntervalSince(save.updatedAt),
+            elapsed: nowProvider().timeIntervalSince(save.updatedAt),
             entitlements: premiumEntitlements
         )
         offlineSeconds = offline.seconds
@@ -364,6 +379,11 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         return true
     }
 
+    func updateSeasonPremiumUnlocked(_ unlocked: Bool) {
+        season.updatePremiumUnlocked(unlocked)
+        persist()
+    }
+
     override func update(_ currentTime: TimeInterval) {
         if lastUpdateTime == 0 {
             lastUpdateTime = currentTime
@@ -423,6 +443,10 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             else if let uniformName = names.first(where: { $0.hasPrefix("equip_bora_") }),
                     let uniform = BoraUniform(rawValue: String(uniformName.dropFirst("equip_bora_".count))) {
                 equipBoraUniform(uniform)
+            }
+            else if names.contains("season_open") {
+                persist()
+                onOpenSeason?()
             }
             else if names.contains("start_research") { startIdleOperation(.research) }
             else if names.contains("start_craft") { startIdleOperation(.craft) }
@@ -639,6 +663,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         onFeedback?(.manualSalvage)
         credits += manualReward
         manualTapCount += 1
+        recordSeasonEvent(.manualSalvage)
         playMechanicAttack()
         let feedback = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
         configureLabel(feedback, size: 10, color: PixelPalette.warningAmber, alignment: .center)
@@ -942,7 +967,10 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         let succeeded = selectedCut == BossEncounterRules.activeCutIndex(stageNumber: stageNumber)
         onFeedback?(.bossDismantled)
         playScreenShake(amount: 5)
-        parts += BossEncounterRules.bonusParts(baseParts: pendingBossBaseParts, cutSucceeded: succeeded)
+        let bonusParts = BossEncounterRules.bonusParts(baseParts: pendingBossBaseParts, cutSucceeded: succeeded)
+        parts += bonusParts
+        if bonusParts > 0 { recordSeasonEvent(.salvagePart, amount: bonusParts) }
+        recordSeasonEvent(.defeatBoss, playXP: 100)
         let firstClear = defeatedBossStages.insert(stageNumber).inserted
         if firstClear {
             let reward = BossEncounterRules.firstClearReward(stageNumber: stageNumber)
@@ -971,7 +999,10 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         onAnalyticsEvent?(.enemyDismantled(id: enemy.spec.id, enemyClass: enemy.spec.enemyClass, stage: stage.number))
         credits += stage.baseReward * stage.rewardMultiplierPpm / 1_000_000
         let baseParts = enemy.spec.enemyClass == "boss" ? 15 : (enemy.spec.enemyClass == "elite" ? 6 : 3)
-        parts += baseParts + magnetLevel - 1
+        let earnedParts = baseParts + magnetLevel - 1
+        parts += earnedParts
+        recordSeasonEvent(.dismantleEnemy)
+        recordSeasonEvent(.salvagePart, amount: earnedParts)
         spawnScrapBurst(at: enemy.root.position)
         spawnShelterDelivery(
             from: enemy.root.position,
@@ -1000,6 +1031,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         groupTransitioning = true
         waveIndex += activeEnemies.count
         if waveIndex >= stage.wave.count {
+            recordSeasonEvent(.clearStage, playXP: 25)
             stageIndex = (stageIndex + 1) % content.stages.count
             waveIndex = 0
             rng = PCG32(seed: UInt64(content.stages[stageIndex].number), stream: 54)
@@ -1047,6 +1079,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private func performCooperativeSweep() {
         let tokens = activeEnemies.filter { $0.hp > 0 }.map(\.token)
         guard !tokens.isEmpty else { return }
+        recordSeasonEvent(.crewAttack)
         let banner = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
         configureLabel(banner, size: 13, color: crewAttackColor, alignment: .center)
         banner.text = "모 × 보라  협동 해체!"
@@ -1771,17 +1804,18 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         )
         addShopHitArea(name: "operations_open", position: CGPoint(x: 214, y: 580), size: CGSize(width: 108, height: 28))
         addShopLabel("작업 관리 〉", x: 316, y: 596, size: 8, color: PixelPalette.warningAmber, name: "operations_open", alignment: .right)
+        addSeasonEntry(y: 514)
         let collect = PixelArt.panel(size: CGSize(width: 292, height: 54), name: "collect_yard_income")
-        collect.position = CGPoint(x: 34, y: 468)
+        collect.position = CGPoint(x: 34, y: 450)
         collect.zPosition = 2
         collect.name = "collect_yard_income"
         shopLayer.addChild(collect)
-        addShopHitArea(name: "collect_yard_income", position: CGPoint(x: 34, y: 468), size: CGSize(width: 292, height: 54))
-        addShopLabel("회수 대기  \(yardIncomeBank) 고철", x: 50, y: 501, size: 11, color: PixelPalette.workWhite, name: "collect_yard_income", alignment: .left)
-        addShopLabel("수익 회수", x: 308, y: 492, size: 10, color: yardIncomeBank > 0 ? PixelPalette.warningAmber : PixelPalette.midIron, name: "collect_yard_income", alignment: .right)
-        addFacilityItem(.press, level: pressLevel, y: 385)
-        addFacilityItem(.sorter, level: sorterLevel, y: 305)
-        addFacilityItem(.warehouse, level: warehouseLevel, y: 225)
+        addShopHitArea(name: "collect_yard_income", position: CGPoint(x: 34, y: 450), size: CGSize(width: 292, height: 54))
+        addShopLabel("회수 대기  \(yardIncomeBank) 고철", x: 50, y: 483, size: 11, color: PixelPalette.workWhite, name: "collect_yard_income", alignment: .left)
+        addShopLabel("수익 회수", x: 308, y: 474, size: 10, color: yardIncomeBank > 0 ? PixelPalette.warningAmber : PixelPalette.midIron, name: "collect_yard_income", alignment: .right)
+        addFacilityItem(.press, level: pressLevel, y: 370)
+        addFacilityItem(.sorter, level: sorterLevel, y: 292)
+        addFacilityItem(.warehouse, level: warehouseLevel, y: 214)
         let slotState = premiumEntitlements.contains(.workbenchSlot3) ? "작업대3 활성" : "작업대3 잠김"
         let offlineState = premiumEntitlements.contains(.offlineCap16Hours) ? "16H 활성" : "16H 잠김"
         let membershipState = premiumEntitlements.contains(.craftSpeed110) ? "멤버십 활성" : "멤버십 잠김"
@@ -1805,8 +1839,9 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func openOperations(status: String = "완료된 작업은 사라지지 않으며 직접 회수합니다") {
-        let now = Date()
+        let now = nowProvider()
         IdleOperationsEngine.observe(now: now, state: &idleOperations)
+        season.synchronize(at: now, clockSuspect: idleOperations.clockSuspect)
         if premiumEntitlements.contains(.dailyTimeTicketPlus1) {
             let previousTicket = dailyInstantFinish
             dailyInstantFinish.refresh(for: now)
@@ -1903,7 +1938,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         do {
             let operation = try IdleOperationsEngine.start(
                 kind,
-                now: Date(),
+                now: nowProvider(),
                 craftSpeedMultiplier: premiumEntitlements.craftSpeedMultiplier,
                 state: &idleOperations
             )
@@ -1921,7 +1956,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
     private func finishIdleOperationFree(id: String) {
         do {
-            try IdleOperationsEngine.finishFree(id: id, now: Date(), state: &idleOperations)
+            try IdleOperationsEngine.finishFree(id: id, now: nowProvider(), state: &idleOperations)
             persist()
             openOperations(status: "3분 이하 작업을 무료로 완료했습니다")
         } catch {
@@ -1949,9 +1984,20 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
     private func claimIdleOperation(id: String) {
         do {
-            let reward = try IdleOperationsEngine.claim(id: id, now: Date(), state: &idleOperations)
+            guard let operation = idleOperations.active.first(where: { $0.id == id }) else {
+                throw IdleOperationError.notComplete
+            }
+            let reward = try IdleOperationsEngine.claim(id: id, now: nowProvider(), state: &idleOperations)
             credits += reward.credits
             parts += reward.parts
+            if reward.parts > 0 { recordSeasonEvent(.salvagePart, amount: reward.parts) }
+            let metric: SeasonMetric = operation.kind == .expedition ? .expeditionComplete : .facilityJob
+            let playXP = operation.kind == .expedition ? 50 : 20
+            recordSeasonEvent(
+                metric,
+                playXP: playXP,
+                eventID: "operation:\(operation.id):claim"
+            )
             persist()
             updateHUD()
             openOperations(status: "보상 회수 • 고철 +" + String(reward.credits) + " • 부품 +" + String(reward.parts))
@@ -1962,6 +2008,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
     private func openRecords() {
         beginManagement(.records, title: "괴수 해체 기록", subtitle: "발견 \(discoveredEnemyIDs.count)/\(content.enemies.count) • 싸워 본 괴수만 기록됩니다")
+        addSeasonEntry(y: 500)
         for (index, enemy) in content.enemies.prefix(6).enumerated() {
             addRecordCard(enemy, index: index)
         }
@@ -1972,6 +2019,17 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         addShopLabel(regionGoal, x: 54, y: 224, size: 9, color: PixelPalette.workWhite, alignment: .left)
         addShopLabel("직접 해체 \(manualTapCount)회", x: 306, y: 236, size: 8, color: PixelPalette.lightTeal, alignment: .right)
         finishManagement(status: "괴수의 이름·모습·장기 목표를 여기서 확인하세요")
+    }
+
+    private func addSeasonEntry(y: Int) {
+        let button = PixelArt.panel(size: CGSize(width: 292, height: 38), name: "season_open")
+        button.position = CGPoint(x: 34, y: y)
+        button.zPosition = 2
+        button.name = "season_open"
+        shopLayer.addChild(button)
+        addShopHitArea(name: "season_open", position: CGPoint(x: 34, y: y), size: CGSize(width: 292, height: 44))
+        addShopLabel("SEASON • 구조 신호 임무", x: 50, y: y + 19, size: 9, color: PixelPalette.lightTeal, name: "season_open", alignment: .left)
+        addShopLabel("시즌 확인 〉", x: 308, y: y + 19, size: 9, color: PixelPalette.warningAmber, name: "season_open", alignment: .right)
     }
 
     private func beginManagement(_ panelType: ManagementPanel, title: String, subtitle: String) {
@@ -2096,7 +2154,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         let column = index % 3
         let row = index / 3
         let x = 34 + column * 98
-        let y = 445 - row * 96
+        let y = 408 - row * 96
         let card = PixelArt.panel(size: CGSize(width: 88, height: 82), name: "record_\(enemy.id)")
         card.position = CGPoint(x: x, y: y)
         card.zPosition = 2
@@ -2582,6 +2640,22 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         }
     }
 
+    private func recordSeasonEvent(
+        _ metric: SeasonMetric,
+        amount: Int = 1,
+        playXP: Int = 0,
+        eventID: String? = nil
+    ) {
+        _ = season.record(
+            metric: metric,
+            amount: amount,
+            playXP: playXP,
+            eventID: eventID,
+            at: nowProvider(),
+            clockSuspect: idleOperations.clockSuspect
+        )
+    }
+
     private func persist() {
         save.schemaVersion = GameSave.currentSchemaVersion
         save.revision += 1
@@ -2621,6 +2695,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         save.idleOperations = idleOperations
         save.dailyInstantFinish = dailyInstantFinish
         save.equippedBoraUniform = equippedBoraUniform
+        season.write(to: &save)
         save.tutorialStep = tutorialStep
         save.combatTick = combatTick
         save.highestStage = max(save.highestStage, content.stages[stageIndex].number)
