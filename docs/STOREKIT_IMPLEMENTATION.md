@@ -41,6 +41,12 @@ entitlement의 실제 연결은 다음과 같다.
 
 월간 직원 외형은 대응 프로덕션 픽셀 자산이 아직 없으므로 직원 화면에 `전용 픽셀 자산 준비 전 잠김`으로 표시하며 선택 버튼을 만들지 않는다.
 
+## 실제 화면 검증
+
+![iPhone App Store 정비소](screenshots/ios-premium-store.png)
+
+`-capture-premium-store`로 iPhone Safe Area 안에서 6개 상품의 이름·효과, 구매 복원, 연결 재시도 상태를 한 화면에 표시하는지 확인한다. StoreKit 연결이 실패한 캡처에서는 가격을 임의 생성하지 않고 `가격 확인 필요`로 명시한다.
+
 ## 로컬 StoreKit 테스트
 
 공유 `StarJunkyard` 스킴은 `StarJunkyard/StarJunkyard.storekit`을 사용한다. 이 구성에는 카탈로그와 동일한 비소모성 5개와 자동 갱신 구독 1개가 있다. Xcode의 StoreKit Transaction Manager에서 구매, 환불, 구독 만료를 로컬로 재현할 수 있다.
