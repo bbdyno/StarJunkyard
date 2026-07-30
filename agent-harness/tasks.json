@@ -149,6 +149,7 @@
         "content/season-*.json",
         "schemas/season.schema.json",
         "docs/**",
+        "tests/test_agent_harness.py",
         "tests/test_project_contracts.py",
         "tools/validate_project.py"
       ],
