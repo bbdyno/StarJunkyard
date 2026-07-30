@@ -79,6 +79,19 @@ final class GameSaveStore: @unchecked Sendable {
             save.enemyHPs = save.enemyHP.map { [$0] }
             save.crewLevel = 1
         }
+        save.defeatedBossStages = Array(Set(save.defeatedBossStages)).sorted()
+        save.unlockedBlueprintIDs = FormationProgression.canonicalIDs(save.unlockedBlueprintIDs)
+        save.unlockedDroneIDs = FormationProgression.canonicalIDs(save.unlockedDroneIDs)
+        save.equippedDroneIDs = FormationProgression.canonicalIDs(save.equippedDroneIDs)
+        save.unlockedModuleIDs = FormationProgression.canonicalIDs(save.unlockedModuleIDs)
+        save.equippedModuleIDs = FormationProgression.canonicalIDs(save.equippedModuleIDs)
+        save.storyLogIDs = FormationProgression.canonicalIDs(save.storyLogIDs)
+        let storedMastery = save.crewMasteryLevels["bora"] ?? save.crewLevel
+        save.crewLevel = max(1, max(save.crewLevel, storedMastery))
+        save.crewMasteryLevels["bora"] = save.crewLevel
+        if CrewRole(rawValue: save.crewRoleAssignments["bora"] ?? "") == nil {
+            save.crewRoleAssignments["bora"] = CrewRole.breaker.rawValue
+        }
         if save.schemaVersion < GameSave.currentSchemaVersion {
             save.schemaVersion = GameSave.currentSchemaVersion
         }

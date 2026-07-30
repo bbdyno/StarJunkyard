@@ -75,6 +75,16 @@ final class GameViewController: UIViewController {
             captureSave.prologueSeen = true
             captureSave.tutorialStep = 4
             startGame(with: captureSave, showOperationsPanelOnLaunch: true)
+        } else if ProcessInfo.processInfo.arguments.contains("-capture-formation") {
+            var captureSave = GameSave.newGame()
+            captureSave.stageIndex = 29
+            captureSave.highestStage = 30
+            captureSave.credits = 12_000
+            captureSave.crewLevel = 4
+            captureSave.defeatedBossStages = [10, 20, 30]
+            captureSave.prologueSeen = true
+            captureSave.tutorialStep = 4
+            startGame(with: captureSave, showCrewPanelOnLaunch: true)
         } else if ProcessInfo.processInfo.arguments.contains("-capture-boss-dismantle") {
             var captureSave = GameSave.newGame()
             captureSave.stageIndex = 9
@@ -218,13 +228,15 @@ final class GameViewController: UIViewController {
     private func startGame(
         with initialSave: GameSave,
         showFacilityPanelOnLaunch: Bool = false,
-        showOperationsPanelOnLaunch: Bool = false
+        showOperationsPanelOnLaunch: Bool = false,
+        showCrewPanelOnLaunch: Bool = false
     ) {
         let scene = CombatScene(
             content: content,
             save: initialSave,
             showFacilityPanelOnLaunch: showFacilityPanelOnLaunch,
             showOperationsPanelOnLaunch: showOperationsPanelOnLaunch,
+            showCrewPanelOnLaunch: showCrewPanelOnLaunch,
             settings: settingsStore.load()
         )
         scene.applyViewport(PixelViewport(view: gameView))
