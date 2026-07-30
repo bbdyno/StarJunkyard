@@ -12,6 +12,8 @@
 
 전투에 들어가면 `괴수 직접 해체 → 직원 자동 공격 → 고철 성장 → 시설 초당 수익 회수`를 화면 안에서 안내한다. 장비 작업대의 절단날·리벳 코일·자석 바구니와 직원 숙련, 폐품장 시설은 고철을 실제로 소비하고 피해량·부품·초당 수익을 바꾸며 즉시 저장된다. 탄환은 총구에서 현재 적까지 5–6개의 정수 위치를 지나간 뒤에만 피해 판정을 발생시킨다.
 
+신규 저장은 폐기 판정을 받은 모와 작업반이 피난처 7호 반응로를 되살려야 하는 이유를 먼저 보여 준다. 괴수를 해체한 부품이 화면을 가로질러 반응로에 들어가고 3·7·12개 복구 단계가 조명과 목표 카드에 남는다. S10 압착왕은 45초 재조립 제한, 70% 집게 외장 분리, 30% 육각 코어 노출을 거친다. 체력 0에서 기본 보상을 먼저 저장한 뒤 빛나는 점선 절단을 선택하며, 최초 완료 때 절단 코일 설계도·모듈과 1장 복구 기록을 확정 지급한다. 절단 선택이 빗나가도 기본 보상은 잃지 않는다.
+
 첫 화면과 전투에는 UIKit 카드, UIButton, SF Symbol, 블러, 그라데이션이 없다. 360×800 논리 장면에서 공통 16색 PNG 배경·정비사·리벳·폐품 생명체를 nearest-neighbor로 렌더링한다. 정비사 대기/공격 4단계, 드론 부유/반동 4단계, 적 이동/피격 3–4단계와 해체 파편 자석 회수를 정수 좌표 스텝 애니메이션으로 표시한다.
 
 ![iOS R1 프로덕션 도트 전투 캡처](screenshots/ios-r1-production-pixel.png)
@@ -26,6 +28,6 @@ xcodebuild -project StarJunkyard.xcodeproj -scheme StarJunkyard -sdk iphonesimul
 xcodebuild -project StarJunkyard.xcodeproj -scheme StarJunkyard -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO test
 ```
 
-검증 항목은 PCG32 기준 출력, 공통 콘텐츠 디코딩, 로컬 저장/백업 복구, 저장 v1·v2→v3 이관, 8시간 오프라인 상한, 저장 선택 설명, SKView 단일 루트, UIButton 부재, 360×800 논리 크기, SKShapeNode 부재, 직접 해체·장비·직원·시설·기록 노드다.
+검증 항목은 PCG32 기준 출력, 공통 콘텐츠 디코딩, 로컬 저장/백업 복구, 저장 v1·v2→v5 이관, 8시간 오프라인 상한, 저장 선택 설명, SKView 단일 루트, UIButton 부재, 360×800 논리 크기, SKShapeNode 부재, 직접 해체·장비·직원·시설·기록, 피난처 복구, 보스 타이머·파괴 단계·복원 가능한 최종 해체 노드다.
 
-Release 구성은 빌드 전 `tools/validate_project.py --release`를 실행한다. 9개 프로덕션 PNG의 크기, 완전 알파, 공통 16색, SHA-256이 모두 일치할 때만 성공한다.
+Release 구성은 빌드 전 `tools/validate_project.py --release`를 실행한다. 11개 프로덕션 PNG의 크기, 완전 알파, 공통 16색, SHA-256이 모두 일치할 때만 성공한다.

@@ -132,7 +132,7 @@ final class PixelSceneTests: XCTestCase {
             """.utf8
         )
         let migrated = try temporarySaveStore().decodeCloudData(data)
-        XCTAssertEqual(migrated.schemaVersion, 4)
+        XCTAssertEqual(migrated.schemaVersion, 5)
         XCTAssertEqual(migrated.enemyHPs, [41])
         XCTAssertEqual(migrated.crewLevel, 1)
         XCTAssertEqual(migrated.pressLevel, 1)
@@ -142,6 +142,8 @@ final class PixelSceneTests: XCTestCase {
         XCTAssertEqual(migrated.storyChapter, 0)
         XCTAssertEqual(migrated.shelterRepairParts, 0)
         XCTAssertFalse(migrated.prologueSeen)
+        XCTAssertTrue(migrated.defeatedBossStages.isEmpty)
+        XCTAssertTrue(migrated.unlockedModuleIDs.isEmpty)
     }
 
     func testSchemaTwoSaveMigratesYardDefaults() throws {
@@ -151,7 +153,7 @@ final class PixelSceneTests: XCTestCase {
             """.utf8
         )
         let migrated = try temporarySaveStore().decodeCloudData(data)
-        XCTAssertEqual(migrated.schemaVersion, 4)
+        XCTAssertEqual(migrated.schemaVersion, 5)
         XCTAssertEqual(migrated.pressLevel, 1)
         XCTAssertEqual(migrated.warehouseLevel, 0)
         XCTAssertEqual(migrated.manualTapCount, 0)
@@ -174,6 +176,44 @@ final class PixelSceneTests: XCTestCase {
         XCTAssertEqual(bossGoal.title, "S10 압착왕 코어 회수")
         XCTAssertEqual(bossGoal.current, 4)
         XCTAssertEqual(bossGoal.required, 10)
+    }
+
+    func testBossRulesDefineTimerPhasesAndGuaranteedReward() {
+        XCTAssertEqual(BossEncounterRules.timeLimitTicks(milliseconds: 45_000), 900)
+        XCTAssertEqual(BossEncounterRules.remainingSeconds(deadlineTick: 900, currentTick: 1), 45)
+        XCTAssertEqual(BossEncounterRules.phase(hp: 71, maxHP: 100), .armored)
+        XCTAssertEqual(BossEncounterRules.phase(hp: 70, maxHP: 100), .clawBroken)
+        XCTAssertEqual(BossEncounterRules.phase(hp: 30, maxHP: 100), .coreExposed)
+        XCTAssertEqual(BossEncounterRules.phase(hp: 0, maxHP: 100), .dismantle)
+        XCTAssertEqual(BossEncounterRules.activeCutIndex(stageNumber: 10), 1)
+        XCTAssertEqual(BossEncounterRules.bonusParts(baseParts: 15, cutSucceeded: true), 3)
+        XCTAssertEqual(BossEncounterRules.bonusParts(baseParts: 15, cutSucceeded: false), 0)
+        let reward = BossEncounterRules.firstClearReward(stageNumber: 10)
+        XCTAssertEqual(reward.blueprintID, "blueprint_cutting_coil")
+        XCTAssertEqual(reward.moduleID, "module_cutting_coil")
+    }
+
+    func testBossStageShowsTimerAndPendingDismantleRestores() {
+        let content = ContentLoader.loadVerticalSlice(bundle: Bundle(for: Self.self))
+        var activeSave = GameSave.newGame()
+        activeSave.stageIndex = 9
+        activeSave.prologueSeen = true
+        activeSave.tutorialStep = 4
+        let activeScene = CombatScene(content: content, save: activeSave)
+        let view = SKView(frame: CGRect(origin: .zero, size: CombatScene.logicalSize))
+        activeScene.didMove(to: view)
+        XCTAssertNotNil(findNode(named: "boss_timer_panel", in: activeScene))
+        XCTAssertNotNil(findNode(named: "boss_timer", in: activeScene))
+
+        var pendingSave = activeSave
+        pendingSave.enemyHPs = [0]
+        pendingSave.pendingBossDismantleStage = 10
+        pendingSave.pendingBossBaseParts = 15
+        let pendingScene = CombatScene(content: content, save: pendingSave)
+        pendingScene.didMove(to: view)
+        XCTAssertNotNil(findNode(named: "boss_dismantle_panel", in: pendingScene))
+        XCTAssertNotNil(findNode(named: "boss_cut_0", in: pendingScene))
+        XCTAssertNotNil(findNode(named: "boss_cut_1", in: pendingScene))
     }
 
     func testRecoveredShelterPersistsStoryStateAndSkipsPrologue() {
