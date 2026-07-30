@@ -89,7 +89,7 @@ let project = Project(
         .scheme(
             name: "StarJunkyard",
             shared: true,
-            buildAction: .buildAction(targets: ["StarJunkyard", "StarJunkyardTests"]),
+            buildAction: .buildAction(targets: ["StarJunkyard"]),
             testAction: .targets(["StarJunkyardTests"]),
             runAction: .runAction(
                 executable: .executable("StarJunkyard"),
