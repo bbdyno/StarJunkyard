@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "mode": "built-in-imagegen-distinct-call-per-asset",
+  "spriteSharedContract": "Production Star Junkyard 2D combat sprite source; supplied R1 images are style-only references for chunky authored pixels, dark 1px/2px outline, readable scrap-machine anatomy and three-quarter side view, never anatomy copies. Strict hand-authored pixel art on one coarse grid; exactly one complete centered subject, fully visible facing left with generous padding. Perfectly flat uniform #00FF00 chroma background with no shadow, gradient, texture, floor, reflection, horizon or lighting variation. No #00FF00 in subject; no text, UI, frame, watermark, particle, cast shadow, extra creature or scenery.",
+  "backgroundSharedContract": "Production portrait 360:572 Star Junkyard battle backdrop; supplied R1 preview is style-only. Strict hand-authored pixel art on one coarse grid, opaque edge-to-edge, layered depth, central lower two-thirds unobstructed as combat lane. No characters, enemies, UI, readable text, logos, watermark, antialiasing, gradients, blur or painterly texture.",
+  "sourceReferences": {
+    "r1Normal": [
+      "art-export/production/sprites/enemy_umbrella_crab.png",
+      "art-export/production/sprites/enemy_fridge_boar.png"
+    ],
+    "r1Combat": [
+      "art-export/production/sprites/elite_vending_knight.png",
+      "art-export/production/sprites/boss_cancrab_king.png"
+    ],
+    "r1Background": ["docs/screenshots/r1-pixel-art-preview.png"]
+  },
+  "assets": [
+    {
+      "id": "enemy_r05_panel_butterfly",
+      "artifactId": "exec-3cf2458c-9e02-4287-998b-ffba161c2a4c",
+      "referenceSet": "r1Normal",
+      "prompt": "Panel Butterfly: two separate rectangular solar-panel wings at unequal reflection angles, compact photovoltaic core, cable antennae and clamp feet; solar_reflect and cooling weakness; no organic wings."
+    },
+    {
+      "id": "enemy_r05_antenna_mantis",
+      "artifactId": "exec-25c4303d-7662-477a-b4dc-2b754a291d12",
+      "referenceSet": "r1Normal",
+      "prompt": "Antenna Mantis: tall transmitter thorax, two dish-antenna scythe forearms, forked mast crown and landing-gear legs; one claw aims antenna_beam; cut weakness."
+    },
+    {
+      "id": "enemy_r05_capsule_turtle",
+      "artifactId": "exec-658e9c7a-6236-4de3-a61d-796090ba1ed2",
+      "referenceSet": "r1Normal",
+      "prompt": "Capsule Turtle: low reentry-capsule shell, separate heat-shield plates, hatch, magnetic feet and visor head; forward reentry charge; cooling weakness."
+    },
+    {
+      "id": "enemy_r05_rocket_mole",
+      "artifactId": "exec-75f97246-7b2b-46e7-b8e9-c26c04ac3205",
+      "referenceSet": "r1Normal",
+      "prompt": "Rocket Mole: drill nose, squat mole body, shovel claws, rear rocket nozzle and exposed fuel cell; zero-g debris burrow; electric weakness."
+    },
+    {
+      "id": "elite_r05_docking_golem",
+      "artifactId": "exec-66d27ed5-2350-424a-964c-623b04b050a5",
+      "referenceSet": "r1Combat",
+      "prompt": "Docking Golem: central rectangular docking-port face, two enormous clamp-jaw docking arms with three warning lamps, short magnetic legs; paired_docking_arms and cut weakness."
+    },
+    {
+      "id": "elite_r05_dish_starfish",
+      "artifactId": "exec-ef326405-684f-4bb3-95c1-77b3e6f7126f",
+      "referenceSet": "r1Combat",
+      "prompt": "Dish Starfish: floating five-arm mechanical starfish, one separate concave satellite dish on every arm aimed at a central receiver, one short reflected beam; five_dish_reflection and cooling weakness."
+    },
+    {
+      "id": "boss_r05_solar_sail_ray",
+      "artifactId": "exec-83d67779-9acd-491a-82d9-48bf478f3f23",
+      "referenceSet": "r1Combat",
+      "prompt": "Solar-Sail Ray: huge horizontal failed cleaning satellite with broad segmented sail wings at different angles, satellite fuselage, folded joints, coolant tanks and antenna tail; cooling weakness."
+    },
+    {
+      "id": "boss_r05_orbital_trash_dragon",
+      "artifactId": "exec-a5f89ba9-72ed-451d-9a9c-8f14fd0cf94b",
+      "referenceSet": "r1Combat",
+      "prompt": "Orbital Trash Dragon: mechanical dragon of satellite debris, antenna-horn head, cable neck, three separate solar-panel wing targets, magnetic feet and gravity-rake tail; cut weakness."
+    },
+    {
+      "id": "background_r05_orbital_debris_belt",
+      "artifactId": "exec-d9558c69-5eb2-4d46-a582-23cf466d2bfd",
+      "referenceSet": "r1Background",
+      "prompt": "Orbital Debris Belt: black-navy space, curved blue-white Earth limb, edge-framing broken satellites and solar panels, distant ring recycling station, purple ion stars and sparse gold warnings; dark empty central combat lane."
+    },
+    {
+      "id": "enemy_r06_lunar_bus_beetle",
+      "artifactId": "exec-1027b993-9db6-48af-a38a-44cf72bacb80",
+      "referenceSet": "r1Normal",
+      "prompt": "Lunar-Bus Beetle: low shuttle-bus cabin shell, window rows, beetle mandible bumper, six wheel-legs, lifted wheel covers and lunar core; low_gravity_jump and impact weakness."
+    },
+    {
+      "id": "enemy_r06_oxygen_tank_sheep",
+      "artifactId": "exec-1879cc2e-3ce8-420c-a2c1-470274727867",
+      "referenceSet": "r1Normal",
+      "prompt": "Oxygen-Tank Sheep: two lunar oxygen tanks form curled horns around a pressure gauge, valve ears, regulator body and magnetic hooves; pressure_charge and cut weakness."
+    },
+    {
+      "id": "enemy_r06_gear_flower",
+      "artifactId": "exec-e4b45e73-618f-409b-bc0d-cb6a023aab85",
+      "referenceSet": "r1Normal",
+      "prompt": "Gear Flower: four toothed gear petals around a hot square axle, piston leaves and cable-root feet, one connected displaced petal; gear_reassemble and heat weakness."
+    },
+    {
+      "id": "enemy_r06_archivist_giant",
+      "artifactId": "exec-4684f982-cdc9-4527-bb10-70ee80a0a7dd",
+      "referenceSet": "r1Normal",
+      "prompt": "Archivist Giant: tall lunar archive automaton with record-tablet chest, oversized stamp arm, filing clamp, narrow legs and memory core behind hinged plate; recorded_attack_echo and electric weakness."
+    },
+    {
+      "id": "elite_r06_time_compressor",
+      "artifactId": "exec-c69b6292-cd3c-4fc7-94ef-f97f55905908",
+      "referenceSet": "r1Combat",
+      "prompt": "Time Compressor: wide four-legged machine with large slow gold gear, small fast magenta gear, central caged pendulum and alternating lamps; alternating_time_scale and impact weakness."
+    },
+    {
+      "id": "elite_r06_memory_incinerator_librarian",
+      "artifactId": "exec-1c738174-943e-4ea4-a04f-b852b491f3de",
+      "referenceSet": "r1Combat",
+      "prompt": "Memory Incinerator Librarian: three-drawer furnace torso glowing in sequence, record-clamp holding punched memory strip, book-stamp arm, teal cooling core and wheeled archive legs; erase_recorded_buff and cooling weakness."
+    },
+    {
+      "id": "boss_r06_reverse_clock_tower",
+      "artifactId": "exec-0e04773a-ba9e-4966-9863-722af857f120",
+      "referenceSet": "r1Combat",
+      "prompt": "Reverse Clock Tower: monumental mobile lunar tower, huge cracked backward clock hands, exactly three exposed gold gear targets, pendulum chamber and walking buttress legs; five_second_echo and impact weakness."
+    },
+    {
+      "id": "boss_r06_final_disposal_protocol",
+      "artifactId": "exec-3ef29bd8-636f-4889-b76f-6acc40460d6e",
+      "referenceSet": "r1Combat",
+      "prompt": "Final Disposal Protocol: colossal three-tier machine with sorting claw and memory bins, reverse-time gear halo, blank crushing plate, central star-screw socket, preserved shard and many hydraulic legs; protocol_three_phase."
+    },
+    {
+      "id": "background_r06_lunar_whiteout_plant",
+      "artifactId": "exec-adccee74-052b-4ce2-806b-eebf4c03fdd2",
+      "referenceSet": "r1Background",
+      "prompt": "Lunar Whiteout Plant: ruined moon-city edges descending into a machine planet, bronze conduits, gold memory conveyors, magenta archive windows, distant blank disposal press and tiny Earth; dark empty central combat lane."
+    }
+  ]
+}

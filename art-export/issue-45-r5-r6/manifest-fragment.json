@@ -1,0 +1,862 @@
+{
+  "$schema": "./manifest-fragment.schema.json",
+  "schemaVersion": 1,
+  "issue": 45,
+  "sourceContract": {
+    "path": "issue-38/content/world_r1_r6.json",
+    "sha256": "f8922a8ce4d98d01f19477a38b7bb3291c52b20914576a4231067e635818338a"
+  },
+  "generationLog": {
+    "path": "art-source/issue-45-r5-r6/generation-log.json",
+    "sha256": "5ddc827ffdf9ff8f875cca0fdeb86a13e23e6829fc320a6a1f45590f32172dbe"
+  },
+  "regions": [
+    {
+      "id": "r05",
+      "nameKo": "궤도 잔해권",
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r05_orbit16.gpl",
+      "paletteAnchors": [
+        "#090B1A",
+        "#4A4E9B",
+        "#8C6ED9",
+        "#D8F3FF"
+      ],
+      "eliteStageAllocation": [
+        {
+          "localStage": 5,
+          "globalStage": 245,
+          "entityId": "docking_golem"
+        },
+        {
+          "localStage": 15,
+          "globalStage": 255,
+          "entityId": "dish_starfish"
+        },
+        {
+          "localStage": 25,
+          "globalStage": 265,
+          "entityId": "docking_golem"
+        },
+        {
+          "localStage": 35,
+          "globalStage": 275,
+          "entityId": "dish_starfish"
+        },
+        {
+          "localStage": 45,
+          "globalStage": 285,
+          "entityId": "docking_golem"
+        },
+        {
+          "localStage": 55,
+          "globalStage": 295,
+          "entityId": "dish_starfish"
+        }
+      ]
+    },
+    {
+      "id": "r06",
+      "nameKo": "버려진 달 도시와 기계 행성",
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r06_civilization16.gpl",
+      "paletteAnchors": [
+        "#17121F",
+        "#6B5B3E",
+        "#D9B44A",
+        "#E45A9D"
+      ],
+      "eliteStageAllocation": [
+        {
+          "localStage": 5,
+          "globalStage": 305,
+          "entityId": "time_compressor"
+        },
+        {
+          "localStage": 15,
+          "globalStage": 315,
+          "entityId": "memory_incinerator_librarian"
+        },
+        {
+          "localStage": 25,
+          "globalStage": 325,
+          "entityId": "time_compressor"
+        },
+        {
+          "localStage": 35,
+          "globalStage": 335,
+          "entityId": "memory_incinerator_librarian"
+        },
+        {
+          "localStage": 45,
+          "globalStage": 345,
+          "entityId": "time_compressor"
+        },
+        {
+          "localStage": 55,
+          "globalStage": 355,
+          "entityId": "memory_incinerator_librarian"
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "enemy_r05_panel_butterfly",
+      "regionId": "r05",
+      "entityId": "panel_butterfly",
+      "nameKo": "패널나비",
+      "nameEn": "Panel Butterfly",
+      "class": "normal",
+      "kind": "enemy_medium",
+      "behaviorId": "solar_reflect",
+      "behaviorKo": "태양 패널 반사",
+      "weakness": "cooling",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "왼날개→오른날개→광전 코어",
+      "canvas": [
+        48,
+        40
+      ],
+      "pivot": [
+        24,
+        36
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r05_orbit16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/enemy_r05_panel_butterfly.png",
+      "imagegenCallArtifacts": [
+        "exec-3cf2458c-9e02-4287-998b-ffba161c2a4c.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/enemy_r05_panel_butterfly.png",
+      "file": "art-export/issue-45-r5-r6/production/enemy_r05_panel_butterfly.png",
+      "sourceSha256": "b1a3b7f6cf786547019f289349646ee370959e281fd4cf6c2eaf5997ce6f2e09",
+      "sha256": "9c37dae639699bebb0e52cb8e37ed5c01c4fabfa838a4f7ec1adb6a9b3444c62",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 7992,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "acfb7592b716b30bdef5ecf49d1d8eeffea2fbc26d90c8e8aa0e685d88acc06e"
+    },
+    {
+      "id": "enemy_r05_antenna_mantis",
+      "regionId": "r05",
+      "entityId": "antenna_mantis",
+      "nameKo": "안테나사마귀",
+      "nameEn": "Antenna Mantis",
+      "class": "normal",
+      "kind": "enemy_medium",
+      "behaviorId": "antenna_beam",
+      "behaviorKo": "안테나 집게 빔",
+      "weakness": "cut",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "안테나→집게→송신기",
+      "canvas": [
+        48,
+        48
+      ],
+      "pivot": [
+        24,
+        43
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r05_orbit16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/enemy_r05_antenna_mantis.png",
+      "imagegenCallArtifacts": [
+        "exec-25c4303d-7662-477a-b4dc-2b754a291d12.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/enemy_r05_antenna_mantis.png",
+      "file": "art-export/issue-45-r5-r6/production/enemy_r05_antenna_mantis.png",
+      "sourceSha256": "fb84df934617d175e026bdccdb3547bbf8a8b46b683eac6f188c4fbfc0f52837",
+      "sha256": "c36cd41fa7595dcabe7da06c86575cd76fefa1527aa6f412d3493a78c8e96668",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 18748,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "dd328d919bf9433726a24570c941c5b667716dae80b4a0eb1f08e38b7019b9f7"
+    },
+    {
+      "id": "enemy_r05_capsule_turtle",
+      "regionId": "r05",
+      "entityId": "capsule_turtle",
+      "nameKo": "캡슐거북",
+      "nameEn": "Capsule Turtle",
+      "class": "normal",
+      "kind": "enemy_medium",
+      "behaviorId": "capsule_reentry",
+      "behaviorKo": "재진입 가열 돌진",
+      "weakness": "cooling",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "열차폐판→캡슐 문→코어",
+      "canvas": [
+        48,
+        48
+      ],
+      "pivot": [
+        24,
+        43
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r05_orbit16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/enemy_r05_capsule_turtle.png",
+      "imagegenCallArtifacts": [
+        "exec-658e9c7a-6236-4de3-a61d-796090ba1ed2.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/enemy_r05_capsule_turtle.png",
+      "file": "art-export/issue-45-r5-r6/production/enemy_r05_capsule_turtle.png",
+      "sourceSha256": "39d8d8ddd980b06d0f86963992a6408ea45daed812bcc02bbb78cec50bbb4885",
+      "sha256": "a4f5afc93a5de3a407a7949041b1e784551b370332e1fbdb305556c6b0ed6d34",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 6314,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "0c9fdfa17ecc5efb61e5309416e53cc56eb55755d672eeb30e5f3037d326119d"
+    },
+    {
+      "id": "enemy_r05_rocket_mole",
+      "regionId": "r05",
+      "entityId": "rocket_mole",
+      "nameKo": "로켓두더지",
+      "nameEn": "Rocket Mole",
+      "class": "normal",
+      "kind": "enemy_medium",
+      "behaviorId": "zero_g_burrow",
+      "behaviorKo": "잔해 뒤 잠복",
+      "weakness": "electric",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "노즐→드릴 코→연료전지",
+      "canvas": [
+        48,
+        48
+      ],
+      "pivot": [
+        24,
+        43
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r05_orbit16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/enemy_r05_rocket_mole.png",
+      "imagegenCallArtifacts": [
+        "exec-75f97246-7b2b-46e7-b8e9-c26c04ac3205.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/enemy_r05_rocket_mole.png",
+      "file": "art-export/issue-45-r5-r6/production/enemy_r05_rocket_mole.png",
+      "sourceSha256": "8252b698c1d1df80f41daa96433be9bcaad3c1c055e2d347faa5273683479a51",
+      "sha256": "b128ab34a596e3894dd2a291d5c8ed21fe1c0fb110a756858485215a6a5cfacc",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 11817,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "6ef219d41b62f61e1360e3425970eaf3e6d8cc58f0d3a2ba27eff8ca00cc0a65"
+    },
+    {
+      "id": "elite_r05_docking_golem",
+      "regionId": "r05",
+      "entityId": "docking_golem",
+      "nameKo": "도킹골렘",
+      "nameEn": "Docking Golem",
+      "class": "elite",
+      "kind": "enemy_large",
+      "behaviorId": "paired_docking_arms",
+      "behaviorKo": "좌우 도킹 암 동시 파괴",
+      "weakness": "cut",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "두 암을 3초 안에→중앙 포트",
+      "canvas": [
+        64,
+        64
+      ],
+      "pivot": [
+        32,
+        58
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r05_orbit16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/elite_r05_docking_golem.png",
+      "imagegenCallArtifacts": [
+        "exec-66d27ed5-2350-424a-964c-623b04b050a5.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/elite_r05_docking_golem.png",
+      "file": "art-export/issue-45-r5-r6/production/elite_r05_docking_golem.png",
+      "sourceSha256": "4ace70c5e0c1b87444390e1833a250335ef83faffb3567b97da63e07730ecc36",
+      "sha256": "ae4ef2e4a4cb4b913d9692024ee59d56d1a0693364f2693d311a247e6416d14b",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 11514,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "adeebbbb12cf9d78f5cbfd40ee4f809664e78f2bd423858e7609f8f619aa6ad9"
+    },
+    {
+      "id": "elite_r05_dish_starfish",
+      "regionId": "r05",
+      "entityId": "dish_starfish",
+      "nameKo": "접시안테나불가사리",
+      "nameEn": "Dish Starfish",
+      "class": "elite",
+      "kind": "enemy_large",
+      "behaviorId": "five_dish_reflection",
+      "behaviorKo": "다섯 접시로 빔 반사",
+      "weakness": "cooling",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "접시 5개 각도 정렬→수신 코어",
+      "canvas": [
+        64,
+        64
+      ],
+      "pivot": [
+        32,
+        58
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r05_orbit16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/elite_r05_dish_starfish.png",
+      "imagegenCallArtifacts": [
+        "exec-ef326405-684f-4bb3-95c1-77b3e6f7126f.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/elite_r05_dish_starfish.png",
+      "file": "art-export/issue-45-r5-r6/production/elite_r05_dish_starfish.png",
+      "sourceSha256": "bcf93a6e191a30250db762bdadb50d958a41a6075051752f387f4d57a9fedcb1",
+      "sha256": "c5bd50bf203dc28c4796334700491d891948315f31974983a00c2a794f4a4c77",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 9768,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "dd73c964fbf4ea14af94b08494ed0335f2d3236ac2eb03a8beea8f74ab81e3c8"
+    },
+    {
+      "id": "boss_r05_solar_sail_ray",
+      "regionId": "r05",
+      "entityId": "solar_sail_ray",
+      "nameKo": "태양돛 가오리",
+      "nameEn": "Solar-Sail Ray",
+      "class": "boss",
+      "kind": "boss",
+      "behaviorId": "reflective_solar_beam",
+      "behaviorKo": "반사 날개와 태양광 빔",
+      "weakness": "cooling",
+      "secondaryWeaknesses": [
+        "electric"
+      ],
+      "breakSequenceKo": "반사각 날개 선택→패널 접기",
+      "canvas": [
+        192,
+        112
+      ],
+      "pivot": [
+        96,
+        106
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r05_orbit16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/boss_r05_solar_sail_ray.png",
+      "imagegenCallArtifacts": [
+        "exec-83d67779-9acd-491a-82d9-48bf478f3f23.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/boss_r05_solar_sail_ray.png",
+      "file": "art-export/issue-45-r5-r6/production/boss_r05_solar_sail_ray.png",
+      "sourceSha256": "0140fe326f6d90d027fab89f2d2446757ea0412820a80e17912a55aded2b240e",
+      "sha256": "0a2358c536c5284b0ee5adbd72a27b9050154bafd21071a94da9799168cdbcf9",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 14148,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "13c1bd5ef213fd023d92b327c36d9438262db4b6a7a9f808444b50f9e5cda7ec"
+    },
+    {
+      "id": "boss_r05_orbital_trash_dragon",
+      "regionId": "r05",
+      "entityId": "orbital_trash_dragon",
+      "nameKo": "궤도 쓰레기 용",
+      "nameEn": "Orbital Trash Dragon",
+      "class": "boss",
+      "kind": "boss",
+      "behaviorId": "debris_meteor_wings",
+      "behaviorKo": "패널 날개와 잔해 유성",
+      "weakness": "cut",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "날개 패널 3개 순서 절단→중력 갈퀴",
+      "canvas": [
+        208,
+        160
+      ],
+      "pivot": [
+        104,
+        152
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r05_orbit16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/boss_r05_orbital_trash_dragon.png",
+      "imagegenCallArtifacts": [
+        "exec-a5f89ba9-72ed-451d-9a9c-8f14fd0cf94b.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/boss_r05_orbital_trash_dragon.png",
+      "file": "art-export/issue-45-r5-r6/production/boss_r05_orbital_trash_dragon.png",
+      "sourceSha256": "2765d774aac8946f31527503839d01868ff75f73b8d3378f6ba8fcc4de1decb2",
+      "sha256": "0aba95c8a45533cea97538e80cda1fd1d02c18344007af499750b2b9cfe03d18",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 27545,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "631bc632943f7fef5297902c97f43050ebd60bb577d82862284e2a67649510a2"
+    },
+    {
+      "id": "background_r05_orbital_debris_belt",
+      "regionId": "r05",
+      "entityId": "orbital_debris_belt",
+      "nameKo": "궤도 잔해권 전장",
+      "nameEn": "Orbital Debris Belt",
+      "class": "background",
+      "kind": "background",
+      "behaviorId": "static_battle_lane",
+      "behaviorKo": "중앙 전투 레인 확보",
+      "weakness": "none",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "없음",
+      "canvas": [
+        360,
+        572
+      ],
+      "pivot": [
+        0,
+        572
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r05_orbit16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/background_r05_orbital_debris_belt.png",
+      "imagegenCallArtifacts": [
+        "exec-d9558c69-5eb2-4d46-a582-23cf466d2bfd.png"
+      ],
+      "file": "art-export/issue-45-r5-r6/production/background_r05_orbital_debris_belt.png",
+      "sourceSha256": "de9b2188edb654f5dd1e035fbdca77ccc82cdee8b32a1e404e06741d0c07439d",
+      "sha256": "40a3e188b5a7fe8b5d3536c1928303c288bdc282e550761a8f5d7e8f53669039",
+      "verified": {
+        "officialChromaHelper": false,
+        "transparentEdgePixels": 0,
+        "transparentCorners": false,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      }
+    },
+    {
+      "id": "enemy_r06_lunar_bus_beetle",
+      "regionId": "r06",
+      "entityId": "lunar_bus_beetle",
+      "nameKo": "월면버스풍뎅이",
+      "nameEn": "Lunar-Bus Beetle",
+      "class": "normal",
+      "kind": "enemy_wide",
+      "behaviorId": "low_gravity_jump",
+      "behaviorKo": "저중력 점프",
+      "weakness": "impact",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "버스 지붕→차륜 날개→월면 코어",
+      "canvas": [
+        64,
+        48
+      ],
+      "pivot": [
+        32,
+        43
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r06_civilization16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/enemy_r06_lunar_bus_beetle.png",
+      "imagegenCallArtifacts": [
+        "exec-1027b993-9db6-48af-a38a-44cf72bacb80.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/enemy_r06_lunar_bus_beetle.png",
+      "file": "art-export/issue-45-r5-r6/production/enemy_r06_lunar_bus_beetle.png",
+      "sourceSha256": "3c7be5d0d91d1d7affb27e5e319efb0182407ea7b3bec3c80da5c5d451f59ff4",
+      "sha256": "74c53fbf128de8efb22cf87f6282330df72c512dce6401782d842857da6c4281",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 6554,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "daa884586c5541262650f5bf7172dc7b9f469586e063379f59233c90881675fd"
+    },
+    {
+      "id": "enemy_r06_oxygen_tank_sheep",
+      "regionId": "r06",
+      "entityId": "oxygen_tank_sheep",
+      "nameKo": "산소통양",
+      "nameEn": "Oxygen-Tank Sheep",
+      "class": "normal",
+      "kind": "enemy_medium",
+      "behaviorId": "pressure_charge",
+      "behaviorKo": "압력 돌진",
+      "weakness": "cut",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "압력계→산소통 뿔→밸브",
+      "canvas": [
+        48,
+        48
+      ],
+      "pivot": [
+        24,
+        43
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r06_civilization16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/enemy_r06_oxygen_tank_sheep.png",
+      "imagegenCallArtifacts": [
+        "exec-1879cc2e-3ce8-420c-a2c1-470274727867.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/enemy_r06_oxygen_tank_sheep.png",
+      "file": "art-export/issue-45-r5-r6/production/enemy_r06_oxygen_tank_sheep.png",
+      "sourceSha256": "c7e769bf3e8dbb786e39d917717f3e10b1e82db6c4629b248908e5f408be5201",
+      "sha256": "87adf30eb65d5e79b6c71d6879f49a214655fdaad3fd84770647deb52c8a1ce1",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 9928,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "624f7d5698ee50ef4ddc62cbc792aff6b209a91e69d4376240c340e97b237224"
+    },
+    {
+      "id": "enemy_r06_gear_flower",
+      "regionId": "r06",
+      "entityId": "gear_flower",
+      "nameKo": "톱니꽃",
+      "nameEn": "Gear Flower",
+      "class": "normal",
+      "kind": "enemy_medium",
+      "behaviorId": "gear_reassemble",
+      "behaviorKo": "톱니 꽃잎 재조립",
+      "weakness": "heat",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "꽃잎 4개 동시 열→중앙 축",
+      "canvas": [
+        48,
+        48
+      ],
+      "pivot": [
+        24,
+        43
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r06_civilization16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/enemy_r06_gear_flower.png",
+      "imagegenCallArtifacts": [
+        "exec-e4b45e73-618f-409b-bc0d-cb6a023aab85.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/enemy_r06_gear_flower.png",
+      "file": "art-export/issue-45-r5-r6/production/enemy_r06_gear_flower.png",
+      "sourceSha256": "2a2f40bbab78a25a28dc76a92a1b7de4bc4bc3e8a74ba95232686c916d01e274",
+      "sha256": "ef17ad608da470b5a8180fa589648e29c89dc7f8ece956cd76f4ac5bb10e1dc8",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 16044,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "77cca5dd48326aa82938b392416c66527fb9b4a13e652946aed68bdfb291b460"
+    },
+    {
+      "id": "enemy_r06_archivist_giant",
+      "regionId": "r06",
+      "entityId": "archivist_giant",
+      "nameKo": "기록관거인",
+      "nameEn": "Archivist Giant",
+      "class": "normal",
+      "kind": "enemy_large",
+      "behaviorId": "recorded_attack_echo",
+      "behaviorKo": "직전 공격 기록 복제",
+      "weakness": "electric",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "기록판→도장 팔→메모리 코어",
+      "canvas": [
+        64,
+        64
+      ],
+      "pivot": [
+        32,
+        58
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r06_civilization16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/enemy_r06_archivist_giant.png",
+      "imagegenCallArtifacts": [
+        "exec-4684f982-cdc9-4527-bb10-70ee80a0a7dd.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/enemy_r06_archivist_giant.png",
+      "file": "art-export/issue-45-r5-r6/production/enemy_r06_archivist_giant.png",
+      "sourceSha256": "ba8fd81145a4e06ee58de5ec4190544ca7a41181f6bb6e1124f16a0dd86a7ee9",
+      "sha256": "81af06c63f0d3dfade625742a4676cf53e1d09e73c8d2fd215c61b514fd1f10a",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 17813,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "e889d849623b711469fb656e017abc3480f473cc075ef66ee51772fc3bb1ad98"
+    },
+    {
+      "id": "elite_r06_time_compressor",
+      "regionId": "r06",
+      "entityId": "time_compressor",
+      "nameKo": "시간압축기",
+      "nameEn": "Time Compressor",
+      "class": "elite",
+      "kind": "enemy_large",
+      "behaviorId": "alternating_time_scale",
+      "behaviorKo": "공격 간격 1배와 2배 교대",
+      "weakness": "impact",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "느린 톱니→빠른 톱니→진자",
+      "canvas": [
+        64,
+        64
+      ],
+      "pivot": [
+        32,
+        58
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r06_civilization16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/elite_r06_time_compressor.png",
+      "imagegenCallArtifacts": [
+        "exec-c69b6292-cd3c-4fc7-94ef-f97f55905908.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/elite_r06_time_compressor.png",
+      "file": "art-export/issue-45-r5-r6/production/elite_r06_time_compressor.png",
+      "sourceSha256": "725c24ee29cbdddb0939272368545d4636d888b701d8043da177aeb69825a573",
+      "sha256": "1d85c815756b68520b394fb14e6df2bc377593bd66d6bf5d3824e175c819164b",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 8780,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "258253da883f03cd0d1b0d53e90bbc1bf90a0025ab938c9b7689e28d7939b455"
+    },
+    {
+      "id": "elite_r06_memory_incinerator_librarian",
+      "regionId": "r06",
+      "entityId": "memory_incinerator_librarian",
+      "nameKo": "기억소각사서",
+      "nameEn": "Memory Incinerator Librarian",
+      "class": "elite",
+      "kind": "enemy_large",
+      "behaviorId": "erase_recorded_buff",
+      "behaviorKo": "기록 한 줄씩 소각해 강화 제거",
+      "weakness": "cooling",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "소각 서랍 3개→기록 집게→냉각 코어",
+      "canvas": [
+        64,
+        64
+      ],
+      "pivot": [
+        32,
+        58
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r06_civilization16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/elite_r06_memory_incinerator_librarian.png",
+      "imagegenCallArtifacts": [
+        "exec-1c738174-943e-4ea4-a04f-b852b491f3de.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/elite_r06_memory_incinerator_librarian.png",
+      "file": "art-export/issue-45-r5-r6/production/elite_r06_memory_incinerator_librarian.png",
+      "sourceSha256": "7d7e9d7bc780398c1056c4a628b02a430143e80dcf673d7e968643f921934a66",
+      "sha256": "ea7736ffa321eab2b71692e444c515a2d9de169a9008b908a7515fb2ab280d11",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 13897,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "2a73fa08f8d5a849edbb5d3a0f1fd6231e90224004003361e0962f9164c23ab7"
+    },
+    {
+      "id": "boss_r06_reverse_clock_tower",
+      "regionId": "r06",
+      "entityId": "reverse_clock_tower",
+      "nameKo": "역행 시계탑",
+      "nameEn": "Reverse Clock Tower",
+      "class": "boss",
+      "kind": "boss",
+      "behaviorId": "five_second_echo",
+      "behaviorKo": "5초 전 공격 복제와 시곗바늘 쓸기",
+      "weakness": "impact",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "정방향 톱니 3개 고정→과거 파편",
+      "canvas": [
+        192,
+        192
+      ],
+      "pivot": [
+        96,
+        184
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r06_civilization16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/boss_r06_reverse_clock_tower.png",
+      "imagegenCallArtifacts": [
+        "exec-0e04773a-ba9e-4966-9863-722af857f120.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/boss_r06_reverse_clock_tower.png",
+      "file": "art-export/issue-45-r5-r6/production/boss_r06_reverse_clock_tower.png",
+      "sourceSha256": "6b177f4bc238b963c94eb5a2e2a2e3f3ea40c9420cbf8b08aa6c7086bafa02fd",
+      "sha256": "c8dfea4e65a64d151ab2e38ded85886c61c3fbf5481fb48ead0026363caa1488",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 12633,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "60e2c7a833e89f27c87316d6e18415af1cf3c64d3ae2cc49ad8c2739fceac46c"
+    },
+    {
+      "id": "boss_r06_final_disposal_protocol",
+      "regionId": "r06",
+      "entityId": "final_disposal_protocol",
+      "nameKo": "최종 처리 규약",
+      "nameEn": "Final Disposal Protocol",
+      "class": "boss",
+      "kind": "boss",
+      "behaviorId": "protocol_three_phase",
+      "behaviorKo": "분류 삭제·시간 역전·백지화 3단계",
+      "weakness": "electric",
+      "secondaryWeaknesses": [
+        "cut",
+        "impact",
+        "heat",
+        "cooling"
+      ],
+      "breakSequenceKo": "기억 잔해 중 보존 선택→별 나사 장착",
+      "canvas": [
+        280,
+        220
+      ],
+      "pivot": [
+        140,
+        212
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r06_civilization16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/boss_r06_final_disposal_protocol.png",
+      "imagegenCallArtifacts": [
+        "exec-3ef29bd8-636f-4889-b76f-6acc40460d6e.png"
+      ],
+      "transparentFile": "art-source/issue-45-r5-r6/transparent/boss_r06_final_disposal_protocol.png",
+      "file": "art-export/issue-45-r5-r6/production/boss_r06_final_disposal_protocol.png",
+      "sourceSha256": "c4218a7e1c13a87409cf37a4aee38e27614b34a716db9a09ce765da2411b94b5",
+      "sha256": "2179b7e3e5be5553247826cd3e642ceda8f71bda5ea2c9176af85118a735e40a",
+      "verified": {
+        "officialChromaHelper": true,
+        "transparentEdgePixels": 30634,
+        "transparentCorners": true,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      },
+      "transparentSha256": "ad9bf2a8e7fde46ad12ba37a7854c93bbd714b1085fda5703221d35f9d030e21"
+    },
+    {
+      "id": "background_r06_lunar_whiteout_plant",
+      "regionId": "r06",
+      "entityId": "lunar_whiteout_plant",
+      "nameKo": "달 도시 백지 처리장",
+      "nameEn": "Lunar Whiteout Plant",
+      "class": "background",
+      "kind": "background",
+      "behaviorId": "static_battle_lane",
+      "behaviorKo": "중앙 전투 레인 확보",
+      "weakness": "none",
+      "secondaryWeaknesses": [],
+      "breakSequenceKo": "없음",
+      "canvas": [
+        360,
+        572
+      ],
+      "pivot": [
+        0,
+        572
+      ],
+      "paletteFile": "art-source/issue-45-r5-r6/palettes/r06_civilization16.gpl",
+      "scalePolicy": "integer_nearest",
+      "status": "production_ready",
+      "sourceFile": "art-source/issue-45-r5-r6/originals/background_r06_lunar_whiteout_plant.png",
+      "imagegenCallArtifacts": [
+        "exec-adccee74-052b-4ce2-806b-eebf4c03fdd2.png"
+      ],
+      "file": "art-export/issue-45-r5-r6/production/background_r06_lunar_whiteout_plant.png",
+      "sourceSha256": "669920c35965d50cebfaf047200cd0a513e0d14df732440d6dd35250fc325024",
+      "sha256": "548c0e05115c5a1e191d3529d0fc4ee14be2d36f0e33d52fe89463c696991c0f",
+      "verified": {
+        "officialChromaHelper": false,
+        "transparentEdgePixels": 0,
+        "transparentCorners": false,
+        "greenFringePixels": 0,
+        "binaryAlpha": true,
+        "strictPalette": true
+      }
+    }
+  ]
+}

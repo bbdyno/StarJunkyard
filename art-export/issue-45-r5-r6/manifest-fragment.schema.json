@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://starjunkyard.local/schemas/issue-45-r5-r6-manifest-fragment.json",
+  "title": "Issue 45 R5-R6 production pixel pack fragment",
+  "type": "object",
+  "required": ["schemaVersion", "issue", "sourceContract", "generationLog", "regions", "assets"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {"type": "string"},
+    "schemaVersion": {"const": 1},
+    "issue": {"const": 45},
+    "sourceContract": {"$ref": "#/$defs/hashedFile"},
+    "generationLog": {"$ref": "#/$defs/hashedFile"},
+    "regions": {
+      "type": "array", "minItems": 2, "maxItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["id", "nameKo", "paletteFile", "paletteAnchors", "eliteStageAllocation"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"enum": ["r05", "r06"]},
+          "nameKo": {"type": "string"},
+          "paletteFile": {"type": "string"},
+          "paletteAnchors": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "string", "pattern": "^#[A-F0-9]{6}$"}},
+          "eliteStageAllocation": {
+            "type": "array", "minItems": 6, "maxItems": 6,
+            "items": {
+              "type": "object", "required": ["localStage", "globalStage", "entityId"], "additionalProperties": false,
+              "properties": {
+                "localStage": {"enum": [5, 15, 25, 35, 45, 55]},
+                "globalStage": {"type": "integer", "minimum": 245, "maximum": 355},
+                "entityId": {"type": "string", "pattern": "^[a-z0-9_]+$"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "assets": {
+      "type": "array", "minItems": 18, "maxItems": 18,
+      "items": {"$ref": "#/$defs/asset"}
+    }
+  },
+  "$defs": {
+    "hashedFile": {
+      "type": "object", "required": ["path", "sha256"], "additionalProperties": false,
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "asset": {
+      "type": "object",
+      "required": ["id", "regionId", "entityId", "nameKo", "nameEn", "class", "kind", "behaviorId", "behaviorKo", "weakness", "secondaryWeaknesses", "breakSequenceKo", "canvas", "pivot", "paletteFile", "scalePolicy", "status", "sourceFile", "imagegenCallArtifacts", "file"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+        "regionId": {"enum": ["r05", "r06"]},
+        "entityId": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+        "nameKo": {"type": "string"},
+        "nameEn": {"type": "string"},
+        "class": {"enum": ["normal", "elite", "boss", "background"]},
+        "kind": {"enum": ["enemy_medium", "enemy_wide", "enemy_large", "boss", "background"]},
+        "behaviorId": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+        "behaviorKo": {"type": "string"},
+        "weakness": {"enum": ["none", "impact", "cut", "electric", "heat", "cooling"]},
+        "secondaryWeaknesses": {"type": "array", "uniqueItems": true, "items": {"enum": ["impact", "cut", "electric", "heat", "cooling"]}},
+        "breakSequenceKo": {"type": "string"},
+        "canvas": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 1}},
+        "pivot": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 0}},
+        "paletteFile": {"type": "string"},
+        "scalePolicy": {"const": "integer_nearest"},
+        "status": {"enum": ["planned", "production_ready"]},
+        "sourceFile": {"type": "string"},
+        "imagegenCallArtifacts": {"type": "array", "minItems": 1, "maxItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^exec-[a-f0-9-]+\\.png$"}},
+        "transparentFile": {"type": "string"},
+        "file": {"type": "string"},
+        "sourceSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "transparentSha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "verified": {
+          "type": "object",
+          "required": ["officialChromaHelper", "transparentEdgePixels", "binaryAlpha", "transparentCorners", "strictPalette", "greenFringePixels"],
+          "additionalProperties": false,
+          "properties": {
+            "officialChromaHelper": {"type": "boolean"},
+            "transparentEdgePixels": {"type": "integer", "minimum": 0},
+            "binaryAlpha": {"const": true},
+            "transparentCorners": {"type": "boolean"},
+            "strictPalette": {"const": true},
+            "greenFringePixels": {"const": 0}
+          }
+        }
+      }
+    }
+  }
+}

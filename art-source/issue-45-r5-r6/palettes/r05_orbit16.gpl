@@ -1,0 +1,20 @@
+GIMP Palette
+Name: StarJunkyard R05 Orbit 16
+Columns: 8
+# Strict R5 orbital debris palette; includes the four world contract anchors.
+ 18  20  28	Outline Ink
+  9  11  26	Region Black Navy
+ 24  29  58	Deep Orbit Navy
+ 45  50 109	Debris Shadow Indigo
+ 74  78 155	Region Indigo
+106  96 184	Ion Violet Shadow
+140 110 217	Region Ion Violet
+180 154 239	Star Violet Light
+216 243 255	Region Ice White
+242 240 233	Work White
+ 83 110 122	Cold Hull Shadow
+131 155 165	Cold Hull Steel
+ 92 200 198	Ion Cyan
+242 193  78	Beacon Gold
+199 118  79	Hazard Rust
+232 121 164	Signal Magenta

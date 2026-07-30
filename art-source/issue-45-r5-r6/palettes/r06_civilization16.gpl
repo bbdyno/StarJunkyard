@@ -1,0 +1,20 @@
+GIMP Palette
+Name: StarJunkyard R06 Civilization 16
+Columns: 8
+# Strict R6 lunar civilization palette; includes the four world contract anchors.
+ 18  20  28	Outline Ink
+ 23  18  31	Region Black Plum
+ 43  34  52	Memory Deep Plum
+ 70  52  79	Archive Plum
+ 61  64  72	Machine Charcoal
+110 114 122	Lunar Grey
+167 160 168	Lunar Light Grey
+242 240 233	Work White
+107  91  62	Region Ancient Bronze
+138 115  71	Archive Brass
+217 180  74	Region Memory Gold
+241 212 122	Memory Gold Light
+120  53  86	Deep Memory Magenta
+228  90 157	Region Memory Magenta
+243 138 189	Memory Pink Light
+ 94 187 177	Preservation Teal
