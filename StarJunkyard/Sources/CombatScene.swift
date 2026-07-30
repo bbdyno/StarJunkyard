@@ -7,6 +7,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     var onAccessibilitySummary: ((String) -> Void)?
     var onSave: ((GameSave) -> Void)?
     var onReturnToSaveSelection: (() -> Void)?
+    var onFeedback: ((GameFeedbackEvent) -> Void)?
+    var onAnalyticsEvent: ((GameAnalyticsEvent) -> Void)?
 
     @MainActor
     private final class ActiveEnemy {
@@ -452,6 +454,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
     private func manualSalvage(token: Int) {
         guard let enemy = activeEnemies.first(where: { $0.token == token }), enemy.hp > 0 else { return }
+        onFeedback?(.manualSalvage)
         credits += manualReward
         manualTapCount += 1
         playMechanicAttack()
@@ -774,6 +777,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
     private func awardDismantleRewards(_ enemy: ActiveEnemy) -> Int {
         let stage = content.stages[stageIndex]
+        onFeedback?(.enemyDismantled)
+        onAnalyticsEvent?(.enemyDismantled(id: enemy.spec.id, enemyClass: enemy.spec.enemyClass, stage: stage.number))
         credits += stage.baseReward * stage.rewardMultiplierPpm / 1_000_000
         let baseParts = enemy.spec.enemyClass == "boss" ? 15 : (enemy.spec.enemyClass == "elite" ? 6 : 3)
         parts += baseParts + magnetLevel - 1
@@ -1779,6 +1784,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func playRecoveryMilestone(_ milestone: Int) {
+        onFeedback?(.recoveryMilestone)
+        onAnalyticsEvent?(.shelterMilestone(milestone))
         let bannerPanel = PixelArt.panel(size: CGSize(width: 240, height: 56), name: "recovery_milestone")
         bannerPanel.position = CGPoint(x: 60, y: 540)
         bannerPanel.zPosition = 86

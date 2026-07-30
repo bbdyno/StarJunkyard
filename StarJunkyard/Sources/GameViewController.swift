@@ -5,16 +5,26 @@ final class GameViewController: UIViewController {
     private let gameView = SKView(frame: .zero)
     private let content: VerticalSliceContent
     private let saveStore: GameSaveStore
+    private let settingsStore: GameSettingsStore
+    private let analytics: any GameAnalytics
     private var combatScene: CombatScene?
     private var saveSelectionScene: SaveSelectionScene?
     private lazy var cloudSave = GameCenterCloudSave(presenter: self, store: saveStore)
+    private lazy var feedback = IOSGameFeedbackService(settings: settingsStore)
 
     init(
         content: VerticalSliceContent = ContentLoader.loadVerticalSlice(),
-        saveStore: GameSaveStore = GameSaveStore()
+        saveStore: GameSaveStore = GameSaveStore(),
+        settingsStore: GameSettingsStore = GameSettingsStore(),
+        analytics: (any GameAnalytics)? = nil
     ) {
         self.content = content
         self.saveStore = saveStore
+        self.settingsStore = settingsStore
+        self.analytics = analytics ?? ConsentGatedGameAnalytics(
+            consentStore: AnalyticsConsentStore(),
+            destination: LocalGameAnalyticsRecorder()
+        )
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -35,7 +45,8 @@ final class GameViewController: UIViewController {
         gameView.preferredFramesPerSecond = ProcessInfo.processInfo.isLowPowerModeEnabled ? 30 : 60
         gameView.isAccessibilityElement = true
         gameView.accessibilityTraits = [.allowsDirectInteraction, .updatesFrequently]
-        gameView.accessibilityLabel = "저장 선택 화면. 계속하기, 새 게임, Game Center 불러오기를 선택할 수 있습니다."
+        gameView.accessibilityLabel = GameText.localized(.accessibilitySaveSelection)
+        analytics.record(.appLaunched)
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-capture-boss-dismantle") {
             var captureSave = GameSave.newGame()
@@ -170,8 +181,9 @@ final class GameViewController: UIViewController {
         scene.applyViewport(PixelViewport(view: gameView))
         saveSelectionScene = scene
         combatScene = nil
-        gameView.accessibilityLabel = "저장 선택 화면. 저장된 진행을 계속하거나 새 게임을 시작할 수 있습니다."
-        gameView.presentScene(scene, transition: .fade(withDuration: 0.18))
+        gameView.accessibilityLabel = GameText.localized(.accessibilitySaveSelection)
+        let transitionDuration = settingsStore.load().reduceMotion ? 0 : 0.18
+        gameView.presentScene(scene, transition: .fade(withDuration: transitionDuration))
     }
 
     private func startGame(with initialSave: GameSave, showFacilityPanelOnLaunch: Bool = false) {
@@ -184,9 +196,16 @@ final class GameViewController: UIViewController {
         scene.onSave = { [weak self] save in try? self?.saveStore.save(save) }
         scene.onAccessibilitySummary = { [weak gameView] summary in gameView?.accessibilityLabel = summary }
         scene.onReturnToSaveSelection = { [weak self] in self?.presentSaveSelection() }
+        scene.onFeedback = { [weak self] event in self?.feedback.perform(event) }
+        scene.onAnalyticsEvent = { [weak self] event in self?.analytics.record(event) }
         combatScene = scene
         saveSelectionScene = nil
-        gameView.presentScene(scene, transition: .doorsOpenVertical(withDuration: 0.22))
+        gameView.accessibilityLabel = GameText.localized(.accessibilityCombat)
+        analytics.record(.combatStarted(stage: initialSave.highestStage))
+        let transition: SKTransition = settingsStore.load().reduceMotion
+            ? .fade(withDuration: 0)
+            : .doorsOpenVertical(withDuration: 0.22)
+        gameView.presentScene(scene, transition: transition)
     }
 
     deinit {

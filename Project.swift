@@ -20,7 +20,9 @@ let project = Project(
             bundleId: "com.bbdyno.starjunkyard",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .extendingDefault(with: [
+                "CFBundleDevelopmentRegion": "ko",
                 "CFBundleDisplayName": "별을 줍는 고물상",
+                "CFBundleLocalizations": ["ko", "en"],
                 "UIApplicationSceneManifest": [
                     "UIApplicationSupportsMultipleScenes": false,
                     "UISceneConfigurations": [
@@ -37,6 +39,7 @@ let project = Project(
             ]),
             sources: ["StarJunkyard/Sources/**"],
             resources: [
+                "StarJunkyard/Resources/**",
                 "content/**",
                 "golden/**",
                 "art-export/production/**"
