@@ -9,6 +9,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     var onReturnToSaveSelection: (() -> Void)?
     var onFeedback: ((GameFeedbackEvent) -> Void)?
     var onAnalyticsEvent: ((GameAnalyticsEvent) -> Void)?
+    var onLongOperationStarted: ((TimedIdleOperation) -> Void)?
 
     @MainActor
     private final class ActiveEnemy {
@@ -65,6 +66,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private var bossFailureCounts: [String: Int]
     private var pendingBossDismantleStage: Int?
     private var pendingBossBaseParts: Int
+    private var idleOperations: IdleOperationsState
     private var bossDeadlineTick: Int?
     private var bossEncounterPhase: BossEncounterRules.Phase?
     private var pendingBossToken: Int?
@@ -72,6 +74,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private let offlineSeconds: Int
     private let offlineAmount: Int
     private let showFacilityPanelOnLaunch: Bool
+    private let showOperationsPanelOnLaunch: Bool
     private var tutorialStep: Int
     private var accumulator: TimeInterval = 0
     private var lastUpdateTime: TimeInterval = 0
@@ -129,7 +132,12 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         self.init(content: content, save: .newGame())
     }
 
-    init(content: VerticalSliceContent, save: GameSave, showFacilityPanelOnLaunch: Bool = false) {
+    init(
+        content: VerticalSliceContent,
+        save: GameSave,
+        showFacilityPanelOnLaunch: Bool = false,
+        showOperationsPanelOnLaunch: Bool = false
+    ) {
         self.content = content
         enemyByID = Dictionary(uniqueKeysWithValues: content.enemies.map { ($0.id, $0) })
         self.save = save
@@ -162,7 +170,9 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         bossFailureCounts = save.bossFailureCounts
         pendingBossDismantleStage = save.pendingBossDismantleStage
         pendingBossBaseParts = max(0, save.pendingBossBaseParts)
+        idleOperations = save.idleOperations
         self.showFacilityPanelOnLaunch = showFacilityPanelOnLaunch
+        self.showOperationsPanelOnLaunch = showOperationsPanelOnLaunch
         let offline = YardEconomy.offlineIncome(
             rate: YardEconomy.passiveIncome(
                 pressLevel: pressLevel,
@@ -217,7 +227,9 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         spawnCurrentGroup()
         applyViewport(PixelViewport(view: view))
         setLowPowerMode(ProcessInfo.processInfo.isLowPowerModeEnabled)
-        if showFacilityPanelOnLaunch {
+        if showOperationsPanelOnLaunch {
+            openOperations()
+        } else if showFacilityPanelOnLaunch {
             openFacilities(status: offlineReportText)
         } else if !prologueSeen {
             openPrologue()
@@ -295,6 +307,16 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             else if names.contains("buy_sorter") { buyFacility(.sorter) }
             else if names.contains("buy_warehouse") { buyFacility(.warehouse) }
             else if names.contains("collect_yard_income") { collectYardIncome() }
+            else if names.contains("operations_open") { openOperations() }
+            else if names.contains("start_research") { startIdleOperation(.research) }
+            else if names.contains("start_craft") { startIdleOperation(.craft) }
+            else if names.contains("start_expedition") { startIdleOperation(.expedition) }
+            else if let claimName = names.first(where: { $0.hasPrefix("claim_operation_") }) {
+                claimIdleOperation(id: String(claimName.dropFirst("claim_operation_".count)))
+            }
+            else if let finishName = names.first(where: { $0.hasPrefix("free_finish_") }) {
+                finishIdleOperationFree(id: String(finishName.dropFirst("free_finish_".count)))
+            }
             else if names.contains("management_equipment") { openShop() }
             else if names.contains("management_crew") { openCrew() }
             else if names.contains("management_facilities") { openFacilities() }
@@ -1399,6 +1421,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
     private func openFacilities(status: String = "회수 대기 고철은 사라지지 않습니다") {
         beginManagement(.facilities, title: "폐품장 시설", subtitle: "자동 생산 +\(passiveIncomeRate)/초 • 오프라인 최대 8시간")
+        addShopHitArea(name: "operations_open", position: CGPoint(x: 214, y: 580), size: CGSize(width: 108, height: 28))
+        addShopLabel("작업 관리 〉", x: 316, y: 596, size: 8, color: PixelPalette.warningAmber, name: "operations_open", alignment: .right)
         let collect = PixelArt.panel(size: CGSize(width: 292, height: 54), name: "collect_yard_income")
         collect.position = CGPoint(x: 34, y: 468)
         collect.zPosition = 2
@@ -1411,6 +1435,96 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         addFacilityItem(.sorter, level: sorterLevel, y: 305)
         addFacilityItem(.warehouse, level: warehouseLevel, y: 225)
         finishManagement(status: status)
+    }
+
+    private func openOperations(status: String = "완료된 작업은 사라지지 않으며 직접 회수합니다") {
+        IdleOperationsEngine.observe(now: Date(), state: &idleOperations)
+        beginManagement(.facilities, title: "연구 · 제작 · 원정", subtitle: "무료 작업대 2칸 • 원정 슬롯 1칸 • 3분 이하 무료 완료")
+        let now = Date()
+        addOperationRow(.research, y: 438, now: now)
+        addOperationRow(.craft, y: 342, now: now)
+        addOperationRow(.expedition, y: 246, now: now)
+        let wallet = "회로 " + String(idleOperations.circuits) + " • 합금 " + String(idleOperations.alloy)
+        addShopLabel(wallet, x: 50, y: 220, size: 8, color: PixelPalette.lightTeal, alignment: .left)
+        let effectiveStatus = idleOperations.clockSuspect
+            ? "기기 시간이 역행해 완료 판정을 보류했습니다"
+            : status
+        finishManagement(status: effectiveStatus)
+    }
+
+    private func addOperationRow(_ kind: IdleOperationKind, y: Int, now: Date) {
+        let row = PixelArt.panel(size: CGSize(width: 292, height: 78), name: "operation_" + kind.rawValue)
+        row.position = CGPoint(x: 34, y: y)
+        row.zPosition = 2
+        shopLayer.addChild(row)
+        if let operation = idleOperations.active.first(where: { $0.kind == kind }) {
+            let remaining = IdleOperationsRules.remainingSeconds(operation, now: now)
+            addShopLabel(kind.nameKo + " • " + operation.title, x: 50, y: y + 54, size: 10, color: PixelPalette.workWhite, alignment: .left)
+            if remaining == 0 {
+                let name = "claim_operation_" + operation.id
+                addShopHitArea(name: name, position: CGPoint(x: 214, y: y + 8), size: CGSize(width: 96, height: 56))
+                addShopLabel("완료 • 회수", x: 302, y: y + 34, size: 9, color: PixelPalette.recoveryGreen, name: name, alignment: .right)
+            } else {
+                let minutes = remaining / 60
+                let seconds = remaining % 60
+                addShopLabel(String(format: "%02d:%02d 남음", minutes, seconds), x: 50, y: y + 24, size: 9, color: PixelPalette.lightTeal, alignment: .left)
+                if IdleOperationsRules.canFinishFree(operation, now: now) {
+                    let name = "free_finish_" + operation.id
+                    addShopHitArea(name: name, position: CGPoint(x: 214, y: y + 8), size: CGSize(width: 96, height: 56))
+                    addShopLabel("무료 완료", x: 302, y: y + 34, size: 9, color: PixelPalette.warningAmber, name: name, alignment: .right)
+                }
+            }
+        } else {
+            let template = IdleOperationsRules.template(for: kind)
+            let name = "start_" + kind.rawValue
+            addShopLabel(kind.nameKo + " • " + template.title, x: 50, y: y + 54, size: 10, color: PixelPalette.workWhite, name: name, alignment: .left)
+            addShopLabel("예상 " + formatOperationDuration(template.duration), x: 50, y: y + 24, size: 8, color: PixelPalette.lightTeal, name: name, alignment: .left)
+            addShopHitArea(name: name, position: CGPoint(x: 214, y: y + 8), size: CGSize(width: 96, height: 56))
+            addShopLabel("시작  〉", x: 302, y: y + 34, size: 9, color: PixelPalette.warningAmber, name: name, alignment: .right)
+        }
+    }
+
+    private func formatOperationDuration(_ duration: TimeInterval) -> String {
+        let minutes = Int(duration) / 60
+        return minutes >= 60 ? String(minutes / 60) + "시간" : String(minutes) + "분"
+    }
+
+    private func startIdleOperation(_ kind: IdleOperationKind) {
+        do {
+            let operation = try IdleOperationsEngine.start(kind, now: Date(), state: &idleOperations)
+            persist()
+            onLongOperationStarted?(operation)
+            openOperations(status: operation.title + " 작업을 시작했습니다")
+        } catch IdleOperationError.slotFull {
+            openOperations(status: "무료 작업 슬롯이 모두 사용 중입니다")
+        } catch IdleOperationError.alreadyRunning {
+            openOperations(status: kind.nameKo + " 작업이 이미 진행 중입니다")
+        } catch {
+            openOperations(status: "기기 시간을 확인한 뒤 다시 시도하세요")
+        }
+    }
+
+    private func finishIdleOperationFree(id: String) {
+        do {
+            try IdleOperationsEngine.finishFree(id: id, now: Date(), state: &idleOperations)
+            persist()
+            openOperations(status: "3분 이하 작업을 무료로 완료했습니다")
+        } catch {
+            openOperations(status: "무료 완료 가능 시간이 아닙니다")
+        }
+    }
+
+    private func claimIdleOperation(id: String) {
+        do {
+            let reward = try IdleOperationsEngine.claim(id: id, now: Date(), state: &idleOperations)
+            credits += reward.credits
+            parts += reward.parts
+            persist()
+            updateHUD()
+            openOperations(status: "보상 회수 • 고철 +" + String(reward.credits) + " • 부품 +" + String(reward.parts))
+        } catch {
+            openOperations(status: "아직 완료되지 않았거나 이미 회수한 작업입니다")
+        }
     }
 
     private func openRecords() {
@@ -1913,6 +2027,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         save.bossFailureCounts = bossFailureCounts
         save.pendingBossDismantleStage = pendingBossDismantleStage
         save.pendingBossBaseParts = pendingBossBaseParts
+        save.idleOperations = idleOperations
         save.tutorialStep = tutorialStep
         save.combatTick = combatTick
         save.highestStage = max(save.highestStage, content.stages[stageIndex].number)
