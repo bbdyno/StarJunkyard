@@ -137,4 +137,14 @@ extension GameAnalyticsEvent {
     static func shelterMilestone(_ milestone: Int) -> GameAnalyticsEvent {
         GameAnalyticsEvent(.shelterMilestoneReached, parameters: [.milestone: .integer(milestone)])
     }
+
+    static func settingChanged(identifier: String, enabled: Bool) -> GameAnalyticsEvent {
+        GameAnalyticsEvent(
+            .settingChanged,
+            parameters: [
+                .setting: .identifier(identifier),
+                .enabled: .boolean(enabled)
+            ]
+        )
+    }
 }

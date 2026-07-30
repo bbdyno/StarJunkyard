@@ -1,6 +1,9 @@
 "app.title" = "Star Junkyard";
 "accessibility.save_selection" = "Save selection. Continue saved progress or start a new game.";
 "accessibility.combat" = "Junkyard combat. Tap an enemy to dismantle it manually.";
+"accessibility.settings" = "Pixel settings. Tap an option to save it immediately";
+"accessibility.action.salvage" = "Dismantle Current Enemy";
+"accessibility.action.settings" = "Open Settings";
 "settings.title" = "Settings";
 "settings.music" = "Music";
 "settings.sound_effects" = "Sound Effects";
@@ -10,6 +13,10 @@
 "settings.single_tap_actions" = "Single-Tap Actions";
 "settings.analytics_consent" = "Share Play Data";
 "settings.analytics_consent_detail" = "Records privacy-safe events only to improve the game.";
+"settings.console_subtitle" = "Shelter 7 • Sound and Controls Terminal";
+"settings.saved_immediately" = "Changes are saved on this device immediately";
+"settings.audio_section" = "Audio";
+"settings.access_section" = "Accessibility";
 "common.on" = "On";
 "common.off" = "Off";
 "common.close" = "Close";

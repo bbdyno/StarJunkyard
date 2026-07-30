@@ -1,6 +1,9 @@
 "app.title" = "별을 줍는 고물상";
 "accessibility.save_selection" = "저장 선택 화면. 저장된 진행을 계속하거나 새 게임을 시작할 수 있습니다.";
 "accessibility.combat" = "고물상 전투 화면. 적을 탭해 직접 해체할 수 있습니다.";
+"accessibility.settings" = "도트 설정 화면. 각 항목을 탭하면 즉시 저장됩니다";
+"accessibility.action.salvage" = "현재 괴수 직접 해체";
+"accessibility.action.settings" = "설정 열기";
 "settings.title" = "설정";
 "settings.music" = "배경 음악";
 "settings.sound_effects" = "효과음";
@@ -10,6 +13,10 @@
 "settings.single_tap_actions" = "한 번 탭으로 실행";
 "settings.analytics_consent" = "플레이 데이터 공유";
 "settings.analytics_consent_detail" = "개인정보 없이 게임 개선용 이벤트만 기록합니다.";
+"settings.console_subtitle" = "피난처 7호 • 소리와 조작 제어 단말";
+"settings.saved_immediately" = "변경 사항은 이 기기에 즉시 저장됩니다";
+"settings.audio_section" = "소리";
+"settings.access_section" = "접근성";
 "common.on" = "켬";
 "common.off" = "끔";
 "common.close" = "닫기";

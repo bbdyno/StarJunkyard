@@ -7,6 +7,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     var onAccessibilitySummary: ((String) -> Void)?
     var onSave: ((GameSave) -> Void)?
     var onReturnToSaveSelection: (() -> Void)?
+    var onOpenSettings: (() -> Void)?
     var onFeedback: ((GameFeedbackEvent) -> Void)?
     var onAnalyticsEvent: ((GameAnalyticsEvent) -> Void)?
     var onLongOperationStarted: ((TimedIdleOperation) -> Void)?
@@ -80,6 +81,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private var lastUpdateTime: TimeInterval = 0
     private var rng = PCG32(seed: 42, stream: 54)
     private var viewport = PixelViewport.phoneFallback
+    private var gameSettings: GameSettings
+    private var lowPowerModeEnabled = false
 
     private let backdrop = SKSpriteNode(color: PixelPalette.deepNavy, size: logicalSize)
     private let laneRoot = SKNode()
@@ -136,7 +139,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         content: VerticalSliceContent,
         save: GameSave,
         showFacilityPanelOnLaunch: Bool = false,
-        showOperationsPanelOnLaunch: Bool = false
+        showOperationsPanelOnLaunch: Bool = false,
+        settings: GameSettings = .default
     ) {
         self.content = content
         enemyByID = Dictionary(uniqueKeysWithValues: content.enemies.map { ($0.id, $0) })
@@ -186,6 +190,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         offlineAmount = offline.amount
         yardIncomeBank = max(0, save.yardIncomeBank) + offline.amount
         tutorialStep = max(0, save.tutorialStep)
+        gameSettings = settings
         super.init(size: Self.logicalSize)
         anchorPoint = .zero
         backgroundColor = PixelPalette.ink
@@ -258,9 +263,34 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     func setLowPowerMode(_ enabled: Bool) {
+        lowPowerModeEnabled = enabled
+        rainLayer.isHidden = gameSettings.reduceMotion
         rainLayer.children.enumerated().forEach { index, node in
             node.isHidden = enabled && index.isMultiple(of: 2)
         }
+    }
+
+    func applySettings(_ settings: GameSettings) {
+        gameSettings = settings
+        rainLayer.isHidden = settings.reduceMotion
+        [mechanicAnchor, crewAnchor, droneAnchor].forEach { $0.isPaused = settings.reduceMotion }
+        for enemy in activeEnemies {
+            enemy.root.removeAction(forKey: "locomotion")
+            if !settings.reduceMotion, enemy.hp > 0 {
+                enemy.root.run(enemyMotion(enemy.spec.id), withKey: "locomotion")
+            }
+        }
+        refreshShelterRecoveryVisuals()
+        setLowPowerMode(lowPowerModeEnabled)
+    }
+
+    @discardableResult
+    func performPrimaryAccessibilityAction() -> Bool {
+        guard storyOverlayLayer.isHidden, shopLayer.isHidden, pendingBossToken == nil,
+              !bossAwaitingRetry, let target = currentTarget
+        else { return false }
+        manualSalvage(token: target.token)
+        return true
     }
 
     override func update(_ currentTime: TimeInterval) {
@@ -337,6 +367,9 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             openFacilities()
         } else if names.contains("records_open") {
             openRecords()
+        } else if names.contains("settings_menu") {
+            persist()
+            onOpenSettings?()
         } else if names.contains("story_goal") {
             openStoryBrief()
         } else if names.contains("save_menu") {
@@ -345,6 +378,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         } else if names.contains("tutorial_help") {
             tutorialStep = 0
             refreshTutorial()
+        } else if gameSettings.singleTapActions {
+            _ = performPrimaryAccessibilityAction()
         }
     }
 
@@ -637,10 +672,14 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         guard !force else { return }
         switch phase {
         case .clawBroken:
+            onFeedback?(.bossPhaseBreak)
+            playScreenShake(amount: 3)
             spawnBossPhaseBreak(title: "집게 외장 분리", at: enemy.root.position, color: PixelPalette.rust)
             enemy.art.color = PixelPalette.rust
             enemy.art.colorBlendFactor = 0.22
         case .coreExposed:
+            onFeedback?(.bossPhaseBreak)
+            playScreenShake(amount: 4)
             spawnBossPhaseBreak(title: "육각 코어 노출", at: enemy.root.position, color: PixelPalette.warningAmber)
             let core = PixelArt.sprite(blocks: [
                 .init(x: 5, y: 0, width: 10, height: 4, color: PixelPalette.warningAmber),
@@ -775,6 +814,8 @@ final class CombatScene: SKScene, AdaptivePixelScene {
               let stageNumber = pendingBossDismantleStage
         else { return }
         let succeeded = selectedCut == BossEncounterRules.activeCutIndex(stageNumber: stageNumber)
+        onFeedback?(.bossDismantled)
+        playScreenShake(amount: 5)
         parts += BossEncounterRules.bonusParts(baseParts: pendingBossBaseParts, cutSucceeded: succeeded)
         let firstClear = defeatedBossStages.insert(stageNumber).inserted
         if firstClear {
@@ -939,7 +980,9 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             drop.zPosition = -80
             let reset = SKAction.moveBy(x: 0, y: 128, duration: 0)
             let fall = SKAction.moveBy(x: 0, y: -128, duration: 1.0 + Double(index % 4) * 0.12)
-            drop.run(.repeatForever(.sequence([fall, reset])))
+            if !gameSettings.reduceMotion {
+                drop.run(.repeatForever(.sequence([fall, reset])))
+            }
             rainLayer.addChild(drop)
         }
         buildShelterReactor()
@@ -1040,6 +1083,20 @@ final class CombatScene: SKScene, AdaptivePixelScene {
         help.zPosition = 103
         help.name = "tutorial_help"
         hudLayer.addChild(help)
+
+        let settingsHit = SKSpriteNode(color: .clear, size: CGSize(width: 48, height: 44))
+        settingsHit.anchorPoint = .zero
+        settingsHit.position = CGPoint(x: 264, y: 720)
+        settingsHit.zPosition = 102
+        settingsHit.name = "settings_menu"
+        hudLayer.addChild(settingsHit)
+        let settingsMenu = SKLabelNode(fontNamed: "AppleSDGothicNeo-Bold")
+        configureLabel(settingsMenu, size: 8, color: PixelPalette.lightTeal, alignment: .center)
+        settingsMenu.text = "설정"
+        settingsMenu.position = CGPoint(x: 288, y: 742)
+        settingsMenu.zPosition = 103
+        settingsMenu.name = "settings_menu"
+        hudLayer.addChild(settingsMenu)
 
         configureLabel(groupLabel, size: 10, color: PixelPalette.workWhite, alignment: .center)
         groupLabel.position = CGPoint(x: 272, y: 410)
@@ -1381,7 +1438,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
             lamp.alpha = 1
             lamp.color = index < milestone ? PixelPalette.recoveryGreen : PixelPalette.midIron
         }
-        if milestone >= 3 {
+        if milestone >= 3 && !gameSettings.reduceMotion {
             shelterCore.run(.repeatForever(.sequence([
                 .fadeAlpha(to: 0.55, duration: 0), .wait(forDuration: 0.16),
                 .fadeAlpha(to: 1, duration: 0), .wait(forDuration: 0.16)
@@ -1766,6 +1823,9 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func stepLoop(points: [Int], duration: TimeInterval) -> SKAction {
+        guard GameMotionPolicy.allowsDecorativeMotion(settings: gameSettings) else {
+            return .wait(forDuration: 3_600)
+        }
         var actions: [SKAction] = []
         var previous = 0
         for point in points {
@@ -1778,6 +1838,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func playMechanicAttack() {
+        guard !gameSettings.reduceMotion else { return }
         mechanicMotion.removeAction(forKey: "attack")
         mechanicMotion.run(.sequence([
             .moveTo(x: 2, duration: 0), .wait(forDuration: 0.05),
@@ -1788,6 +1849,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func playDroneAttack() {
+        guard !gameSettings.reduceMotion else { return }
         droneMotion.removeAction(forKey: "attack")
         droneMotion.run(.sequence([
             .moveTo(x: 3, duration: 0), .wait(forDuration: 0.05),
@@ -1797,6 +1859,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     }
 
     private func playCrewAttack() {
+        guard !gameSettings.reduceMotion else { return }
         crewMotion.removeAction(forKey: "attack")
         crewMotion.run(.sequence([
             .rotate(toAngle: 0.12, duration: 0), .moveTo(x: 4, duration: 0), .wait(forDuration: 0.06),
@@ -1808,13 +1871,18 @@ final class CombatScene: SKScene, AdaptivePixelScene {
     private func playEnemyHit(_ enemy: ActiveEnemy) {
         enemy.art.removeAction(forKey: "hit")
         enemy.art.color = PixelPalette.workWhite
-        enemy.art.run(.sequence([
+        let actions: [SKAction] = gameSettings.reduceMotion ? [
+            .colorize(withColorBlendFactor: 0.9, duration: 0),
+            .wait(forDuration: 0.04),
+            .colorize(withColorBlendFactor: 0, duration: 0)
+        ] : [
             .group([.moveTo(x: 4, duration: 0), .colorize(withColorBlendFactor: 0.9, duration: 0)]),
             .wait(forDuration: 0.05),
             .group([.moveTo(x: -3, duration: 0), .colorize(withColorBlendFactor: 0, duration: 0)]),
             .wait(forDuration: 0.05),
             .moveTo(x: 0, duration: 0)
-        ]), withKey: "hit")
+        ]
+        enemy.art.run(.sequence(actions), withKey: "hit")
     }
 
     private func spawnProjectile(from source: CGPoint, to enemyPosition: CGPoint, critical: Bool, color suppliedColor: SKColor?, steps: Int, completion: @escaping () -> Void) {
@@ -1899,6 +1967,7 @@ final class CombatScene: SKScene, AdaptivePixelScene {
 
     private func playRecoveryMilestone(_ milestone: Int) {
         onFeedback?(.recoveryMilestone)
+        playScreenShake(amount: 2)
         onAnalyticsEvent?(.shelterMilestone(milestone))
         let bannerPanel = PixelArt.panel(size: CGSize(width: 240, height: 56), name: "recovery_milestone")
         bannerPanel.position = CGPoint(x: 60, y: 540)
@@ -1929,6 +1998,16 @@ final class CombatScene: SKScene, AdaptivePixelScene {
                 .fadeOut(withDuration: 0.10), .removeFromParent()
             ]))
         }
+    }
+
+    private func playScreenShake(amount: CGFloat) {
+        guard GameMotionPolicy.allowsScreenShake(settings: gameSettings) else { return }
+        laneRoot.removeAction(forKey: "screen_shake")
+        laneRoot.run(.sequence([
+            .moveBy(x: amount, y: 0, duration: 0), .wait(forDuration: 0.035),
+            .moveBy(x: -amount * 2, y: 0, duration: 0), .wait(forDuration: 0.035),
+            .moveBy(x: amount, y: 0, duration: 0)
+        ]), withKey: "screen_shake")
     }
 
     private func updateEnemyHUD(_ enemy: ActiveEnemy) {

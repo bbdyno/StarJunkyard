@@ -6,9 +6,11 @@ final class GameViewController: UIViewController {
     private let content: VerticalSliceContent
     private let saveStore: GameSaveStore
     private let settingsStore: GameSettingsStore
+    private let consentStore: AnalyticsConsentStore
     private let analytics: any GameAnalytics
     private var combatScene: CombatScene?
     private var saveSelectionScene: SaveSelectionScene?
+    private var settingsScene: PixelSettingsScene?
     private lazy var cloudSave = GameCenterCloudSave(presenter: self, store: saveStore)
     private lazy var feedback = IOSGameFeedbackService(settings: settingsStore)
     private lazy var operationNotifications = IOSIdleOperationNotificationScheduler()
@@ -17,13 +19,15 @@ final class GameViewController: UIViewController {
         content: VerticalSliceContent = ContentLoader.loadVerticalSlice(),
         saveStore: GameSaveStore = GameSaveStore(),
         settingsStore: GameSettingsStore = GameSettingsStore(),
+        consentStore: AnalyticsConsentStore = AnalyticsConsentStore(),
         analytics: (any GameAnalytics)? = nil
     ) {
         self.content = content
         self.saveStore = saveStore
         self.settingsStore = settingsStore
+        self.consentStore = consentStore
         self.analytics = analytics ?? ConsentGatedGameAnalytics(
-            consentStore: AnalyticsConsentStore(),
+            consentStore: consentStore,
             destination: LocalGameAnalyticsRecorder()
         )
         super.init(nibName: nil, bundle: nil)
@@ -49,7 +53,18 @@ final class GameViewController: UIViewController {
         gameView.accessibilityLabel = GameText.localized(.accessibilitySaveSelection)
         analytics.record(.appLaunched)
         #if DEBUG
-        if ProcessInfo.processInfo.arguments.contains("-capture-operations") {
+        if ProcessInfo.processInfo.arguments.contains("-capture-settings") ||
+            ProcessInfo.processInfo.arguments.contains("-capture-settings-en") {
+            var captureSave = GameSave.newGame()
+            captureSave.stageIndex = 3
+            captureSave.prologueSeen = true
+            captureSave.tutorialStep = 4
+            startGame(with: captureSave)
+            let locale = ProcessInfo.processInfo.arguments.contains("-capture-settings-en")
+                ? Locale(identifier: "en")
+                : Locale(identifier: "ko")
+            presentSettings(locale: locale)
+        } else if ProcessInfo.processInfo.arguments.contains("-capture-operations") {
             let expeditionStart = Date().addingTimeInterval(-31 * 60)
             var captureSave = GameSave.newGame(now: expeditionStart)
             var operations = IdleOperationsState.newGame(now: expeditionStart)
@@ -192,9 +207,11 @@ final class GameViewController: UIViewController {
         if let status { scene.setStatus(status, isError: isError) }
         scene.applyViewport(PixelViewport(view: gameView))
         saveSelectionScene = scene
+        settingsScene = nil
         combatScene = nil
         gameView.accessibilityLabel = GameText.localized(.accessibilitySaveSelection)
-        let transitionDuration = settingsStore.load().reduceMotion ? 0 : 0.18
+        gameView.accessibilityCustomActions = []
+        let transitionDuration = GameMotionPolicy.transitionDuration(0.18, settings: settingsStore.load())
         gameView.presentScene(scene, transition: .fade(withDuration: transitionDuration))
     }
 
@@ -207,12 +224,14 @@ final class GameViewController: UIViewController {
             content: content,
             save: initialSave,
             showFacilityPanelOnLaunch: showFacilityPanelOnLaunch,
-            showOperationsPanelOnLaunch: showOperationsPanelOnLaunch
+            showOperationsPanelOnLaunch: showOperationsPanelOnLaunch,
+            settings: settingsStore.load()
         )
         scene.applyViewport(PixelViewport(view: gameView))
         scene.onSave = { [weak self] save in try? self?.saveStore.save(save) }
         scene.onAccessibilitySummary = { [weak gameView] summary in gameView?.accessibilityLabel = summary }
         scene.onReturnToSaveSelection = { [weak self] in self?.presentSaveSelection() }
+        scene.onOpenSettings = { [weak self] in self?.presentSettings() }
         scene.onFeedback = { [weak self] event in self?.feedback.perform(event) }
         scene.onAnalyticsEvent = { [weak self] event in self?.analytics.record(event) }
         scene.onLongOperationStarted = { [weak self] operation in
@@ -220,12 +239,80 @@ final class GameViewController: UIViewController {
         }
         combatScene = scene
         saveSelectionScene = nil
-        gameView.accessibilityLabel = GameText.localized(.accessibilityCombat)
+        settingsScene = nil
+        configureCombatAccessibility()
+        feedback.syncMusic()
         analytics.record(.combatStarted(stage: initialSave.highestStage))
-        let transition: SKTransition = settingsStore.load().reduceMotion
+        let duration = GameMotionPolicy.transitionDuration(0.22, settings: settingsStore.load())
+        let transition: SKTransition = duration == 0
             ? .fade(withDuration: 0)
-            : .doorsOpenVertical(withDuration: 0.22)
+            : .doorsOpenVertical(withDuration: duration)
         gameView.presentScene(scene, transition: transition)
+    }
+
+    private func presentSettings(locale: Locale = .current) {
+        let scene = PixelSettingsScene(
+            settingsStore: settingsStore,
+            consentStore: consentStore,
+            locale: locale,
+            bundle: Bundle(for: GameViewController.self)
+        )
+        scene.onClose = { [weak self] in self?.dismissSettings() }
+        scene.onSettingsChanged = { [weak self] settings in
+            self?.combatScene?.applySettings(settings)
+            self?.feedback.syncMusic()
+        }
+        scene.onFeedback = { [weak self] event in self?.feedback.perform(event) }
+        scene.onAnalyticsEvent = { [weak self] event in self?.analytics.record(event) }
+        scene.onAccessibilitySummary = { [weak gameView] summary in
+            gameView?.accessibilityLabel = summary
+        }
+        scene.applyViewport(PixelViewport(view: gameView))
+        settingsScene = scene
+        saveSelectionScene = nil
+        gameView.accessibilityLabel = scene.accessibilitySummary
+        gameView.accessibilityCustomActions = [
+            UIAccessibilityCustomAction(
+                name: GameText.localized(.commonClose, locale: locale, bundle: Bundle(for: GameViewController.self)),
+                actionHandler: { [weak self] _ in
+                    self?.dismissSettings()
+                    return true
+                }
+            )
+        ]
+        let duration = GameMotionPolicy.transitionDuration(0.16, settings: settingsStore.load())
+        gameView.presentScene(scene, transition: .fade(withDuration: duration))
+    }
+
+    private func dismissSettings() {
+        guard let scene = combatScene else {
+            presentSaveSelection()
+            return
+        }
+        let settings = settingsStore.load()
+        scene.applySettings(settings)
+        scene.applyViewport(PixelViewport(view: gameView))
+        settingsScene = nil
+        configureCombatAccessibility()
+        let duration = GameMotionPolicy.transitionDuration(0.16, settings: settings)
+        gameView.presentScene(scene, transition: .fade(withDuration: duration))
+    }
+
+    private func configureCombatAccessibility() {
+        gameView.accessibilityLabel = GameText.localized(.accessibilityCombat)
+        gameView.accessibilityCustomActions = [
+            UIAccessibilityCustomAction(
+                name: GameText.localized(.accessibilityActionSalvage),
+                actionHandler: { [weak self] _ in self?.combatScene?.performPrimaryAccessibilityAction() ?? false }
+            ),
+            UIAccessibilityCustomAction(
+                name: GameText.localized(.accessibilityActionSettings),
+                actionHandler: { [weak self] _ in
+                    self?.presentSettings()
+                    return true
+                }
+            )
+        ]
     }
 
     deinit {
