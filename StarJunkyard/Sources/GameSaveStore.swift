@@ -76,9 +76,11 @@ final class GameSaveStore: @unchecked Sendable {
             throw GameSaveStoreError.unsupportedSchema(save.schemaVersion)
         }
         if save.schemaVersion == 1 {
-            save.schemaVersion = GameSave.currentSchemaVersion
             save.enemyHPs = save.enemyHP.map { [$0] }
             save.crewLevel = 1
+        }
+        if save.schemaVersion < GameSave.currentSchemaVersion {
+            save.schemaVersion = GameSave.currentSchemaVersion
         }
         return save
     }

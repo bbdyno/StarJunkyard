@@ -1,7 +1,7 @@
 import Foundation
 
 struct GameSave: Codable, Equatable, Sendable {
-    static let currentSchemaVersion = 2
+    static let currentSchemaVersion = 3
     static let cloudSlotName = "sj_main_v1"
 
     var schemaVersion: Int = currentSchemaVersion
@@ -17,6 +17,12 @@ struct GameSave: Codable, Equatable, Sendable {
     var droneLevel: Int
     var magnetLevel: Int
     var crewLevel: Int
+    var pressLevel: Int
+    var sorterLevel: Int
+    var warehouseLevel: Int
+    var yardIncomeBank: Int
+    var manualTapCount: Int
+    var discoveredEnemyIDs: [String]
     var tutorialStep: Int
     var combatTick: Int
     var highestStage: Int
@@ -36,6 +42,12 @@ struct GameSave: Codable, Equatable, Sendable {
             droneLevel: 1,
             magnetLevel: 1,
             crewLevel: 1,
+            pressLevel: 1,
+            sorterLevel: 0,
+            warehouseLevel: 0,
+            yardIncomeBank: 0,
+            manualTapCount: 0,
+            discoveredEnemyIDs: [],
             tutorialStep: 0,
             combatTick: 0,
             highestStage: 1,
@@ -44,12 +56,13 @@ struct GameSave: Codable, Equatable, Sendable {
     }
 
     var summary: String {
-        "S\(highestStage)  •  고철 \(credits)  •  보라 LV.\(crewLevel)"
+        "S\(highestStage)  •  고철 \(credits)  •  회수 대기 \(yardIncomeBank)  •  보라 LV.\(crewLevel)"
     }
 
     private enum CodingKeys: String, CodingKey {
         case schemaVersion, revision, updatedAt, stageIndex, waveIndex, enemyHP, enemyHPs
         case credits, parts, cutterLevel, droneLevel, magnetLevel, crewLevel
+        case pressLevel, sorterLevel, warehouseLevel, yardIncomeBank, manualTapCount, discoveredEnemyIDs
         case tutorialStep, combatTick, highestStage, cloudBackupEnabled
     }
 
@@ -67,6 +80,12 @@ struct GameSave: Codable, Equatable, Sendable {
         droneLevel: Int,
         magnetLevel: Int,
         crewLevel: Int,
+        pressLevel: Int,
+        sorterLevel: Int,
+        warehouseLevel: Int,
+        yardIncomeBank: Int,
+        manualTapCount: Int,
+        discoveredEnemyIDs: [String],
         tutorialStep: Int,
         combatTick: Int,
         highestStage: Int,
@@ -85,6 +104,12 @@ struct GameSave: Codable, Equatable, Sendable {
         self.droneLevel = droneLevel
         self.magnetLevel = magnetLevel
         self.crewLevel = crewLevel
+        self.pressLevel = pressLevel
+        self.sorterLevel = sorterLevel
+        self.warehouseLevel = warehouseLevel
+        self.yardIncomeBank = yardIncomeBank
+        self.manualTapCount = manualTapCount
+        self.discoveredEnemyIDs = discoveredEnemyIDs
         self.tutorialStep = tutorialStep
         self.combatTick = combatTick
         self.highestStage = highestStage
@@ -106,6 +131,12 @@ struct GameSave: Codable, Equatable, Sendable {
         droneLevel = try values.decode(Int.self, forKey: .droneLevel)
         magnetLevel = try values.decode(Int.self, forKey: .magnetLevel)
         crewLevel = try values.decodeIfPresent(Int.self, forKey: .crewLevel) ?? 1
+        pressLevel = try values.decodeIfPresent(Int.self, forKey: .pressLevel) ?? 1
+        sorterLevel = try values.decodeIfPresent(Int.self, forKey: .sorterLevel) ?? 0
+        warehouseLevel = try values.decodeIfPresent(Int.self, forKey: .warehouseLevel) ?? 0
+        yardIncomeBank = try values.decodeIfPresent(Int.self, forKey: .yardIncomeBank) ?? 0
+        manualTapCount = try values.decodeIfPresent(Int.self, forKey: .manualTapCount) ?? 0
+        discoveredEnemyIDs = try values.decodeIfPresent([String].self, forKey: .discoveredEnemyIDs) ?? []
         tutorialStep = try values.decode(Int.self, forKey: .tutorialStep)
         combatTick = try values.decode(Int.self, forKey: .combatTick)
         highestStage = try values.decode(Int.self, forKey: .highestStage)
